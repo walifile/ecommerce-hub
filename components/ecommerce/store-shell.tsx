@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShoppingBag, ShoppingCart, Store, Truck } from "lucide-react";
+import { Mail, MessageCircle, ShoppingBag, ShoppingCart, Store, Truck } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -28,10 +28,10 @@ export function StoreShell({
             </div>
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Ecommerce OS
+                Play. Learn. Repeat.
               </p>
               <p className="text-base font-semibold text-foreground">
-                Ecommerce Hub
+                ToyVerse
               </p>
             </div>
           </Link>
@@ -70,27 +70,35 @@ export function StoreShell({
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-foreground">
               <ShoppingBag className="size-4" />
-              <span className="font-semibold">Ecommerce Hub</span>
+              <span className="font-semibold">ToyVerse</span>
             </div>
             <p className="max-w-md leading-6">
-              Built as a single-store operating system: storefront, orders,
-              customers, profit, and AI content workflows in one surface.
+              Bright, premium toys for curious kids and Gen Z parents who want
+              quality, speed, and a cleaner shopping experience.
             </p>
-          </div>
-          <div className="space-y-3">
-            <p className="font-semibold text-foreground">Store</p>
-            <div className="grid gap-2">
-              <Link href="/shop">Shop</Link>
-              <Link href="/checkout">Checkout</Link>
-              <Link href="/track-order">Order Tracking</Link>
+            <div className="flex items-center gap-3 text-foreground">
+              <Link href="#" aria-label="Community chat" className="rounded-full border border-border/70 p-2 hover:bg-muted">
+                <MessageCircle className="size-4" />
+              </Link>
+              <Link href="mailto:hello@toyverse.shop" aria-label="Email" className="rounded-full border border-border/70 p-2 hover:bg-muted">
+                <Mail className="size-4" />
+              </Link>
             </div>
           </div>
           <div className="space-y-3">
-            <p className="font-semibold text-foreground">Operations</p>
+            <p className="font-semibold text-foreground">Contact</p>
             <div className="grid gap-2">
-              <Link href="/admin">Dashboard</Link>
-              <Link href="/admin/orders">Orders</Link>
-              <Link href="/admin/profit">Profit</Link>
+              <Link href="/contact">Help Center</Link>
+              <Link href="/track-order">Track Order</Link>
+              <Link href="mailto:hello@toyverse.shop">hello@toyverse.shop</Link>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <p className="font-semibold text-foreground">Policies</p>
+            <div className="grid gap-2">
+              <Link href="#">Shipping Policy</Link>
+              <Link href="#">Returns Policy</Link>
+              <Link href="#">Privacy Policy</Link>
             </div>
           </div>
         </div>

@@ -1,319 +1,453 @@
+import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Bot, ChartSpline, Package, ShoppingCart, Users } from "lucide-react";
-import { ProductCard } from "@/components/ecommerce/product-card";
-import { SectionHeading } from "@/components/ecommerce/section-heading";
+import {
+  ArrowRight,
+  Blocks,
+  Brain,
+  Car,
+  Check,
+  Palette,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Truck,
+  Undo2,
+} from "lucide-react";
+import { FloatingToys } from "@/app/_components/floating-toys";
+import { MotionFade } from "@/app/_components/motion-fade";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getCatalogData, getDashboardData, formatCurrency } from "@/lib/ecommerce-data";
 import { cn } from "@/lib/utils";
 
-export default async function HomePage() {
-  const [catalog, dashboard] = await Promise.all([
-    getCatalogData(),
-    getDashboardData(),
-  ]);
+export const metadata: Metadata = {
+  title: "Toys That Spark Imagination",
+  description:
+    "Shop ToyVerse for premium toys, playful design, bright visuals, and conversion-focused shopping built for modern parents.",
+};
 
-  const featuredProducts = catalog.products.filter((product) => product.featured).slice(0, 4);
-  const newArrivals = catalog.products.filter((product) => product.isNew).slice(0, 3);
-  const bestSellers = catalog.products.filter((product) => product.bestSeller).slice(0, 3);
+const categoryCards = [
+  {
+    name: "Educational Toys",
+    description: "Skill-building picks for curious minds.",
+    image:
+      "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80",
+    icon: Brain,
+    tone: "from-[#eef4ff] to-white",
+  },
+  {
+    name: "Building Sets",
+    description: "Colorful builds with room for big ideas.",
+    image:
+      "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=900&q=80",
+    icon: Blocks,
+    tone: "from-[#f1e9ff] to-white",
+  },
+  {
+    name: "RC Toys",
+    description: "Fast-moving fun for indoor and outdoor play.",
+    image:
+      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=900&q=80",
+    icon: Car,
+    tone: "from-[#fff7cf] to-white",
+  },
+  {
+    name: "Creative Play",
+    description: "Art, pretend play, and open-ended discovery.",
+    image:
+      "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80",
+    icon: Palette,
+    tone: "from-[#ffe8f5] to-white",
+  },
+  {
+    name: "Outdoor Fun",
+    description: "Bright, active toys built for movement.",
+    image:
+      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80",
+    icon: Sparkles,
+    tone: "from-[#e8fbff] to-white",
+  },
+];
 
+const bestSellers = [
+  {
+    name: "Rocket Builder Lab",
+    price: "$49",
+    rating: "4.9",
+    image:
+      "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=1000&q=80",
+    badge: "STEM Favorite",
+  },
+  {
+    name: "Mini Drift Racer",
+    price: "$59",
+    rating: "4.8",
+    image:
+      "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1000&q=80",
+    badge: "Fast Seller",
+  },
+  {
+    name: "Dream Canvas Kit",
+    price: "$34",
+    rating: "4.7",
+    image:
+      "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1000&q=80",
+    badge: "Creative Pick",
+  },
+  {
+    name: "Adventure Bounce Set",
+    price: "$44",
+    rating: "4.9",
+    image:
+      "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=1000&q=80",
+    badge: "Outdoor Hit",
+  },
+];
+
+const trustCards = [
+  { title: "Safe Materials", icon: ShieldCheck, tone: "bg-[#eef4ff] text-[#4b74ff]" },
+  { title: "Fast Shipping", icon: Truck, tone: "bg-[#fff7cf] text-[#d89a00]" },
+  { title: "Quality Tested", icon: Check, tone: "bg-[#e9fbff] text-[#1596b5]" },
+  { title: "Easy Returns", icon: Undo2, tone: "bg-[#f1e9ff] text-[#7c51e6]" },
+];
+
+const reviews = [
+  {
+    quote:
+      "The quality feels premium the second the box arrives. My son opened one set and forgot screen time existed.",
+    name: "Maha R.",
+    role: "Karachi parent",
+  },
+  {
+    quote:
+      "ToyVerse feels clean and easy to trust. I found a birthday gift in minutes and checkout was painless on mobile.",
+    name: "Areeba S.",
+    role: "Lahore parent",
+  },
+  {
+    quote:
+      "Bright design, solid prices, fast delivery. It looks fun without feeling chaotic, which is rare in toy stores.",
+    name: "Usman K.",
+    role: "Islamabad parent",
+  },
+];
+
+export default function HomePage() {
   return (
-    <StoreShell cartCount={3}>
-      <main>
-        <section className="border-b border-border/70 bg-muted/30">
-          <div className="section-shell grid gap-10 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:py-16">
-            <div className="space-y-8">
-              <div className="space-y-5">
-                <Badge className="rounded-full bg-emerald-600 px-3 py-1 text-white">
-                  Phase 1 specification
+    <StoreShell cartCount={2}>
+      <main className="overflow-hidden">
+        <section className="relative border-b border-border/60 bg-[radial-gradient(circle_at_top_left,#eef4ff,transparent_35%),radial-gradient(circle_at_top_right,#f3ebff,transparent_30%),linear-gradient(to_bottom,#ffffff,#fcfdff)]">
+          <div className="section-shell relative py-10 sm:py-12 lg:py-16">
+            <FloatingToys />
+            <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-12">
+              <MotionFade className="space-y-6" delay={0.05}>
+                <Badge className="rounded-full bg-[#fff3b3] px-4 py-1.5 text-[#5b4b00] shadow-sm">
+                  New season drops
                 </Badge>
                 <div className="space-y-4">
-                  <h1 className="max-w-3xl text-4xl font-semibold leading-tight text-foreground sm:text-5xl">
-                    {catalog.settings.heroTitle}
+                  <h1 className="max-w-xl text-4xl font-semibold leading-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                    Toys That Spark Imagination
                   </h1>
-                  <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-                    {catalog.settings.heroSubtitle}
+                  <p className="max-w-lg text-base leading-7 text-slate-600 sm:text-lg">
+                    Premium toys for curious kids, picked for learning, movement,
+                    and joyful everyday play. Fast shipping, clean checkout, and
+                    parent-friendly quality.
                   </p>
                 </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/shop"
+                    className={cn(
+                      buttonVariants({ size: "lg" }),
+                      "rounded-2xl bg-slate-950 px-6 text-white hover:bg-slate-800"
+                    )}
+                  >
+                    Shop Now
+                    <ArrowRight className="size-4" />
+                  </Link>
+                  <Link
+                    href="#best-sellers"
+                    className={cn(
+                      buttonVariants({ size: "lg", variant: "outline" }),
+                      "rounded-2xl border-slate-200 bg-white/80 px-6 text-slate-900 hover:bg-white"
+                    )}
+                  >
+                    Best Sellers
+                  </Link>
+                </div>
+                <div className="grid max-w-lg grid-cols-3 gap-3">
+                  {[
+                    ["15k+", "Happy families"],
+                    ["48h", "Dispatch window"],
+                    ["4.9/5", "Average rating"],
+                  ].map(([value, label]) => (
+                    <div
+                      key={label}
+                      className="rounded-2xl border border-white/60 bg-white/80 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur"
+                    >
+                      <p className="text-xl font-semibold text-slate-950">{value}</p>
+                      <p className="mt-1 text-sm text-slate-600">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              </MotionFade>
+
+              <MotionFade delay={0.12}>
+                <div className="relative">
+                  <div className="absolute inset-4 rounded-[32px] bg-[linear-gradient(135deg,#eef4ff,#fff7cf,#f1e9ff)] blur-3xl" />
+                  <div className="relative overflow-hidden rounded-[28px] border border-white/70 bg-white/85 p-3 shadow-[0_30px_90px_rgba(15,23,42,0.12)]">
+                    <div className="overflow-hidden rounded-[24px]">
+                      <Image
+                        src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=1600&q=80"
+                        alt="Children playing with colorful toys"
+                        width={1400}
+                        height={1100}
+                        priority
+                        className="h-[360px] w-full object-cover sm:h-[460px]"
+                      />
+                    </div>
+                    <div className="absolute bottom-7 left-7 right-7 flex items-end justify-between gap-4">
+                      <div className="max-w-xs rounded-3xl border border-white/70 bg-white/78 p-4 shadow-lg backdrop-blur">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          Parent Pick
+                        </p>
+                        <p className="mt-2 text-base font-semibold text-slate-950">
+                          Bright toys, soft edges, and cleaner materials for
+                          everyday play.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </MotionFade>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-10 sm:py-12">
+          <div className="section-shell">
+            <MotionFade className="space-y-6">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="eyebrow text-[#4b74ff]">Featured Categories</p>
+                  <h2 className="mt-2 text-3xl font-semibold text-slate-950 sm:text-4xl">
+                    Shop by what kids want to do next.
+                  </h2>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/shop"
-                  className={cn(buttonVariants({ size: "lg" }), "rounded-md")}
-                >
-                  Start shopping
-                  <ArrowRight className="size-4" />
-                </Link>
-                <Link
-                  href="/admin"
-                  className={cn(
-                    buttonVariants({ size: "lg", variant: "outline" }),
-                    "rounded-md"
-                  )}
-                >
-                  Open admin
-                </Link>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                {[
-                  { label: "Revenue", value: formatCurrency(dashboard.metrics.totalRevenue), icon: ChartSpline },
-                  { label: "Orders", value: String(dashboard.metrics.totalOrders), icon: ShoppingCart },
-                  { label: "Customers", value: String(dashboard.metrics.totalCustomers), icon: Users },
-                  { label: "Products", value: String(catalog.products.length), icon: Package },
-                ].map((metric) => {
-                  const Icon = metric.icon;
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                {categoryCards.map((category, index) => {
+                  const Icon = category.icon;
+
                   return (
-                    <Card key={metric.label} className="rounded-lg border-border/70 bg-background py-0">
-                      <CardContent className="flex items-center justify-between p-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">{metric.label}</p>
-                          <p className="mt-1 text-2xl font-semibold text-foreground">
-                            {metric.value}
-                          </p>
+                    <MotionFade key={category.name} delay={0.05 * index}>
+                      <Link
+                        href="/shop"
+                        className={`group block overflow-hidden rounded-[24px] border border-slate-200 bg-gradient-to-b ${category.tone} p-3 shadow-[0_18px_55px_rgba(15,23,42,0.05)] transition-transform duration-300 hover:-translate-y-1`}
+                      >
+                        <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-[20px]">
+                          <Image
+                            src={category.image}
+                            alt={category.name}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 20vw"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
                         </div>
-                        <div className="flex size-10 items-center justify-center rounded-md bg-muted">
-                          <Icon className="size-5 text-foreground" />
+                        <div className="flex items-start justify-between gap-3 p-2">
+                          <div>
+                            <h3 className="text-lg font-semibold text-slate-950">
+                              {category.name}
+                            </h3>
+                            <p className="mt-1 text-sm leading-6 text-slate-600">
+                              {category.description}
+                            </p>
+                          </div>
+                          <div className="rounded-2xl bg-white/80 p-2 shadow-sm">
+                            <Icon className="size-5 text-slate-900" />
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                      </Link>
+                    </MotionFade>
                   );
                 })}
               </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <img
-                  src="https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1600&q=80"
-                  alt="Store owner managing products and orders"
-                  className="h-full min-h-72 w-full rounded-lg object-cover"
-                />
-              </div>
-              <Card className="rounded-lg border-border/70 py-0">
-                <CardContent className="space-y-3 p-5">
-                  <div className="flex items-center gap-2">
-                    <Bot className="size-4 text-emerald-600" />
-                    <p className="text-sm font-medium text-foreground">AI product generator</p>
-                  </div>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    Generate title, long description, short copy, SEO metadata,
-                    and FAQ from a single product name.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="rounded-lg border-border/70 py-0">
-                <CardContent className="space-y-3 p-5">
-                  <p className="text-sm font-medium text-foreground">
-                    Profit tracking model
-                  </p>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    Revenue - product cost - shipping - ad spend, calculated at
-                    the order level and surfaced daily, weekly, and monthly.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            </MotionFade>
           </div>
         </section>
 
-        <section className="py-16">
-          <div className="section-shell space-y-8">
-            <SectionHeading
-              eyebrow="Featured Products"
-              title="Products already positioned for margin and repeat purchase."
-              description="Phase 1 starts with a store that can sell, not a placeholder catalog. These items map directly into product, order, and profit tracking flows."
-            />
-            <div className="grid gap-4 lg:grid-cols-4">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-border/70 bg-muted/30 py-16">
-          <div className="section-shell space-y-8">
-            <SectionHeading
-              eyebrow="Categories"
-              title="Category structure built for a single-store operator."
-              description="Each category is positioned as a business unit: demand shape, stock profile, and pricing behavior are visible from the start."
-            />
-            <div className="grid gap-4 lg:grid-cols-3">
-              {catalog.categories.map((category) => (
-                <Card key={category.id} className="overflow-hidden rounded-lg border-border/70 py-0">
-                  <div className="aspect-[16/10] overflow-hidden">
-                    <img
-                      src={category.image}
-                      alt={category.name}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <CardContent className="space-y-3 p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="text-lg font-semibold text-foreground">
-                        {category.name}
-                      </h3>
-                      <Badge variant="secondary" className="rounded-full px-2.5 py-1">
-                        {category.productCount} items
-                      </Badge>
-                    </div>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      {category.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="section-shell grid gap-8 lg:grid-cols-[1fr_1fr]">
-            <div className="space-y-6">
-              <SectionHeading
-                eyebrow="New Arrivals"
-                title="New inventory slots directly into the storefront."
-                description="The product pages, stock tracking, and admin modules use the same data shape, so new inventory is operational from day one."
-              />
-              <div className="grid gap-4">
-                {newArrivals.map((product) => (
-                  <Card key={product.id} className="rounded-lg border-border/70 py-0">
-                    <CardContent className="flex flex-col gap-4 p-5 sm:flex-row">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="h-28 w-full rounded-md object-cover sm:w-36"
-                      />
-                      <div className="flex flex-1 flex-col justify-between gap-3">
-                        <div>
-                          <p className="eyebrow">{product.category}</p>
-                          <h3 className="mt-1 text-lg font-semibold text-foreground">
-                            {product.name}
-                          </h3>
-                          <p className="mt-2 text-sm text-muted-foreground">
-                            {product.shortDescription}
-                          </p>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-foreground">
-                            {formatCurrency(product.price)}
-                          </span>
-                          <Link
-                            href={`/products/${product.slug}`}
-                            className={cn(
-                              buttonVariants({ variant: "outline" }),
-                              "rounded-md"
-                            )}
-                          >
-                            Open
-                          </Link>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-6">
-              <SectionHeading
-                eyebrow="Best Sellers"
-                title="Products with the strongest current signal."
-                description="These are the items most likely to drive restocks, upsells, and paid traffic confidence."
-              />
-              <div className="grid gap-4">
-                {bestSellers.map((product, index) => (
-                  <Card key={product.id} className="rounded-lg border-border/70 py-0">
-                    <CardContent className="flex items-center gap-4 p-5">
-                      <div className="flex size-10 items-center justify-center rounded-md bg-muted text-sm font-semibold text-foreground">
-                        0{index + 1}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">{product.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {product.reviewsCount} reviews • {formatCurrency(product.price)}
-                        </p>
-                      </div>
-                      <Link
-                        href={`/products/${product.slug}`}
-                        className={cn(
-                          buttonVariants({ variant: "ghost" }),
-                          "rounded-md"
-                        )}
-                      >
-                        View
-                      </Link>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-border/70 bg-muted/30 py-16">
-          <div className="section-shell space-y-8">
-            <SectionHeading
-              eyebrow="Testimonials"
-              title="Built around the operator workflow, not a generic template."
-              description="Phase 1 is intentionally narrow: one store, one owner, one control surface."
-            />
-            <div className="grid gap-4 lg:grid-cols-3">
-              {catalog.testimonials.map((testimonial) => (
-                <Card key={testimonial.name} className="rounded-lg border-border/70 py-0">
-                  <CardContent className="space-y-4 p-5">
-                    <p className="text-sm leading-6 text-foreground">
-                      “{testimonial.quote}”
-                    </p>
-                    <div>
-                      <p className="font-semibold text-foreground">
-                        {testimonial.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {testimonial.company}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="py-16">
+        <section id="best-sellers" className="py-10 sm:py-12">
           <div className="section-shell">
-            <div className="grid gap-6 rounded-lg border border-border/70 bg-background p-6 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="space-y-3">
-                <p className="eyebrow">Newsletter</p>
-                <h2 className="text-3xl font-semibold text-foreground">
-                  Keep store operators informed about new launches and offers.
-                </h2>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  This is the same surface where email capture, promotions, and
-                  product launches can plug into Supabase-backed workflows later.
-                </p>
-              </div>
-              <div className="flex flex-col items-start justify-center gap-3 sm:flex-row lg:flex-col">
+            <MotionFade className="space-y-6">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="eyebrow text-[#7c51e6]">Best Sellers</p>
+                  <h2 className="mt-2 text-3xl font-semibold text-slate-950 sm:text-4xl">
+                    Four favorites parents buy fast.
+                  </h2>
+                </div>
                 <Link
                   href="/shop"
-                  className={cn(
-                    buttonVariants(),
-                    "w-full rounded-md sm:w-auto lg:w-full"
-                  )}
+                  className="hidden text-sm font-semibold text-slate-900 md:inline-flex"
                 >
-                  Browse products
-                </Link>
-                <Link
-                  href="/contact"
-                  className={cn(
-                    buttonVariants({ variant: "outline" }),
-                    "w-full rounded-md sm:w-auto lg:w-full"
-                  )}
-                >
-                  Contact store
+                  View all
                 </Link>
               </div>
-            </div>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {bestSellers.map((product, index) => (
+                  <MotionFade key={product.name} delay={0.04 * index}>
+                    <Card className="overflow-hidden rounded-[24px] border-slate-200 py-0 shadow-[0_18px_55px_rgba(15,23,42,0.06)] transition-transform duration-300 hover:-translate-y-1">
+                      <div className="relative aspect-[4/3] overflow-hidden bg-[#f8fbff]">
+                        <Image
+                          src={product.image}
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 25vw"
+                          className="object-cover transition-transform duration-500 hover:scale-105"
+                        />
+                      </div>
+                      <CardContent className="space-y-4 p-5">
+                        <Badge className="rounded-full bg-[#eef4ff] px-3 py-1 text-[#4b74ff]">
+                          {product.badge}
+                        </Badge>
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-3">
+                            <h3 className="text-lg font-semibold text-slate-950">
+                              {product.name}
+                            </h3>
+                            <div className="flex items-center gap-1 rounded-full bg-[#fff7cf] px-2.5 py-1 text-sm font-medium text-slate-900">
+                              <Star className="size-3.5 fill-current" />
+                              {product.rating}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <p className="text-xl font-semibold text-slate-950">
+                              {product.price}
+                            </p>
+                            <Link
+                              href="/cart"
+                              className={cn(
+                                buttonVariants({ variant: "outline", size: "sm" }),
+                                "rounded-2xl border-slate-200 bg-white"
+                              )}
+                            >
+                              Quick add
+                            </Link>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </MotionFade>
+                ))}
+              </div>
+            </MotionFade>
+          </div>
+        </section>
+
+        <section className="py-10 sm:py-12">
+          <div className="section-shell">
+            <MotionFade className="space-y-6">
+              <div>
+                <p className="eyebrow text-[#d89a00]">Why Parents Love Us</p>
+                <h2 className="mt-2 text-3xl font-semibold text-slate-950 sm:text-4xl">
+                  Built to feel playful for kids and effortless for parents.
+                </h2>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {trustCards.map((item, index) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <MotionFade key={item.title} delay={0.04 * index}>
+                      <Card className="rounded-[24px] border-slate-200 py-0 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
+                        <CardContent className="space-y-4 p-6">
+                          <div
+                            className={`flex size-12 items-center justify-center rounded-2xl ${item.tone}`}
+                          >
+                            <Icon className="size-5" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-slate-950">
+                              {item.title}
+                            </h3>
+                            <p className="mt-2 text-sm leading-6 text-slate-600">
+                              From material standards to shipping speed, each
+                              touchpoint is tuned to reduce friction and build trust.
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </MotionFade>
+                  );
+                })}
+              </div>
+            </MotionFade>
+          </div>
+        </section>
+
+        <section className="py-10 sm:py-12">
+          <div className="section-shell">
+            <MotionFade className="space-y-6">
+              <div>
+                <p className="eyebrow text-[#1596b5]">Customer Reviews</p>
+                <h2 className="mt-2 text-3xl font-semibold text-slate-950 sm:text-4xl">
+                  What parents say after the box arrives.
+                </h2>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-3">
+                {reviews.map((review, index) => (
+                  <MotionFade key={review.name} delay={0.05 * index}>
+                    <div className="rounded-[24px] border border-white/70 bg-white/70 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur-md">
+                      <div className="mb-4 flex items-center gap-1 text-[#d89a00]">
+                        {Array.from({ length: 5 }).map((_, starIndex) => (
+                          <Star key={starIndex} className="size-4 fill-current" />
+                        ))}
+                      </div>
+                      <p className="text-sm leading-7 text-slate-700">
+                        “{review.quote}”
+                      </p>
+                      <div className="mt-5">
+                        <p className="font-semibold text-slate-950">{review.name}</p>
+                        <p className="text-sm text-slate-500">{review.role}</p>
+                      </div>
+                    </div>
+                  </MotionFade>
+                ))}
+              </div>
+            </MotionFade>
+          </div>
+        </section>
+
+        <section className="pb-12 pt-6 sm:pb-16">
+          <div className="section-shell">
+            <MotionFade>
+              <div className="relative overflow-hidden rounded-[32px] border border-slate-200 bg-[linear-gradient(135deg,#eef4ff,#fff7cf_52%,#f1e9ff)] p-7 shadow-[0_25px_80px_rgba(15,23,42,0.08)] sm:p-10">
+                <div className="absolute -right-8 -top-8 size-32 rounded-full bg-white/45 blur-2xl" />
+                <div className="absolute bottom-0 left-0 size-28 rounded-full bg-white/35 blur-2xl" />
+                <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="max-w-2xl">
+                    <p className="eyebrow text-slate-700">Final CTA</p>
+                    <h2 className="mt-2 text-3xl font-semibold text-slate-950 sm:text-4xl">
+                      Make Playtime More Magical
+                    </h2>
+                    <p className="mt-3 text-sm leading-7 text-slate-700 sm:text-base">
+                      Bright toys, premium quality, and a cleaner path to checkout.
+                    </p>
+                  </div>
+                  <Link
+                    href="/shop"
+                    className={cn(
+                      buttonVariants({ size: "lg" }),
+                      "rounded-2xl bg-slate-950 px-6 text-white hover:bg-slate-800"
+                    )}
+                  >
+                    Start Shopping
+                  </Link>
+                </div>
+              </div>
+            </MotionFade>
           </div>
         </section>
       </main>

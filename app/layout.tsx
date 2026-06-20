@@ -15,8 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ecommerce Hub",
-  description: "Next.js ecommerce app scaffolded with shadcn/ui components.",
+  title: {
+    default: "ToyVerse",
+    template: "%s | ToyVerse",
+  },
+  description:
+    "ToyVerse is a premium toy store with bright visuals, playful products, and a compact conversion-focused ecommerce experience.",
 };
 
 export default function RootLayout({
