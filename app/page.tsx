@@ -125,18 +125,18 @@ export default function HomePage() {
         {/* ══════════════════════════════════════
             HERO
         ══════════════════════════════════════ */}
-        <section className="relative min-h-[92vh] overflow-hidden bg-[#07070f]">
+        <section className="relative overflow-hidden bg-[#07070f]">
 
           {/* Orange circle — large enough to bleed off top + right, curved left edge visible */}
           <div
             className="pointer-events-none absolute right-0 top-0"
             style={{
-              width: "min(1400px, 130vw)",
-              height: "min(1400px, 130vw)",
+              width: "60vw",
+              height: "60vw",
               borderRadius: "50%",
-              transform: "translate(28%, -28%)",
-              background: "radial-gradient(circle at 45% 55%, #fb923c 0%, #ea580c 50%, #c2410c 100%)",
-              boxShadow: "inset -60px -60px 120px rgba(0,0,0,0.3)",
+              transform: "translate(10%, -25%)",
+              background: "radial-gradient(circle at 45% 50%, #fb923c 0%, #ea580c 52%, #c2410c 100%)",
+              boxShadow: "inset -50px -50px 100px rgba(0,0,0,0.28)",
               zIndex: 0,
             }}
           />
@@ -145,7 +145,7 @@ export default function HomePage() {
           <div className="pointer-events-none absolute -left-40 top-1/2 h-125 w-125 -translate-y-1/2 rounded-full bg-[#8b5cf6]/5 blur-[120px]" />
 
           {/* Grid */}
-          <div className="relative z-10 mx-auto grid min-h-[92vh] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8">
+          <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 sm:py-28 lg:grid-cols-2 lg:gap-8 lg:px-8">
 
             {/* Left */}
             <MotionFade className="space-y-7" delay={0.05}>
