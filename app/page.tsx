@@ -134,7 +134,7 @@ export default function HomePage() {
               width: "60vw",
               height: "60vw",
               borderRadius: "50%",
-              transform: "translate(10%, -25%)",
+              transform: "translate(25%, -36%)",
               background: "radial-gradient(circle at 45% 50%, #fb923c 0%, #ea580c 52%, #c2410c 100%)",
               boxShadow: "inset -50px -50px 100px rgba(0,0,0,0.28)",
               zIndex: 0,
