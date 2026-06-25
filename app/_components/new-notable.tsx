@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Bookmark, ChevronLeft, ChevronRight } from "lucide-react";
+import { Bookmark } from "lucide-react";
 
 type Product = {
   name: string;
@@ -120,26 +120,6 @@ export function NewNotable() {
 
         {/* Carousel */}
         <div className="relative mt-14">
-          {/* Arrows */}
-          <button
-            type="button"
-            aria-label="Previous"
-            onClick={() => goTo(page - 1)}
-            disabled={page === 0}
-            className="absolute -left-2 top-1/2 z-20 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 backdrop-blur-md transition-all hover:border-white/25 hover:text-white disabled:opacity-25 lg:flex"
-          >
-            <ChevronLeft className="size-5" />
-          </button>
-          <button
-            type="button"
-            aria-label="Next"
-            onClick={() => goTo(page + 1)}
-            disabled={page === PAGES - 1}
-            className="absolute -right-2 top-1/2 z-20 hidden size-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 backdrop-blur-md transition-all hover:border-white/25 hover:text-white disabled:opacity-25 lg:flex"
-          >
-            <ChevronRight className="size-5" />
-          </button>
-
           {/* Track */}
           <div
             ref={trackRef}
@@ -153,7 +133,7 @@ export function NewNotable() {
               >
                 <div className="group flex h-full flex-col overflow-hidden rounded-3xl border border-white/[0.07] bg-white/3 transition-all duration-300 hover:border-white/12 hover:-translate-y-1">
                   {/* Image */}
-                  <div className="relative aspect-square overflow-hidden">
+                  <div className="relative aspect-3/2 overflow-hidden">
                     <div className="absolute inset-0 z-10 bg-linear-to-t from-[#07070f]/60 via-transparent to-transparent" />
                     <Image
                       src={product.image}
@@ -184,28 +164,28 @@ export function NewNotable() {
                   </div>
 
                   {/* Body */}
-                  <div className="flex flex-1 flex-col items-center px-5 py-6 text-center">
-                    <h3 className="text-base font-black text-white">{product.name}</h3>
-                    <p className="mt-2 max-w-xs text-sm leading-6 text-white/45">
+                  <div className="flex flex-1 flex-col items-center px-4 py-4 text-center">
+                    <h3 className="text-sm font-black text-white">{product.name}</h3>
+                    <p className="mt-1 line-clamp-2 max-w-xs text-xs leading-5 text-white/45">
                       {product.description}
                     </p>
 
-                    <div className="mt-4 space-y-0.5">
+                    <div className="mt-2 space-y-0">
                       {product.meta.map((line, i) => (
                         <p
                           key={line}
-                          className={i === 0 ? "text-xs text-white/35" : "text-sm font-semibold text-white/70"}
+                          className={i === 0 ? "text-[11px] text-white/35" : "text-xs font-semibold text-white/70"}
                         >
                           {line}
                         </p>
                       ))}
                     </div>
 
-                    <p className="mt-5 text-lg font-black text-white">{product.price}</p>
+                    <p className="mt-2 text-base font-black text-white">{product.price}</p>
 
                     <Link
                       href="/cart"
-                      className="mt-5 w-full rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] py-3 text-sm font-bold text-white shadow-[0_0_25px_rgba(249,115,22,0.25)] transition-shadow hover:shadow-[0_0_40px_rgba(249,115,22,0.45)]"
+                      className="mt-3 w-full rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] py-2.5 text-xs font-bold text-white shadow-[0_0_25px_rgba(249,115,22,0.25)] transition-shadow hover:shadow-[0_0_40px_rgba(249,115,22,0.45)]"
                     >
                       Add to cart
                     </Link>
