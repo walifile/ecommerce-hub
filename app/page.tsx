@@ -9,11 +9,11 @@ import {
   Truck,
   Undo2,
   Zap,
-  Package,
 } from "lucide-react";
 import { FloatingToys } from "@/app/_components/floating-toys";
 import { MotionFade } from "@/app/_components/motion-fade";
 import { CategoryCard } from "@/app/_components/category-card";
+import { NewNotable } from "@/app/_components/new-notable";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 
 export const metadata: Metadata = {
@@ -145,7 +145,7 @@ export default function HomePage() {
           <div className="pointer-events-none absolute -left-40 top-1/2 h-125 w-125 -translate-y-1/2 rounded-full bg-[#8b5cf6]/5 blur-[120px]" />
 
           {/* Grid */}
-          <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 sm:py-28 lg:grid-cols-2 lg:gap-8 lg:px-8">
+          <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 pb-10 pt-16 sm:px-6 sm:pb-12 sm:pt-20 lg:grid-cols-2 lg:gap-8 lg:px-8">
 
             {/* Left */}
             <MotionFade className="space-y-7" delay={0.05}>
@@ -206,29 +206,22 @@ export default function HomePage() {
 
             {/* Right — image over section-level circle */}
             <MotionFade delay={0.12} className="relative">
-              <div className="absolute bottom-4 left-4 z-20 rounded-2xl border border-white/10 bg-black/65 px-4 py-3 backdrop-blur-md">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#f97316]">
-                  Season 3 Drop
-                </p>
-                <p className="mt-0.5 text-sm font-black text-white">New arrivals are live now.</p>
-              </div>
-
-              <div className="absolute right-4 top-4 z-20 flex items-center gap-1.5 rounded-full border border-[#8b5cf6]/30 bg-black/55 px-3 py-1.5 backdrop-blur-sm">
-                <Package className="size-3.5 text-[#8b5cf6]" />
-                <span className="text-[11px] font-bold text-[#8b5cf6]">Free Shipping</span>
-              </div>
-
               <Image
                 src="/images/banner-img.png"
                 alt="Premium Toys Collection"
                 width={900}
                 height={700}
                 priority
-                className="relative z-10 h-100 w-full object-contain drop-shadow-[0_40px_80px_rgba(0,0,0,0.7)] sm:h-135"
+                className="relative z-10 h-80 w-full object-contain drop-shadow-[0_40px_80px_rgba(0,0,0,0.7)] sm:h-100"
               />
             </MotionFade>
           </div>
         </section>
+
+        {/* ══════════════════════════════════════
+            NEW & NOTABLE
+        ══════════════════════════════════════ */}
+        <NewNotable />
 
         {/* ══════════════════════════════════════
             CATEGORIES
