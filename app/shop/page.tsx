@@ -5,6 +5,7 @@ import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { listProducts, getCatalogData } from "@/lib/ecommerce-data";
 import { cn } from "@/lib/utils";
 
@@ -44,18 +45,14 @@ export default async function ShopPage(props: PageProps<"/shop">) {
                     <label className="text-sm font-medium text-foreground">
                       Category
                     </label>
-                    <select
-                      name="category"
-                      defaultValue={category}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                    >
-                      <option value="all">All categories</option>
+                    <NativeSelect name="category" defaultValue={category} className="w-full">
+                      <NativeSelectOption value="all">All categories</NativeSelectOption>
                       {catalog.categories.map((item) => (
-                        <option key={item.id} value={item.name}>
+                        <NativeSelectOption key={item.id} value={item.name}>
                           {item.name}
-                        </option>
+                        </NativeSelectOption>
                       ))}
-                    </select>
+                    </NativeSelect>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">
@@ -67,16 +64,12 @@ export default async function ShopPage(props: PageProps<"/shop">) {
                     <label className="text-sm font-medium text-foreground">
                       Sort
                     </label>
-                    <select
-                      name="sort"
-                      defaultValue={sort}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                    >
-                      <option value="featured">Featured</option>
-                      <option value="price-asc">Price: Low to high</option>
-                      <option value="price-desc">Price: High to low</option>
-                      <option value="rating">Rating</option>
-                    </select>
+                    <NativeSelect name="sort" defaultValue={sort} className="w-full">
+                      <NativeSelectOption value="featured">Featured</NativeSelectOption>
+                      <NativeSelectOption value="price-asc">Price: Low to high</NativeSelectOption>
+                      <NativeSelectOption value="price-desc">Price: High to low</NativeSelectOption>
+                      <NativeSelectOption value="rating">Rating</NativeSelectOption>
+                    </NativeSelect>
                   </div>
                   <Button className="w-full rounded-md">Apply filters</Button>
                 </form>

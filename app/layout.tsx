@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Syne, Outfit } from "next/font/google";
+import { Sora, Outfit } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
-const syne = Syne({
-  variable: "--font-syne",
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
 });
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${outfit.variable} h-full antialiased`}
+      className={`${sora.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <TooltipProvider>

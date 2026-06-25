@@ -1,0 +1,137 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useRef, useState } from "react";
+import { motion } from "framer-motion";
+
+type Category = {
+  name: string;
+  image: string;
+  accent: string;
+};
+
+const categories: Category[] = [
+  {
+    name: "Educational Toys",
+    image: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80",
+    accent: "#f97316",
+  },
+  {
+    name: "Building Sets",
+    image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=900&q=80",
+    accent: "#8b5cf6",
+  },
+  {
+    name: "RC Toys",
+    image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=900&q=80",
+    accent: "#06b6d4",
+  },
+  {
+    name: "Creative Play",
+    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80",
+    accent: "#f97316",
+  },
+  {
+    name: "Outdoor Fun",
+    image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80",
+    accent: "#8b5cf6",
+  },
+  {
+    name: "Board Games",
+    image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?auto=format&fit=crop&w=900&q=80",
+    accent: "#06b6d4",
+  },
+];
+
+export function BrowseCategory() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  const onScroll = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    const max = track.scrollWidth - track.clientWidth;
+    setProgress(max <= 0 ? 0 : track.scrollLeft / max);
+  };
+
+  return (
+    <section className="bg-[#07070f] py-20 sm:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: 22 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-end justify-between gap-4"
+        >
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8b5cf6]">
+              Explore the Range
+            </p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
+              Browse by category
+            </h2>
+          </div>
+          <Link
+            href="/shop"
+            className="hidden shrink-0 items-center gap-1.5 text-sm font-semibold text-white/50 transition-colors hover:text-white md:inline-flex"
+          >
+            View all
+          </Link>
+        </motion.div>
+
+        {/* Track */}
+        <div
+          ref={trackRef}
+          onScroll={onScroll}
+          className="mt-10 flex gap-5 overflow-x-auto scroll-smooth pb-2 scrollbar-none [&::-webkit-scrollbar]:hidden"
+        >
+          {categories.map((category, index) => (
+            <motion.div
+              key={category.name}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+              className="w-[60%] shrink-0 sm:w-[38%] lg:w-[calc((100%-5rem)/5)]"
+            >
+              <Link href="/shop" className="group block">
+                <div className="relative aspect-3/4 overflow-hidden rounded-2xl border border-white/[0.07]">
+                  <div className="absolute inset-0 z-10 bg-linear-to-t from-[#07070f]/70 via-transparent to-transparent" />
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    fill
+                    sizes="(max-width: 640px) 60vw, (max-width: 1024px) 38vw, 20vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <span
+                    className="absolute left-3 top-3 z-20 size-2 rounded-full"
+                    style={{ background: category.accent, boxShadow: `0 0 10px ${category.accent}` }}
+                  />
+                </div>
+                <p className="mt-3 text-sm font-bold text-white/80 transition-colors group-hover:text-white">
+                  {category.name}
+                </p>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Progress bar */}
+        <div className="mt-6 h-0.5 w-full overflow-hidden rounded-full bg-white/8">
+          <div
+            className="h-full rounded-full transition-all duration-150"
+            style={{
+              width: "28%",
+              transform: `translateX(${progress * 257}%)`,
+              background: "linear-gradient(90deg, #f97316, #8b5cf6)",
+            }}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}

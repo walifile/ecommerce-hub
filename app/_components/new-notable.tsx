@@ -92,11 +92,7 @@ export function NewNotable() {
   };
 
   return (
-    <section className="bg-[#07070f] pb-20 pt-10 sm:pb-28 sm:pt-12">
-      <div
-        className="mb-12 h-px w-full"
-        style={{ background: "linear-gradient(90deg, transparent, #f9731622, #06b6d422, transparent)" }}
-      />
+    <section className="bg-[#07070f] py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
@@ -107,7 +103,7 @@ export function NewNotable() {
           className="mx-auto max-w-2xl text-center"
         >
           <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#f97316]">
-            Fresh This Season
+            Best Sellers
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
             New and notable

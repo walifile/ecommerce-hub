@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { listProducts, formatCurrency } from "@/lib/ecommerce-data";
 
 export default async function CheckoutPage() {
@@ -32,10 +33,10 @@ export default async function CheckoutPage() {
               <Input placeholder="Email address" className="sm:col-span-2" />
               <Input placeholder="Address" className="sm:col-span-2" />
               <Input placeholder="City" />
-              <select className="flex h-10 rounded-md border border-input bg-background px-3 text-sm">
-                <option>Cash on Delivery</option>
-                <option>Stripe (Optional)</option>
-              </select>
+              <NativeSelect className="w-full">
+                <NativeSelectOption>Cash on Delivery</NativeSelectOption>
+                <NativeSelectOption>Stripe (Optional)</NativeSelectOption>
+              </NativeSelect>
               <Textarea
                 placeholder="Order notes"
                 className="min-h-28 sm:col-span-2"
