@@ -15,7 +15,15 @@ import {
 } from "@/lib/ecommerce-data";
 import { cn } from "@/lib/utils";
 
-const trackingStates = ["pending", "confirmed", "processing", "shipped", "delivered"];
+const trackingStates = [
+  "pending",
+  "confirmed",
+  "processing",
+  "shipped",
+  "delivered",
+  "returned",
+  "cancelled",
+];
 
 const supportItems = [
   { label: "Secure checkout", icon: ShieldCheck },
@@ -181,11 +189,47 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                           {order.status.replaceAll("_", " ")}
                         </p>
                       </div>
+                      {(order.status === "cancelled" || order.status === "returned") && (
+                        <div className="rounded-[22px] border border-white/[0.08] bg-black/20 p-4">
+                          <p className="text-sm font-semibold text-white">
+                            {order.status === "cancelled"
+                              ? "This order was cancelled and inventory was restored."
+                              : "This order was returned and inventory was restored."}
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-white/55">
+                            Status updates are kept in sync with stock so the support team sees the right availability.
+                          </p>
+                          {(order.reversalReason || order.refundAmount || order.reversalNote) && (
+                            <div className="mt-3 space-y-1 border-t border-white/[0.08] pt-3 text-sm text-white/60">
+                              {order.reversalReason ? (
+                                <p>
+                                  <span className="font-semibold text-white">Reason:</span>{" "}
+                                  {order.reversalReason}
+                                </p>
+                              ) : null}
+                              {typeof order.refundAmount === "number" ? (
+                                <p>
+                                  <span className="font-semibold text-white">Refund:</span>{" "}
+                                  {formatCurrency(order.refundAmount)}
+                                </p>
+                              ) : null}
+                              {order.reversalNote ? (
+                                <p>{order.reversalNote}</p>
+                              ) : null}
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <div className="grid gap-3">
                         {trackingStates.map((state, index) => {
-                          const active =
+                          let active =
                             trackingStates.indexOf(order.status) >= index ||
                             order.status === state;
+                          if (order.status === "cancelled") {
+                            active = state === "cancelled";
+                          } else if (order.status === "returned") {
+                            active = state === "returned" || state === "delivered";
+                          }
 
                           return (
                             <div

@@ -13,6 +13,7 @@ const toneMap: Record<string, string> = {
   shipped: "bg-violet-100 text-violet-700",
   delivered: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-rose-100 text-rose-700",
+  returned: "bg-orange-100 text-orange-700",
   sent: "bg-emerald-100 text-emerald-700",
   queued: "bg-amber-100 text-amber-800",
 };

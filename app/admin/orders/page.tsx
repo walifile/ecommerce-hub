@@ -19,7 +19,7 @@ export default async function AdminOrdersPage() {
   return (
     <AdminShell
       title="Orders Module"
-      description="Orders expose the lifecycle in the spec: pending, confirmed, processing, shipped, delivered, and cancelled, with profit and invoice actions."
+      description="Orders expose the lifecycle in the spec: pending, confirmed, processing, shipped, delivered, cancelled, and returned, with profit and invoice actions."
     >
       <Card className="rounded-lg border-border/70 py-0">
         <CardHeader>

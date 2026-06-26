@@ -83,6 +83,19 @@ export type Database = {
           unit_price: number;
         };
       };
+      order_events: {
+        Row: {
+          actor_role: string;
+          created_at: string;
+          id: string;
+          new_status: string;
+          note: string | null;
+          order_id: string;
+          previous_status: string | null;
+          reason: string | null;
+          refund_amount: number | null;
+        };
+      };
       orders: {
         Row: {
           ad_cost: number;
@@ -92,9 +105,13 @@ export type Database = {
           discount_amount: number;
           id: string;
           notes: string | null;
+          refund_amount: number | null;
           order_number: string;
           payment_method: string;
           revenue: number;
+          reversal_note: string | null;
+          reversal_reason: string | null;
+          reversed_at: string | null;
           shipping_cost: number;
           status: string;
           total: number;

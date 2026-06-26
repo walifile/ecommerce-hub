@@ -14,6 +14,7 @@ const STATUSES = [
   "shipped",
   "delivered",
   "cancelled",
+  "returned",
 ];
 
 export function OrderActions({

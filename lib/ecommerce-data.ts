@@ -60,6 +60,17 @@ export type OrderItem = {
   productCost: number;
 };
 
+export type OrderEvent = {
+  id: string;
+  previousStatus: string | null;
+  newStatus: string;
+  reason: string;
+  refundAmount: number | null;
+  note: string;
+  actorRole: string;
+  createdAt: string;
+};
+
 export type Order = {
   id: string;
   orderNumber: string;
@@ -74,12 +85,18 @@ export type Order = {
     | "processing"
     | "shipped"
     | "delivered"
-    | "cancelled";
+    | "cancelled"
+    | "returned";
   paymentMethod: "cod" | "stripe";
   shippingCost: number;
   adCost: number;
   discount: number;
   couponCode?: string;
+  reversalReason?: string;
+  refundAmount?: number;
+  reversalNote?: string;
+  reversedAt?: string;
+  events?: OrderEvent[];
   revenue: number;
   total: number;
   createdAt: string;
@@ -707,7 +724,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("product_images").select("*").order("sort_order"),
       supabase.from("customers").select("*").order("created_at", { ascending: false }),
-      supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
+      supabase.from("orders").select("*, order_items(*), order_events(*)").order("created_at", { ascending: false }),
       supabase.from("expenses").select("*").order("expense_date", { ascending: false }),
       supabase.from("coupons").select("*").order("created_at", { ascending: false }),
       supabase.from("ai_generations").select("*").order("created_at", { ascending: false }),
@@ -740,6 +757,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     (customersResult.data ?? []) as Database["public"]["Tables"]["customers"]["Row"][];
   const ordersRows = (ordersResult.data ?? []) as (Database["public"]["Tables"]["orders"]["Row"] & {
     order_items?: Database["public"]["Tables"]["order_items"]["Row"][];
+    order_events?: Database["public"]["Tables"]["order_events"]["Row"][];
   })[];
   const expensesRows =
     (expensesResult.data ?? []) as Database["public"]["Tables"]["expenses"]["Row"][];
@@ -823,6 +841,29 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       adCost: Number(order.ad_cost),
       discount: Number(order.discount_amount),
       couponCode: order.coupon_code ?? undefined,
+      reversalReason: order.reversal_reason ?? undefined,
+      refundAmount:
+        order.refund_amount === null || order.refund_amount === undefined
+          ? undefined
+          : Number(order.refund_amount),
+      reversalNote: order.reversal_note ?? undefined,
+      reversedAt: order.reversed_at ?? undefined,
+      events: (order.order_events ?? [])
+        .slice()
+        .sort((a, b) => a.created_at.localeCompare(b.created_at))
+        .map((event) => ({
+        id: event.id,
+        previousStatus: event.previous_status,
+        newStatus: event.new_status,
+        reason: event.reason ?? "",
+        refundAmount:
+          event.refund_amount === null || event.refund_amount === undefined
+            ? null
+            : Number(event.refund_amount),
+        note: event.note ?? "",
+        actorRole: event.actor_role,
+        createdAt: event.created_at,
+      })),
       revenue: Number(order.revenue),
       total: Number(order.total),
       createdAt: order.created_at.slice(0, 10),

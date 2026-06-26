@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useTransition } from "react";
 import { Loader2, WandSparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import {
   createProductAction,
+  generateProductContentAction,
   updateProductAction,
   type AdminActionState,
 } from "@/app/admin/actions";
@@ -46,6 +47,7 @@ export function ProductForm({
     initialState
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const [generating, startGenerating] = useTransition();
 
   useEffect(() => {
     if (state.status === "success") {
@@ -55,6 +57,45 @@ export function ProductForm({
       toast.error(state.message);
     }
   }, [state, isEdit]);
+
+  function setField(name: string, value: string) {
+    const el = formRef.current?.elements.namedItem(name) as
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | null;
+    if (el) el.value = value;
+  }
+
+  function handleGenerate() {
+    const form = formRef.current;
+    if (!form) return;
+    const productName =
+      (form.elements.namedItem("name") as HTMLInputElement | null)?.value.trim() ??
+      "";
+    const category =
+      (form.elements.namedItem("category") as HTMLInputElement | null)?.value.trim() ??
+      "";
+
+    if (!productName) {
+      toast.error("Enter a product name first.");
+      return;
+    }
+
+    startGenerating(async () => {
+      const result = await generateProductContentAction(productName, category);
+      if (result.status === "error") {
+        toast.error(result.message);
+        return;
+      }
+      const c = result.content;
+      setField("shortDescription", c.shortDescription);
+      setField("description", c.longDescription);
+      setField("specifications", c.specifications.join("\n"));
+      setField("metaTitle", c.metaTitle);
+      setField("metaDescription", c.metaDescription);
+      toast.success("AI content generated. Review and save.");
+    });
+  }
 
   return (
     <form ref={formRef} action={formAction} className="grid gap-4">
@@ -123,11 +164,21 @@ export function ProductForm({
           type="button"
           variant="outline"
           className="rounded-md"
-          disabled
-          title="AI generation coming soon"
+          onClick={handleGenerate}
+          disabled={generating || pending}
+          title="Generate copy and SEO from the product name"
         >
-          <WandSparkles className="size-4" />
-          Generate with AI
+          {generating ? (
+            <>
+              <Loader2 className="size-4 animate-spin" />
+              Generating…
+            </>
+          ) : (
+            <>
+              <WandSparkles className="size-4" />
+              Generate with AI
+            </>
+          )}
         </Button>
       </div>
     </form>

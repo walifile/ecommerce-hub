@@ -14,7 +14,9 @@ import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -37,6 +39,7 @@ const STATUSES = [
   "shipped",
   "delivered",
   "cancelled",
+  "returned",
 ] as const;
 
 export default async function AdminOrderDetailPage(
@@ -170,6 +173,21 @@ export default async function AdminOrderDetailPage(
                     {formatCurrency(getOrderProfit(order))}
                   </p>
                 </div>
+                {typeof order.refundAmount === "number" ? (
+                  <div className="rounded-2xl border border-border/70 bg-muted/30 p-4 sm:col-span-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Refund amount
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold text-foreground">
+                      {formatCurrency(order.refundAmount)}
+                    </p>
+                    {order.reversalReason ? (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Reason: {order.reversalReason}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           </div>
@@ -272,10 +290,12 @@ export default async function AdminOrderDetailPage(
               <CardContent className="space-y-3">
                 {STATUSES.map((status, index) => {
                   const activeIndex = STATUSES.indexOf(order.status as (typeof STATUSES)[number]);
-                  const active =
-                    order.status === "cancelled"
-                      ? status === "cancelled"
-                      : activeIndex >= index;
+                  let active = activeIndex >= index;
+                  if (order.status === "cancelled") {
+                    active = status === "cancelled";
+                  } else if (order.status === "returned") {
+                    active = status === "returned" || status === "delivered";
+                  }
 
                   return (
                     <div
@@ -305,6 +325,126 @@ export default async function AdminOrderDetailPage(
                     {order.items.reduce((sum, item) => sum + item.quantity, 0)} items in shipment
                   </p>
                 </div>
+
+                <div className="rounded-2xl border border-border/70 bg-muted/30 p-4">
+                  <p className="text-sm font-medium text-foreground">
+                    Cancelled or returned orders restore inventory automatically.
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Status changes are handled through the database so stock stays accurate.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-lg border-border/70 py-0">
+              <CardHeader>
+                <CardTitle>Return or cancellation</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <form action={updateOrderStatusAction} className="space-y-4">
+                  <input type="hidden" name="orderId" value={order.id} />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        Resolution
+                      </p>
+                      <NativeSelect
+                        name="status"
+                        defaultValue={order.status === "returned" ? "returned" : "cancelled"}
+                        className="capitalize"
+                      >
+                        <NativeSelectOption value="cancelled" className="capitalize">
+                          cancelled
+                        </NativeSelectOption>
+                        <NativeSelectOption value="returned" className="capitalize">
+                          returned
+                        </NativeSelectOption>
+                      </NativeSelect>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        Refund amount
+                      </p>
+                      <Input
+                        name="refundAmount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        defaultValue={order.refundAmount ?? ""}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Reason
+                    </p>
+                    <Input
+                      name="reason"
+                      defaultValue={order.reversalReason ?? ""}
+                      placeholder="Customer request, damaged item, wrong address..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Internal note
+                    </p>
+                    <Textarea
+                      name="note"
+                      defaultValue={order.reversalNote ?? ""}
+                      placeholder="Add support or warehouse context here."
+                      className="min-h-28"
+                    />
+                  </div>
+
+                  <Button type="submit" className="rounded-md">
+                    Save resolution
+                  </Button>
+                </form>
+
+                {order.events?.length ? (
+                  <div className="space-y-2 border-t border-border/60 pt-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Activity log
+                    </p>
+                    <div className="space-y-2">
+                      {order.events
+                        .slice()
+                        .reverse()
+                        .map((event) => (
+                          <div
+                            key={event.id}
+                            className="rounded-2xl border border-border/70 bg-muted/20 p-4"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <p className="text-sm font-medium text-foreground">
+                                {event.previousStatus ?? "created"} → {event.newStatus}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(event.createdAt)}
+                              </p>
+                            </div>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                              {event.reason || "No reason provided"}
+                            </p>
+                            {event.refundAmount !== null ? (
+                              <p className="mt-1 text-sm text-foreground">
+                                Refund: {formatCurrency(event.refundAmount)}
+                              </p>
+                            ) : null}
+                            {event.note ? (
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {event.note}
+                              </p>
+                            ) : null}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           </div>
