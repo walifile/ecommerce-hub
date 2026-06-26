@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, ShoppingCart, Store } from "lucide-react";
+import { LogOut, Menu, ShoppingCart, Store, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -11,6 +11,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { signOutAction } from "@/app/actions/auth";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -49,7 +50,15 @@ export function NavLinks() {
   );
 }
 
-export function MobileNav({ cartCount = 0 }: { cartCount?: number }) {
+export function MobileNav({
+  cartCount = 0,
+  signedIn = false,
+  accountName = "Account",
+}: {
+  cartCount?: number;
+  signedIn?: boolean;
+  accountName?: string;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -107,6 +116,46 @@ export function MobileNav({ cartCount = 0 }: { cartCount?: number }) {
             );
           })}
         </nav>
+
+        {/* Account */}
+        <div className="border-t border-white/8 px-3 py-4">
+          {signedIn ? (
+            <div className="space-y-1">
+              <SheetClose
+                render={
+                  <Link
+                    href="/account"
+                    className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/55 transition-colors hover:bg-white/5 hover:text-white"
+                  />
+                }
+              >
+                <User className="size-4" />
+                {accountName}
+              </SheetClose>
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold text-white/55 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  <LogOut className="size-4" />
+                  Sign out
+                </button>
+              </form>
+            </div>
+          ) : (
+            <SheetClose
+              render={
+                <Link
+                  href="/login"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/55 transition-colors hover:bg-white/5 hover:text-white"
+                />
+              }
+            >
+              <User className="size-4" />
+              Sign in
+            </SheetClose>
+          )}
+        </div>
 
         <div className="mt-auto border-t border-white/8 p-5">
           <SheetClose

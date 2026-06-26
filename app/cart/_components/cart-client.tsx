@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { Product } from "@/lib/ecommerce-data";
-import { formatCurrency } from "@/lib/ecommerce-data";
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type CartItem = {

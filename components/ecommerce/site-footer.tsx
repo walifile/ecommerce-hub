@@ -68,9 +68,9 @@ const footerColumns = [
     title: "Company",
     links: [
       { label: "About ToyVerse", href: "/about-us" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms & Conditions", href: "/terms-and-conditions" },
       { label: "Careers", href: "/contact" },
-      { label: "Reviews", href: "/shop" },
-      { label: "Blog", href: "/shop" },
     ],
   },
 ];

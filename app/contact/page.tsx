@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { Mail, MessageSquare, Phone, ShieldCheck, Truck, Undo2 } from "lucide-react";
+import { ContactForm } from "@/components/ecommerce/contact-form";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { getCatalogData } from "@/lib/ecommerce-data";
-
-const supportValues = [
-  { label: "Email", icon: Mail },
-  { label: "Phone", icon: Phone },
-  { label: "Response", icon: MessageSquare },
-];
 
 const servicePromises = [
   { label: "Secure checkout", icon: ShieldCheck },
@@ -80,29 +72,7 @@ export default async function ContactPage() {
                   </h2>
                 </div>
 
-                <form className="grid gap-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Input
-                      placeholder="Your name"
-                      className="h-12 rounded-full border-white/10 bg-black/30 text-white placeholder:text-white/25 focus-visible:ring-[#f97316]/40"
-                    />
-                    <Input
-                      placeholder="Email address"
-                      className="h-12 rounded-full border-white/10 bg-black/30 text-white placeholder:text-white/25 focus-visible:ring-[#f97316]/40"
-                    />
-                  </div>
-                  <Input
-                    placeholder="Subject"
-                    className="h-12 rounded-full border-white/10 bg-black/30 text-white placeholder:text-white/25 focus-visible:ring-[#f97316]/40"
-                  />
-                  <Textarea
-                    placeholder="Message"
-                    className="min-h-44 rounded-[24px] border-white/10 bg-black/30 text-white placeholder:text-white/25 focus-visible:ring-[#f97316]/40"
-                  />
-                  <Button className="h-12 rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] text-white shadow-[0_0_22px_rgba(249,115,22,0.24)]">
-                    Send message
-                  </Button>
-                </form>
+                <ContactForm />
               </CardContent>
             </Card>
 

@@ -145,6 +145,29 @@ export type Database = {
           template_name: string;
         };
       };
+      profiles: {
+        Row: {
+          id: string;
+          email: string | null;
+          full_name: string | null;
+          role: string;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          email?: string | null;
+          full_name?: string | null;
+          role?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string | null;
+          full_name?: string | null;
+          role?: string;
+          created_at?: string;
+        };
+      };
       newsletter_subscribers: {
         Row: {
           id: string;
