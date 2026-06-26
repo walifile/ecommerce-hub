@@ -142,6 +142,23 @@ create table if not exists public.whatsapp_logs (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.newsletter_subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  source text,
+  created_at timestamptz not null default now()
+);
+
+-- Public signups via the anon key: allow INSERT only, keep the list private.
+alter table public.newsletter_subscribers enable row level security;
+grant insert on public.newsletter_subscribers to anon;
+drop policy if exists "Allow anonymous newsletter signups" on public.newsletter_subscribers;
+create policy "Allow anonymous newsletter signups"
+  on public.newsletter_subscribers
+  for insert
+  to anon
+  with check (true);
+
 create index if not exists idx_products_category_id on public.products(category_id);
 create index if not exists idx_orders_customer_id on public.orders(customer_id);
 create index if not exists idx_orders_status on public.orders(status);

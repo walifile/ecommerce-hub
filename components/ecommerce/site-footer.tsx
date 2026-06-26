@@ -1,17 +1,42 @@
+import type { SVGProps } from "react";
 import Link from "next/link";
-import {
-  ArrowUpRight,
-  Globe,
-  Mail,
-  MessageCircle,
-  Phone,
-  ShieldCheck,
-  Star,
-  Truck,
-  Undo2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Mail, Phone, ShieldCheck, Store } from "lucide-react";
+import { NewsletterForm } from "@/components/ecommerce/newsletter-form";
+
+/* Brand marks — lucide dropped social logos, so these are inline. */
+function InstagramIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function FacebookIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5h1.65V3.6c-.8-.1-1.6-.15-2.4-.15-2.4 0-4.05 1.45-4.05 4.15v2.3H7.5V13h2.75v8h3.25z" />
+    </svg>
+  );
+}
+
+function YoutubeIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M22.5 7.2a2.7 2.7 0 0 0-1.9-1.9C18.9 4.8 12 4.8 12 4.8s-6.9 0-8.6.5A2.7 2.7 0 0 0 1.5 7.2 28 28 0 0 0 1.1 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9c1.7.5 8.6.5 8.6.5s6.9 0 8.6-.5a2.7 2.7 0 0 0 1.9-1.9 28 28 0 0 0 .4-4.8 28 28 0 0 0-.4-4.8zM9.9 15.3V8.7l5.7 3.3z" />
+    </svg>
+  );
+}
+
+function WhatsappIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M12 2a9.9 9.9 0 0 0-8.5 15l-1.4 5 5.1-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-6.1c-.25-.13-1.5-.74-1.7-.82-.23-.08-.4-.13-.56.13-.16.25-.64.82-.78.99-.14.16-.29.18-.54.06a6.7 6.7 0 0 1-2-1.23 7.4 7.4 0 0 1-1.37-1.7c-.14-.25 0-.38.11-.5.11-.11.25-.29.37-.43.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.13-.56-1.35-.77-1.84-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.65.31-.22.25-.86.84-.86 2.05s.88 2.38 1 2.54c.13.17 1.74 2.66 4.22 3.73.59.25 1.05.4 1.4.52.59.19 1.13.16 1.55.1.47-.07 1.5-.61 1.71-1.2.21-.59.21-1.1.15-1.2-.06-.11-.23-.17-.48-.29z" />
+    </svg>
+  );
+}
 
 const footerColumns = [
   {
@@ -29,7 +54,7 @@ const footerColumns = [
       { label: "Track Order", href: "/track-order" },
       { label: "Contact Us", href: "/contact" },
       { label: "Shipping Info", href: "/contact" },
-      { label: "Returns", href: "/contact" },
+      { label: "Returns & Refunds", href: "/contact" },
     ],
   },
   {
@@ -37,119 +62,101 @@ const footerColumns = [
     links: [
       { label: "About ToyVerse", href: "/contact" },
       { label: "Careers", href: "/contact" },
-      { label: "Privacy Policy", href: "/contact" },
-      { label: "Terms", href: "/contact" },
+      { label: "Reviews", href: "/" },
+      { label: "Blog", href: "/" },
     ],
   },
 ];
 
-const trustSignals = [
-  { icon: ShieldCheck, label: "Lab-safe products" },
-  { icon: Truck, label: "48-hour dispatch" },
-  { icon: Star, label: "4.9/5 customer rating" },
-  { icon: Undo2, label: "30-day returns" },
+const socials = [
+  { label: "Instagram", href: "#", icon: InstagramIcon },
+  { label: "Facebook", href: "#", icon: FacebookIcon },
+  { label: "YouTube", href: "#", icon: YoutubeIcon },
+  { label: "WhatsApp", href: "#", icon: WhatsappIcon },
 ];
 
-const contactLinks = [
-  { label: "Community", href: "/contact", icon: MessageCircle },
-  { label: "Website", href: "/", icon: Globe },
-  { label: "Email", href: "mailto:hello@toyverse.shop", icon: Mail },
-  { label: "Phone", href: "tel:+15551234567", icon: Phone },
-];
+const paymentMethods = ["COD", "Easypaisa", "JazzCash", "Visa", "Mastercard"];
 
 export function SiteFooter() {
   return (
-    <footer id="footer" className="relative border-t border-white/[0.08] bg-[#06060d]">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#f97316]/80 to-transparent" />
+    <footer id="footer" className="relative border-t border-white/8 bg-[#06060d]">
+      <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#f97316]/80 to-transparent" />
 
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f97316]/80">
-                ToyVerse
-              </p>
-              <h2 className="max-w-lg text-3xl font-black tracking-tight text-white sm:text-4xl">
-                Toys that feel premium, move fast, and make gifting easier.
-              </h2>
-              <p className="max-w-xl text-sm leading-7 text-white/50 sm:text-base">
-                Built for modern parents and curious kids, with cleaner product
-                discovery, faster checkout, and a shopping experience that feels
-                calm instead of cluttered.
-              </p>
-            </div>
+        {/* Newsletter band */}
+        <div className="mb-12 flex flex-col gap-6 border-b border-white/8 pb-12 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-md">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f97316]/25 bg-[#f97316]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#f97316]">
+              Get 10% off
+            </span>
+            <h3 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-3xl">
+              10% off your first order.
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-white/50">
+              Join the list for new drops, restocks and gift picks — plus a
+              welcome code for your first purchase.
+            </p>
+          </div>
+          <div className="w-full lg:max-w-sm">
+            <NewsletterForm />
+          </div>
+        </div>
 
-            <div className="flex flex-wrap gap-3">
-              {contactLinks.map(({ label, href, icon: Icon }) => (
+        {/* Brand + link columns */}
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+          {/* Brand */}
+          <div className="space-y-5">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-[#f97316] to-[#ea580c] shadow-[0_0_18px_rgba(249,115,22,0.4)]">
+                <Store className="size-5 text-white" />
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f97316]/70">
+                  Play · Learn · Repeat
+                </p>
+                <p className="text-base font-black leading-tight text-white">ToyVerse</p>
+              </div>
+            </Link>
+
+            <p className="max-w-xs text-sm leading-7 text-white/50">
+              Premium toys for curious kids — cleaner discovery, faster checkout,
+              and a calmer shopping experience for modern parents.
+            </p>
+
+            {/* Social */}
+            <div className="flex flex-wrap gap-2.5">
+              {socials.map(({ label, href, icon: Icon }) => (
                 <Link
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="group flex h-11 items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 text-sm text-white/55 transition-all hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+                  className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/4 text-white/55 transition-all hover:border-[#f97316]/40 hover:bg-[#f97316]/10 hover:text-[#f97316]"
                 >
-                  <Icon className="size-4 transition-transform group-hover:-translate-y-0.5" />
-                  <span>{label}</span>
+                  <Icon className="size-4" />
                 </Link>
               ))}
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {trustSignals.map(({ icon: Icon, label }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3"
-                >
-                  <div className="flex size-9 items-center justify-center rounded-full bg-[#f97316]/10 text-[#f97316]">
-                    <Icon className="size-4" />
-                  </div>
-                  <span className="text-sm font-medium text-white/70">{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-white/[0.08] bg-white/[0.03] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:p-7">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/50">
-              Stay in the loop
-            </p>
-            <h3 className="mt-3 text-2xl font-black tracking-tight text-white">
-              Get restocks, drops, and gift picks first.
-            </h3>
-            <p className="mt-3 text-sm leading-7 text-white/50">
-              One short email for new arrivals, limited bundles, and better
-              buying decisions.
-            </p>
-
-            <form className="mt-6 space-y-3">
-              <Input
-                type="email"
-                placeholder="Email address"
-                aria-label="Email address"
-                className="h-12 rounded-full border-white/10 bg-black/30 px-5 text-white placeholder:text-white/30 focus-visible:ring-[#f97316]/40"
-              />
-              <Button
-                type="submit"
-                className="h-12 w-full rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] text-sm font-bold text-white shadow-[0_0_24px_rgba(249,115,22,0.24)] transition-transform hover:translate-y-[-1px] hover:shadow-[0_0_34px_rgba(249,115,22,0.34)]"
+            {/* Direct contact */}
+            <div className="flex flex-col gap-2 text-sm text-white/55">
+              <Link
+                href="mailto:hello@toyverse.shop"
+                className="flex items-center gap-2 transition-colors hover:text-white"
               >
-                Join the list
-                <ArrowUpRight className="size-4" />
-              </Button>
-            </form>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/[0.08] bg-black/20 p-4">
-                <p className="text-2xl font-black text-white">15k+</p>
-                <p className="mt-1 text-sm text-white/45">families shopping monthly</p>
-              </div>
-              <div className="rounded-2xl border border-white/[0.08] bg-black/20 p-4">
-                <p className="text-2xl font-black text-white">48h</p>
-                <p className="mt-1 text-sm text-white/45">average dispatch window</p>
-              </div>
+                <Mail className="size-4 text-[#f97316]" />
+                hello@toyverse.shop
+              </Link>
+              <Link
+                href="tel:+15551234567"
+                className="flex items-center gap-2 transition-colors hover:text-white"
+              >
+                <Phone className="size-4 text-[#f97316]" />
+                +1 (555) 123-4567
+              </Link>
             </div>
           </div>
-        </div>
 
-        <div className="mt-12 grid gap-10 border-t border-white/[0.08] pt-10 md:grid-cols-3">
+          {/* Link columns */}
           {footerColumns.map((column) => (
             <div key={column.title} className="space-y-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/55">
@@ -170,17 +177,41 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 border-t border-white/[0.08] pt-6 text-sm text-white/35 md:flex-row md:items-center md:justify-between">
+        {/* Payment methods */}
+        <div className="mt-10 flex flex-col items-start gap-4 border-t border-white/8 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/40">
+              We accept
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {paymentMethods.map((method) => (
+                <span
+                  key={method}
+                  className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold text-white/70"
+                >
+                  {method}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium text-white/45">
+            <ShieldCheck className="size-4 text-[#06b6d4]" />
+            Secure SSL-encrypted checkout
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="mt-8 flex flex-col gap-4 border-t border-white/8 pt-6 text-sm text-white/35 md:flex-row md:items-center md:justify-between">
           <p>© 2026 ToyVerse. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <Link href="/contact" className="transition-colors hover:text-white">
-              Support
+              Privacy Policy
             </Link>
-            <Link href="/track-order" className="transition-colors hover:text-white">
-              Track Order
+            <Link href="/contact" className="transition-colors hover:text-white">
+              Terms of Service
             </Link>
-            <Link href="/cart" className="transition-colors hover:text-white">
-              Cart
+            <Link href="/contact" className="transition-colors hover:text-white">
+              Cookie Policy
             </Link>
           </div>
         </div>
