@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ShoppingCart, Store, User } from "lucide-react";
 import { NavLinks, MobileNav } from "@/components/ecommerce/nav-links";
+import { ProfileMenu } from "@/components/ecommerce/profile-menu";
 import { SiteFooter } from "@/components/ecommerce/site-footer";
 import { getCurrentProfile } from "@/lib/auth";
 
@@ -34,13 +35,11 @@ export async function StoreShell({
 
           <div className="flex items-center gap-2">
             {profile ? (
-              <Link
-                href="/account"
-                className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/70 transition-all hover:border-white/20 hover:text-white sm:inline-flex"
-              >
-                <User className="size-4" />
-                {firstName}
-              </Link>
+              <ProfileMenu
+                name={firstName}
+                email={profile.email}
+                isAdmin={profile.role === "admin"}
+              />
             ) : (
               <Link
                 href="/login"
@@ -57,7 +56,12 @@ export async function StoreShell({
               <ShoppingCart className="size-4" />
               <span className="hidden sm:inline">Cart </span>({cartCount})
             </Link>
-            <MobileNav cartCount={cartCount} signedIn={Boolean(profile)} accountName={firstName} />
+            <MobileNav
+              cartCount={cartCount}
+              signedIn={Boolean(profile)}
+              accountName={firstName}
+              isAdmin={profile?.role === "admin"}
+            />
           </div>
         </div>
       </header>

@@ -21,9 +21,13 @@ import { ReviewsCarousel } from "@/app/_components/reviews-carousel";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 
 export const metadata: Metadata = {
-  title: "ToyVerse — Toys That Spark Imagination",
+  // Absolute title so the homepage doesn't get the "| ToyVerse" template suffix.
+  title: {
+    absolute: "ToyVerse — Premium Toys for Curious Kids",
+  },
   description:
-    "Shop ToyVerse for premium toys, playful design, bright visuals, and conversion-focused shopping built for modern parents.",
+    "Shop ToyVerse for premium, lab-safe toys kids love — educational kits, building sets, RC toys and creative play. Fast 48-hour dispatch, easy 30-day returns, and free shipping over $50.",
+  alternates: { canonical: "/" },
 };
 
 const trustCards = [
@@ -64,9 +68,51 @@ const trustBadges = [
   { label: "Certified safe", icon: Award },
 ];
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "ToyVerse",
+      url: SITE_URL,
+      logo: `${SITE_URL}/images/banner-img.png`,
+      description:
+        "Premium, lab-safe toys for curious kids — educational kits, building sets, RC toys and creative play.",
+      sameAs: [
+        "https://instagram.com/",
+        "https://facebook.com/",
+        "https://youtube.com/",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: "ToyVerse",
+      description: "Premium toys for curious kids.",
+      publisher: { "@id": `${SITE_URL}/#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: `${SITE_URL}/shop?query={search_term_string}`,
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
+};
+
 export default function HomePage() {
   return (
     <StoreShell cartCount={2}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <main className="overflow-hidden bg-surface">
 
         {/* ══════════════════════════════════════

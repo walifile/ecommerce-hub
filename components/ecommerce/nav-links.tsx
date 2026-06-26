@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, Menu, ShoppingCart, Store, User } from "lucide-react";
+import { LayoutDashboard, LogOut, Menu, ShoppingCart, Store, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -54,10 +54,12 @@ export function MobileNav({
   cartCount = 0,
   signedIn = false,
   accountName = "Account",
+  isAdmin = false,
 }: {
   cartCount?: number;
   signedIn?: boolean;
   accountName?: string;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -132,6 +134,19 @@ export function MobileNav({
                 <User className="size-4" />
                 {accountName}
               </SheetClose>
+              {isAdmin && (
+                <SheetClose
+                  render={
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-brand transition-colors hover:bg-brand/10"
+                    />
+                  }
+                >
+                  <LayoutDashboard className="size-4" />
+                  Admin Panel
+                </SheetClose>
+              )}
               <form action={signOutAction}>
                 <button
                   type="submit"

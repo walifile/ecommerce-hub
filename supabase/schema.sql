@@ -1,13 +1,5 @@
 create extension if not exists "pgcrypto";
 
-create table if not exists public.users (
-  id uuid primary key default gen_random_uuid(),
-  email text not null unique,
-  full_name text not null,
-  role text not null default 'admin',
-  created_at timestamptz not null default now()
-);
-
 create table if not exists public.categories (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -184,7 +176,9 @@ create policy "Users can update their own profile"
   on public.profiles for update to authenticated
   using (auth.uid() = id) with check (auth.uid() = id);
 
--- Auto-create a profile row whenever a new auth user signs up.
+-- Auto-create a 'customer' profile whenever a new auth user signs up.
+-- (The optional "first signup becomes admin" bootstrap lives in
+--  supabase/migrations/20260626130000_first_admin_bootstrap.sql.)
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -192,11 +186,12 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, full_name)
+  insert into public.profiles (id, email, full_name, role)
   values (
     new.id,
     new.email,
-    coalesce(new.raw_user_meta_data ->> 'full_name', '')
+    coalesce(new.raw_user_meta_data ->> 'full_name', ''),
+    'customer'
   )
   on conflict (id) do nothing;
   return new;
@@ -208,8 +203,34 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
--- Make a user an admin (run manually after they sign up):
+-- Promote/demote a user manually at any time:
 --   update public.profiles set role = 'admin' where email = 'you@example.com';
+
+-- ── RLS: public catalog read, everything else service-role only ──────────
+alter table public.categories enable row level security;
+alter table public.products enable row level security;
+alter table public.product_images enable row level security;
+
+drop policy if exists "Public can read categories" on public.categories;
+create policy "Public can read categories"
+  on public.categories for select to anon, authenticated using (true);
+
+drop policy if exists "Public can read published products" on public.products;
+create policy "Public can read published products"
+  on public.products for select to anon, authenticated using (status = 'published');
+
+drop policy if exists "Public can read product images" on public.product_images;
+create policy "Public can read product images"
+  on public.product_images for select to anon, authenticated using (true);
+
+alter table public.customers       enable row level security;
+alter table public.orders          enable row level security;
+alter table public.order_items     enable row level security;
+alter table public.expenses        enable row level security;
+alter table public.coupons         enable row level security;
+alter table public.settings        enable row level security;
+alter table public.ai_generations  enable row level security;
+alter table public.whatsapp_logs   enable row level security;
 
 create index if not exists idx_products_category_id on public.products(category_id);
 create index if not exists idx_orders_customer_id on public.orders(customer_id);
