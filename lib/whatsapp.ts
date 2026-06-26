@@ -6,7 +6,8 @@ export type OrderTemplateKey =
   | "order_processing"
   | "order_shipped"
   | "order_delivered"
-  | "order_cancelled";
+  | "order_cancelled"
+  | "order_returned";
 
 export type OrderNotifyInput = {
   orderId: string;
@@ -23,17 +24,19 @@ function money(value: number) {
 
 const TEMPLATES: Record<OrderTemplateKey, (o: OrderNotifyInput) => string> = {
   order_created: (o) =>
-    `Hi ${o.customerName}! 🎉 We received your ToyVerse order ${o.orderNumber} (${money(o.total)}). We'll confirm it shortly.`,
+    `Hi ${o.customerName}! We received your ToyVerse order ${o.orderNumber} (${money(o.total)}). We'll confirm it shortly.`,
   order_confirmed: (o) =>
-    `Good news ${o.customerName}! Your ToyVerse order ${o.orderNumber} is confirmed and being prepared. 📦`,
+    `Good news ${o.customerName}! Your ToyVerse order ${o.orderNumber} is confirmed and being prepared.`,
   order_processing: (o) =>
-    `Your ToyVerse order ${o.orderNumber} is now being processed. We'll let you know once it ships. ⚙️`,
+    `Your ToyVerse order ${o.orderNumber} is now being processed. We'll let you know once it ships.`,
   order_shipped: (o) =>
-    `🚚 Your ToyVerse order ${o.orderNumber} has shipped and is on its way!`,
+    `Your ToyVerse order ${o.orderNumber} has shipped and is on its way.`,
   order_delivered: (o) =>
-    `✅ Your ToyVerse order ${o.orderNumber} has been delivered. Enjoy! Thank you for shopping with us.`,
+    `Your ToyVerse order ${o.orderNumber} has been delivered. Enjoy! Thank you for shopping with us.`,
   order_cancelled: (o) =>
     `Your ToyVerse order ${o.orderNumber} has been cancelled. If this wasn't expected, please contact support.`,
+  order_returned: (o) =>
+    `Your ToyVerse order ${o.orderNumber} was returned. Inventory has been updated and support can help with the next step.`,
 };
 
 /** Map an order status to its notification template (null = no message). */
@@ -49,6 +52,8 @@ export function templateForStatus(status: string): OrderTemplateKey | null {
       return "order_delivered";
     case "cancelled":
       return "order_cancelled";
+    case "returned":
+      return "order_returned";
     default:
       return null;
   }
