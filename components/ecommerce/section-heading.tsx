@@ -16,16 +16,16 @@ export function SectionHeading({
   return (
     <div className={cn("max-w-3xl space-y-3", className)}>
       {eyebrow ? (
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand">
           {eyebrow}
         </p>
       ) : null}
       <div className="space-y-2">
-        <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">
+        <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
           {title}
         </h2>
         {description ? (
-          <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+          <p className="max-w-2xl text-sm leading-7 text-white/50 sm:text-base">
             {description}
           </p>
         ) : null}

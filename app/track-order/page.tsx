@@ -31,16 +31,16 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
 
   return (
     <StoreShell cartCount={3}>
-      <main className="bg-[#07070f]">
+      <main className="bg-surface">
         <section className="relative overflow-hidden border-b border-white/[0.06]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.1),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_70%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--brand)_16%,transparent),transparent_28%),radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--brand-2)_10%,transparent),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_70%)]" />
           <div className="section-shell relative py-12 sm:py-14 lg:py-16">
             <div className="max-w-3xl space-y-5">
               <Badge className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold text-white/70">
                 Order tracking
               </Badge>
               <div className="space-y-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f97316]/80">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-brand/80">
                   Live order status
                 </p>
                 <h1 className="max-w-2xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -58,7 +58,7 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                     key={label}
                     className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/60"
                   >
-                    <Icon className="size-4 text-[#f97316]" />
+                    <Icon className="size-4 text-brand" />
                     {label}
                   </span>
                 ))}
@@ -92,10 +92,10 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                           name="orderNumber"
                           defaultValue={orderNumber}
                           placeholder="ECO-1001"
-                          className="h-12 rounded-full border-white/10 bg-black/30 pl-11 text-white placeholder:text-white/25 focus-visible:ring-[#f97316]/40"
+                          className="h-12 rounded-full border-white/10 bg-black/30 pl-11 text-white placeholder:text-white/25 focus-visible:ring-brand/40"
                         />
                       </div>
-                      <Button className="h-12 rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] px-6 text-white shadow-[0_0_22px_rgba(249,115,22,0.24)]">
+                      <Button className="h-12 rounded-full bg-linear-to-r from-brand to-brand-strong px-6 text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_24%,transparent)]">
                         Track order
                       </Button>
                     </div>
@@ -106,7 +106,7 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                       Example order:{" "}
                       <Link
                         href="/track-order?orderNumber=ECO-1001"
-                        className="font-semibold text-white hover:text-[#f97316]"
+                        className="font-semibold text-white hover:text-brand"
                       >
                         ECO-1001
                       </Link>
@@ -193,14 +193,14 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                               className={cn(
                                 "flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors",
                                 active
-                                  ? "border-[#f97316]/30 bg-[#f97316]/10 text-white"
+                                  ? "border-brand/30 bg-brand/10 text-white"
                                   : "border-white/[0.08] bg-black/20 text-white/50"
                               )}
                             >
                               <div
                                 className={cn(
                                   "flex size-8 items-center justify-center rounded-full text-sm font-semibold",
-                                  active ? "bg-[#f97316] text-white" : "bg-white/[0.06]"
+                                  active ? "bg-brand text-white" : "bg-white/[0.06]"
                                 )}
                               >
                                 {index + 1}
@@ -219,7 +219,7 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                   </div>
                 ) : (
                   <div className="flex min-h-[320px] flex-col items-start justify-center gap-4">
-                    <div className="flex size-14 items-center justify-center rounded-2xl bg-[#f97316]/10 text-[#f97316]">
+                    <div className="flex size-14 items-center justify-center rounded-2xl bg-brand/10 text-brand">
                       <Search className="size-7" />
                     </div>
                     <div className="space-y-2">

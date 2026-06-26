@@ -1,98 +1,111 @@
 import Link from "next/link";
-import { ArrowUpRight, Flame, ShoppingCart, Star } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ShoppingCart, Star } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { formatCurrency, type Product } from "@/lib/ecommerce-data";
 import { cn } from "@/lib/utils";
 
 export function ProductCard({ product }: { product: Product }) {
+  const discount =
+    product.comparePrice && product.comparePrice > product.price
+      ? Math.round((1 - product.price / product.comparePrice) * 100)
+      : 0;
+  const inStock = product.stockQuantity > product.lowStockLimit;
+
   return (
-    <Card className="group overflow-hidden rounded-[28px] border border-white/[0.08] bg-white/[0.035] py-0 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1">
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-t from-surface via-transparent to-transparent opacity-90" />
-        <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
-          <Badge className="rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[11px] font-semibold text-white/80 backdrop-blur-md">
+    <div className="group flex flex-col overflow-hidden rounded-3xl border border-white/8 bg-white/[0.03] transition-all duration-300 hover:-translate-y-1 hover:border-white/15">
+      {/* Image */}
+      <Link
+        href={`/products/${product.slug}`}
+        className="relative block aspect-square overflow-hidden bg-surface-2"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={product.image}
+          alt={product.name}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+
+        {/* Status badge (one, top-left) */}
+        {product.bestSeller ? (
+          <span className="absolute left-3 top-3 rounded-full bg-brand px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-[0_0_18px_color-mix(in_srgb,var(--brand)_35%,transparent)]">
+            Best seller
+          </span>
+        ) : product.isNew ? (
+          <span className="absolute left-3 top-3 rounded-full border border-white/15 bg-black/50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-md">
+            New
+          </span>
+        ) : null}
+
+        {/* Discount badge (top-right) */}
+        {discount > 0 && (
+          <span className="absolute right-3 top-3 rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-black">
+            -{discount}%
+          </span>
+        )}
+
+        {/* Out-of-stock veil */}
+        {!inStock && (
+          <span className="absolute bottom-3 left-3 rounded-full border border-white/15 bg-black/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white/80 backdrop-blur-md">
+            Low stock
+          </span>
+        )}
+      </Link>
+
+      {/* Body */}
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-white/35">
             {product.category}
-          </Badge>
-          {product.bestSeller ? (
-            <Badge className="rounded-full border-0 bg-brand px-3 py-1 text-[11px] font-semibold text-white shadow-[0_0_18px_color-mix(in_srgb,var(--brand)_25%,transparent)]">
-              <Flame className="mr-1 size-3.5" />
-              Best seller
-            </Badge>
-          ) : null}
-          {product.isNew ? (
-            <Badge className="rounded-full border-0 bg-white px-3 py-1 text-[11px] font-semibold text-black">
-              New
-            </Badge>
-          ) : null}
+          </span>
+          <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-white/60">
+            <Star className="size-3.5 fill-[#fbbf24] text-[#fbbf24]" />
+            {product.rating.toFixed(1)}
+          </span>
         </div>
-        <div className="aspect-[4/3] overflow-hidden bg-surface-2">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        </div>
-      </div>
 
-      <CardContent className="space-y-4 p-5">
-        <div className="space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold tracking-tight text-white">
-                {product.name}
-              </h3>
-              <p className="text-sm leading-6 text-white/50">
-                {product.shortDescription}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-sm text-white/70">
-              <Star className="size-3.5 fill-[#fbbf24] text-[#fbbf24]" />
-              {product.rating.toFixed(1)}
-            </div>
-          </div>
+        <h3 className="mt-1.5 line-clamp-1 text-base font-black tracking-tight text-white">
+          {product.name}
+        </h3>
+        <p className="mt-1 line-clamp-1 text-sm text-white/45">
+          {product.shortDescription}
+        </p>
 
+        <div className="mt-3 flex items-end justify-between">
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-white">
+            <span className="text-xl font-black tracking-tight text-white">
               {formatCurrency(product.price)}
             </span>
             {product.comparePrice ? (
-              <span className="text-sm text-white/35 line-through">
+              <span className="text-sm text-white/30 line-through">
                 {formatCurrency(product.comparePrice)}
               </span>
             ) : null}
           </div>
-
-          <div className="flex items-center justify-between text-xs text-white/40">
-            <span>{product.reviewsCount} reviews</span>
-            <span>{product.stockQuantity > product.lowStockLimit ? "In stock" : "Low stock"}</span>
-          </div>
+          <span className="text-[11px] font-medium text-white/35">
+            {product.reviewsCount} reviews
+          </span>
         </div>
-      </CardContent>
 
-      <CardFooter className="grid grid-cols-2 gap-3 p-5 pt-0">
-        <Link
-          href={`/products/${product.slug}`}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-11 rounded-full border-white/10 bg-white/[0.04] text-white hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
-          )}
-        >
-          View details
-        </Link>
-        <Link
-          href="/cart"
-          className={cn(
-            buttonVariants(),
-            "h-11 rounded-full bg-linear-to-r from-brand to-brand-strong text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_28%,transparent)]"
-          )}
-        >
-          <ShoppingCart className="size-4" />
-          Buy now
-          <ArrowUpRight className="size-4" />
-        </Link>
-      </CardFooter>
-    </Card>
+        {/* Actions */}
+        <div className="mt-4 grid grid-cols-[1fr_auto] gap-2">
+          <Link
+            href={`/products/${product.slug}`}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-11 rounded-xl border-white/10 bg-white/[0.04] text-sm font-semibold text-white hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
+            )}
+          >
+            View details
+          </Link>
+          <Link
+            href="/cart"
+            aria-label="Add to cart"
+            className="flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-r from-brand to-brand-strong text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_28%,transparent)] transition-shadow hover:shadow-[0_0_30px_color-mix(in_srgb,var(--brand)_42%,transparent)]"
+          >
+            <ShoppingCart className="size-4" />
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

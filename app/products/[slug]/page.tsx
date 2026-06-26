@@ -25,12 +25,12 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
 
   return (
     <StoreShell cartCount={3}>
-      <main className="bg-[#07070f]">
+      <main className="bg-surface">
         <section className="section-shell py-10 sm:py-12">
           <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
             <div className="space-y-4">
               <div className="overflow-hidden rounded-[28px] border border-white/[0.08] bg-white/[0.03] p-3 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur-xl">
-                <div className="aspect-[4/3] overflow-hidden rounded-[22px] bg-[#0d0d16]">
+                <div className="aspect-[4/3] overflow-hidden rounded-[22px] bg-surface-2">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -45,7 +45,7 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
                     key={image}
                     className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] p-2"
                   >
-                    <div className="aspect-[4/3] overflow-hidden rounded-xl bg-[#0d0d16]">
+                    <div className="aspect-[4/3] overflow-hidden rounded-xl bg-surface-2">
                       <img
                         src={image}
                         alt={product.name}
@@ -130,7 +130,7 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <Button className="h-12 rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] text-white shadow-[0_0_22px_rgba(249,115,22,0.24)]">
+                    <Button className="h-12 rounded-full bg-linear-to-r from-brand to-brand-strong text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_24%,transparent)]">
                       Add to cart
                     </Button>
                     <Link
@@ -152,7 +152,7 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
                       "Made for quick add-to-cart decisions",
                     ].map((item) => (
                       <div key={item} className="flex items-center gap-2">
-                        <Check className="size-4 text-[#f97316]" />
+                        <Check className="size-4 text-brand" />
                         <span>{item}</span>
                       </div>
                     ))}
@@ -181,7 +181,7 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
 
         <section className="section-shell pb-14">
           <div className="mb-6 max-w-3xl space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#f97316]/80">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand/80">
               Related products
             </p>
             <h2 className="text-3xl font-black tracking-tight text-white">

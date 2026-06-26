@@ -23,16 +23,16 @@ export default async function ContactPage() {
 
   return (
     <StoreShell cartCount={3}>
-      <main className="bg-[#07070f]">
+      <main className="bg-surface">
         <section className="relative overflow-hidden border-b border-white/[0.06]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.1),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_70%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--brand)_16%,transparent),transparent_28%),radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--brand-2)_10%,transparent),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_70%)]" />
           <div className="section-shell relative py-12 sm:py-14 lg:py-16">
             <div className="max-w-3xl space-y-5">
               <Badge className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold text-white/70">
                 Contact
               </Badge>
               <div className="space-y-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f97316]/80">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-brand/80">
                   Support and sales
                 </p>
                 <h1 className="max-w-2xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -50,7 +50,7 @@ export default async function ContactPage() {
                     key={label}
                     className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/60"
                   >
-                    <Icon className="size-4 text-[#f97316]" />
+                    <Icon className="size-4 text-brand" />
                     {label}
                   </span>
                 ))}
@@ -85,7 +85,7 @@ export default async function ContactPage() {
                     className="rounded-[28px] border border-white/[0.08] bg-white/[0.03] py-0 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl"
                   >
                     <CardContent className="flex items-start gap-4 p-5">
-                      <div className="flex size-11 items-center justify-center rounded-2xl bg-[#f97316]/10 text-[#f97316]">
+                      <div className="flex size-11 items-center justify-center rounded-2xl bg-brand/10 text-brand">
                         <Icon className="size-5" />
                       </div>
                       <div className="min-w-0">

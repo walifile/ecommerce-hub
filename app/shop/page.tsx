@@ -1,20 +1,39 @@
 import Link from "next/link";
-import { ArrowRight, Filter, Search, Sparkles } from "lucide-react";
+import {
+  PackageOpen,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
+  Truck,
+  Undo2,
+  X,
+  Zap,
+} from "lucide-react";
 import { ProductCard } from "@/components/ecommerce/product-card";
 import { StoreShell } from "@/components/ecommerce/store-shell";
-import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getCatalogData, listProducts } from "@/lib/ecommerce-data";
-import { cn } from "@/lib/utils";
 
-const quickFilters = [
-  { label: "All drops", value: "all" },
-  { label: "New arrivals", value: "new" },
-  { label: "Best sellers", value: "best" },
-  { label: "Under $50", value: "budget" },
+const SORT_LABELS: Record<string, string> = {
+  featured: "Featured",
+  "price-asc": "Price: Low to high",
+  "price-desc": "Price: High to low",
+  rating: "Top rated",
+};
+
+const trustItems = [
+  { icon: Truck, label: "Free shipping over $50" },
+  { icon: Zap, label: "48-hour dispatch" },
+  { icon: Undo2, label: "30-day returns" },
+  { icon: ShieldCheck, label: "Lab-safe & certified" },
 ];
 
 export default async function ShopPage(props: PageProps<"/shop">) {
@@ -30,262 +49,212 @@ export default async function ShopPage(props: PageProps<"/shop">) {
     getCatalogData(),
   ]);
 
-  const featuredCategories = catalog.categories.slice(0, 3);
+  // Merge current filters, apply overrides (undefined removes a key), build href.
+  const buildHref = (overrides: Record<string, string | undefined>) => {
+    const current: Record<string, string | undefined> = {
+      category: category !== "all" ? category : undefined,
+      query: query || undefined,
+      sort: sort !== "featured" ? sort : undefined,
+      maxPrice: maxPrice ? String(maxPrice) : undefined,
+    };
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries({ ...current, ...overrides })) {
+      if (v) params.set(k, v);
+    }
+    const qs = params.toString();
+    return qs ? `/shop?${qs}` : "/shop";
+  };
+
+  const pills = [
+    { id: "all", name: "All", count: catalog.products.length },
+    ...catalog.categories.map((c) => ({
+      id: c.id,
+      name: c.name,
+      count: c.productCount,
+    })),
+  ];
+
+  const activeFilters = [
+    category !== "all" && { label: category, href: buildHref({ category: undefined }) },
+    query && { label: `“${query}”`, href: buildHref({ query: undefined }) },
+    maxPrice && { label: `Under $${maxPrice}`, href: buildHref({ maxPrice: undefined }) },
+    sort !== "featured" && { label: SORT_LABELS[sort], href: buildHref({ sort: undefined }) },
+  ].filter(Boolean) as { label: string; href: string }[];
 
   return (
     <StoreShell cartCount={3}>
-      <main className="bg-[#07070f]">
-        <section className="relative overflow-hidden border-b border-white/[0.06]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.16),transparent_30%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.12),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_60%)]" />
-          <div className="section-shell relative py-12 sm:py-14 lg:py-16">
-            <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
-              <div className="space-y-6">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold text-white/70">
-                    <Sparkles className="mr-1 size-3.5 text-[#f97316]" />
-                    ToyVerse shop
-                  </Badge>
-                  <Badge className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[11px] font-semibold text-white/55">
-                    {products.length} live products
-                  </Badge>
-                </div>
+      <main className="bg-surface">
+        {/* Header */}
+        <section className="relative overflow-hidden border-b border-white/6">
+          <div className="pointer-events-none absolute -right-20 -top-32 size-[36rem] rounded-full bg-brand/8 blur-[130px]" />
+          <div className="pointer-events-none absolute -left-32 top-10 size-96 rounded-full bg-brand-2/6 blur-[120px]" />
 
-                <div className="space-y-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f97316]/80">
-                    Curated catalog
-                  </p>
-                  <h1 className="max-w-2xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
-                    A cleaner way to browse products that actually sell.
-                  </h1>
-                  <p className="max-w-2xl text-sm leading-7 text-white/50 sm:text-base">
-                    Search by need, filter by category, and move faster through the
-                    catalog with a layout that feels premium, focused, and built for
-                    conversion.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    href="#products"
-                    className={cn(
-                      buttonVariants(),
-                      "h-11 rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] px-5 text-white shadow-[0_0_22px_rgba(249,115,22,0.24)]"
-                    )}
-                  >
-                    Browse products
-                    <ArrowRight className="size-4" />
-                  </Link>
-                  <Link
-                    href="/cart"
-                    className={cn(
-                      buttonVariants({ variant: "outline" }),
-                      "h-11 rounded-full border-white/10 bg-white/[0.04] px-5 text-white hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
-                    )}
-                  >
-                    Go to cart
-                  </Link>
-                </div>
+          <div className="section-shell relative pb-7 pt-12 sm:pt-16">
+            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand">
+              ToyVerse Shop
+            </p>
+            <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h1 className="text-4xl font-black tracking-tight text-white sm:text-5xl">
+                  Find the perfect toy.
+                </h1>
+                <p className="mt-3 max-w-xl text-sm leading-7 text-white/45">
+                  Premium, lab-safe picks for every age and interest — filtered,
+                  sorted, and ready to ship.
+                </p>
               </div>
+              <p className="pb-1 text-sm font-semibold text-white/40">
+                {products.length} product{products.length === 1 ? "" : "s"}
+              </p>
+            </div>
 
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                <Card className="rounded-[24px] border border-white/[0.08] bg-white/[0.03] py-0 backdrop-blur-xl">
-                  <CardContent className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                      Store focus
-                    </p>
-                    <p className="mt-3 text-2xl font-black text-white">ToyVerse</p>
-                    <p className="mt-2 text-sm leading-6 text-white/50">
-                      Playful, premium, conversion-first shopping.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-[24px] border border-white/[0.08] bg-white/[0.03] py-0 backdrop-blur-xl">
-                  <CardContent className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                      Fast lane
-                    </p>
-                    <p className="mt-3 text-2xl font-black text-white">Filtered search</p>
-                    <p className="mt-2 text-sm leading-6 text-white/50">
-                      Categories, price, and sort are one tap away.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-[24px] border border-white/[0.08] bg-white/[0.03] py-0 backdrop-blur-xl">
-                  <CardContent className="p-5">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                      Featured lane
-                    </p>
-                    <p className="mt-3 text-2xl font-black text-white">
-                      {featuredCategories.length} categories
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-white/50">
-                      Highlighted lanes for quick scanning.
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+            {/* Trust strip */}
+            <div className="mt-7 flex flex-wrap gap-x-6 gap-y-3">
+              {trustItems.map(({ icon: Icon, label }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-2 text-xs font-semibold text-white/55"
+                >
+                  <Icon className="size-4 text-brand" />
+                  {label}
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="section-shell py-8">
-          <div className="flex flex-wrap items-center gap-2">
-            {quickFilters.map((item, index) => (
-              <Badge
-                key={item.label}
-                className={cn(
-                  "rounded-full border px-4 py-2 text-[11px] font-semibold tracking-[0.16em]",
-                  index === 0
-                    ? "border-white/10 bg-white/[0.08] text-white"
-                    : "border-white/10 bg-white/[0.03] text-white/55"
-                )}
-              >
-                {item.label}
-              </Badge>
-            ))}
-          </div>
-        </section>
+        {/* Sticky filter bar */}
+        <div className="sticky top-[68px] z-30 border-b border-white/6 bg-surface/80 backdrop-blur-xl">
+          <div className="section-shell space-y-3 py-4">
+            <form
+              action="/shop"
+              className="flex flex-col gap-3 sm:flex-row sm:items-center"
+            >
+              <input type="hidden" name="category" value={category} />
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-white/30" />
+                <Input
+                  name="query"
+                  defaultValue={query}
+                  placeholder="Search toys, brands, categories…"
+                  className="h-11 rounded-xl border-white/10 bg-black/30 pl-11 text-white placeholder:text-white/30 focus-visible:border-brand/50 focus-visible:ring-brand/30"
+                />
+              </div>
+              <Input
+                name="maxPrice"
+                defaultValue={maxPrice ?? ""}
+                placeholder="Max $"
+                className="h-11 rounded-xl border-white/10 bg-black/30 text-white placeholder:text-white/30 focus-visible:border-brand/50 focus-visible:ring-brand/30 sm:w-28"
+              />
+              <Select name="sort" defaultValue={sort}>
+                <SelectTrigger className="w-full rounded-xl border-white/10 bg-black/30 text-white data-[size=default]:h-11 sm:w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border border-white/10 bg-surface text-white">
+                  <SelectItem value="featured" className="text-white/80 focus:bg-white/10 focus:text-white">
+                    Featured
+                  </SelectItem>
+                  <SelectItem value="price-asc" className="text-white/80 focus:bg-white/10 focus:text-white">
+                    Price: Low to high
+                  </SelectItem>
+                  <SelectItem value="price-desc" className="text-white/80 focus:bg-white/10 focus:text-white">
+                    Price: High to low
+                  </SelectItem>
+                  <SelectItem value="rating" className="text-white/80 focus:bg-white/10 focus:text-white">
+                    Top rated
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Button className="h-11 rounded-xl bg-linear-to-r from-brand to-brand-strong px-6 text-sm font-bold text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_28%,transparent)]">
+                <SlidersHorizontal className="size-4" />
+                Apply
+              </Button>
+            </form>
 
-        <section id="products" className="section-shell pb-14">
-          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-            <aside className="lg:sticky lg:top-24 lg:self-start">
-              <Card className="rounded-[28px] border border-white/[0.08] bg-white/[0.03] py-0 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl">
-                <CardContent className="space-y-6 p-5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
-                        Filters
-                      </p>
-                      <h2 className="mt-1 text-lg font-semibold text-white">
-                        Refine the shelf
-                      </h2>
-                    </div>
-                    <Filter className="size-5 text-white/40" />
-                  </div>
-
-                  <form className="space-y-4" action="/shop">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">
-                        Search
-                      </label>
-                      <div className="relative">
-                        <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-white/30" />
-                        <Input
-                          name="query"
-                          defaultValue={query}
-                          placeholder="Product or category"
-                          className="h-12 rounded-full border-white/10 bg-black/30 pl-11 text-white placeholder:text-white/25 focus-visible:ring-[#f97316]/40"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">
-                        Category
-                      </label>
-                      <NativeSelect
-                        name="category"
-                        defaultValue={category}
-                        className="h-12 w-full rounded-full border-white/10 bg-black/30 text-white"
-                      >
-                        <NativeSelectOption value="all">All categories</NativeSelectOption>
-                        {catalog.categories.map((item) => (
-                          <NativeSelectOption key={item.id} value={item.name}>
-                            {item.name}
-                          </NativeSelectOption>
-                        ))}
-                      </NativeSelect>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">
-                        Max price
-                      </label>
-                      <Input
-                        name="maxPrice"
-                        defaultValue={search.maxPrice?.toString?.() ?? ""}
-                        placeholder="e.g. 80"
-                        className="h-12 rounded-full border-white/10 bg-black/30 text-white placeholder:text-white/25 focus-visible:ring-[#f97316]/40"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-white/70">
-                        Sort
-                      </label>
-                      <NativeSelect
-                        name="sort"
-                        defaultValue={sort}
-                        className="h-12 w-full rounded-full border-white/10 bg-black/30 text-white"
-                      >
-                        <NativeSelectOption value="featured">Featured</NativeSelectOption>
-                        <NativeSelectOption value="price-asc">
-                          Price: Low to high
-                        </NativeSelectOption>
-                        <NativeSelectOption value="price-desc">
-                          Price: High to low
-                        </NativeSelectOption>
-                        <NativeSelectOption value="rating">Rating</NativeSelectOption>
-                      </NativeSelect>
-                    </div>
-
-                    <Button
-                      className="h-12 w-full rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] text-white shadow-[0_0_22px_rgba(249,115,22,0.24)]"
+            {/* Category pills */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden">
+              {pills.map((c) => {
+                const active =
+                  category === c.name || (c.id === "all" && category === "all");
+                return (
+                  <Link
+                    key={c.id}
+                    href={buildHref({
+                      category: c.id === "all" ? undefined : c.name,
+                    })}
+                    className={`flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                      active
+                        ? "border-brand/40 bg-brand/15 text-brand"
+                        : "border-white/10 bg-white/3 text-white/55 hover:border-white/20 hover:text-white"
+                    }`}
+                  >
+                    {c.name}
+                    <span
+                      className={`rounded-full px-1.5 text-[11px] ${
+                        active ? "bg-brand/20 text-brand" : "bg-white/8 text-white/40"
+                      }`}
                     >
-                      Apply filters
-                    </Button>
-                  </form>
-
-                  <div className="grid gap-3 rounded-[22px] border border-white/[0.07] bg-black/20 p-4">
-                    {featuredCategories.map((category) => (
-                      <div
-                        key={category.id}
-                        className="flex items-center justify-between gap-3"
-                      >
-                        <div>
-                          <p className="text-sm font-medium text-white">
-                            {category.name}
-                          </p>
-                          <p className="text-xs text-white/40">
-                            {category.productCount} products
-                          </p>
-                        </div>
-                        <ArrowRight className="size-4 text-white/30" />
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </aside>
-
-            <section className="space-y-4">
-              <div className="flex flex-col gap-3 rounded-[24px] border border-white/[0.08] bg-white/[0.03] px-5 py-4 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-white/45">
-                    {products.length} products found
-                  </p>
-                  <p className="mt-1 text-xs text-white/30">
-                    Same catalog used by the admin, checkout, and product detail views.
-                  </p>
-                </div>
-                <Link
-                  href="/cart"
-                  className={cn(
-                    buttonVariants({ variant: "outline" }),
-                    "h-11 rounded-full border-white/10 bg-white/[0.04] px-5 text-white hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
-                  )}
-                >
-                  Go to cart
-                </Link>
-              </div>
-
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </section>
+                      {c.count}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
+        </div>
+
+        {/* Active filters */}
+        {activeFilters.length > 0 && (
+          <section className="section-shell pt-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/35">
+                Active
+              </span>
+              {activeFilters.map((f) => (
+                <Link
+                  key={f.label}
+                  href={f.href}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70 transition-colors hover:border-white/20 hover:text-white"
+                >
+                  {f.label}
+                  <X className="size-3" />
+                </Link>
+              ))}
+              <Link
+                href="/shop"
+                className="ml-1 text-xs font-bold text-brand hover:underline"
+              >
+                Clear all
+              </Link>
+            </div>
+          </section>
+        )}
+
+        {/* Product grid */}
+        <section className="section-shell pb-16 pt-6">
+          {products.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-white/8 bg-white/3 px-6 py-20 text-center">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-white/5 text-white/40">
+                <PackageOpen className="size-7" />
+              </div>
+              <h2 className="mt-5 text-xl font-black text-white">No products found</h2>
+              <p className="mt-2 max-w-sm text-sm text-white/45">
+                Try a different search, category, or a higher max price.
+              </p>
+              <Link
+                href="/shop"
+                className="mt-6 rounded-full bg-linear-to-r from-brand to-brand-strong px-6 py-2.5 text-sm font-bold text-white"
+              >
+                Reset filters
+              </Link>
+            </div>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
         </section>
       </main>
     </StoreShell>

@@ -40,7 +40,7 @@ export function CartClient({ initialItems }: { initialItems: Product[] }) {
         <Card className="rounded-[28px] border border-white/[0.08] bg-white/[0.03] py-0 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl">
           <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6">
             <div className="flex items-center gap-3">
-              <div className="flex size-11 items-center justify-center rounded-2xl bg-[#f97316]/10 text-[#f97316]">
+              <div className="flex size-11 items-center justify-center rounded-2xl bg-brand/10 text-brand">
                 <ShoppingCart className="size-5" />
               </div>
               <div>
@@ -66,7 +66,7 @@ export function CartClient({ initialItems }: { initialItems: Product[] }) {
                 className="overflow-hidden rounded-[28px] border border-white/[0.08] bg-white/[0.03] py-0 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl"
               >
                 <CardContent className="grid gap-4 p-4 sm:grid-cols-[120px_1fr] sm:gap-5 sm:p-5">
-                  <div className="overflow-hidden rounded-2xl bg-[#0d0d16]">
+                  <div className="overflow-hidden rounded-2xl bg-surface-2">
                     <img
                       src={item.product.image}
                       alt={item.product.name}
@@ -82,7 +82,7 @@ export function CartClient({ initialItems }: { initialItems: Product[] }) {
                             {item.product.category}
                           </span>
                           {item.product.bestSeller ? (
-                            <span className="rounded-full bg-[#f97316] px-3 py-1 text-[11px] font-semibold text-white">
+                            <span className="rounded-full bg-brand px-3 py-1 text-[11px] font-semibold text-white">
                               Best seller
                             </span>
                           ) : null}
@@ -174,7 +174,7 @@ export function CartClient({ initialItems }: { initialItems: Product[] }) {
         ) : (
           <Card className="rounded-[28px] border border-white/[0.08] bg-white/[0.03] py-0 shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-xl">
             <CardContent className="flex flex-col items-start gap-4 p-8">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-[#f97316]/10 text-[#f97316]">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-brand/10 text-brand">
                 <ShoppingBag className="size-7" />
               </div>
               <div className="space-y-2">
@@ -189,7 +189,7 @@ export function CartClient({ initialItems }: { initialItems: Product[] }) {
               <Link
                 href="/shop"
                 className={cn(
-                  "inline-flex h-11 items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] px-5 text-sm font-semibold text-white shadow-[0_0_22px_rgba(249,115,22,0.24)]"
+                  "inline-flex h-11 items-center justify-center gap-2 rounded-full bg-linear-to-r from-brand to-brand-strong px-5 text-sm font-semibold text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_24%,transparent)]"
                 )}
               >
                 Browse products
@@ -214,7 +214,7 @@ export function CartClient({ initialItems }: { initialItems: Product[] }) {
             <div className="flex items-center gap-2">
               <Input
                 placeholder="Coupon code"
-                className="h-12 rounded-full border-white/10 bg-black/30 text-white placeholder:text-white/25 focus-visible:ring-[#f97316]/40"
+                className="h-12 rounded-full border-white/10 bg-black/30 text-white placeholder:text-white/25 focus-visible:ring-brand/40"
               />
               <Button
                 variant="outline"
@@ -243,7 +243,7 @@ export function CartClient({ initialItems }: { initialItems: Product[] }) {
               </div>
             </div>
 
-            <Button className="h-12 w-full rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] text-white shadow-[0_0_22px_rgba(249,115,22,0.24)]">
+            <Button className="h-12 w-full rounded-full bg-linear-to-r from-brand to-brand-strong text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_24%,transparent)]">
               Proceed to checkout
             </Button>
 
@@ -262,7 +262,7 @@ export function CartClient({ initialItems }: { initialItems: Product[] }) {
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-white/[0.08]">
               <div
-                className="h-full rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c]"
+                className="h-full rounded-full bg-linear-to-r from-brand to-brand-strong"
                 style={{ width: `${Math.min(100, (subtotal / 120) * 100)}%` }}
               />
             </div>

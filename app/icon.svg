@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="tv" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fb923c"/>
+      <stop offset="1" stop-color="#ea580c"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#tv)"/>
+  <!-- awning -->
+  <path d="M8 8h16l2 5H6l2-5Z" fill="#fff"/>
+  <!-- store body -->
+  <rect x="8" y="13.5" width="16" height="10.5" rx="1.5" fill="#fff"/>
+  <!-- door -->
+  <rect x="13.4" y="17" width="5.2" height="7" rx="1" fill="url(#tv)"/>
+</svg>
