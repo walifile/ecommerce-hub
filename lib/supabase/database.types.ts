@@ -120,6 +120,10 @@ export type Database = {
       };
       settings: {
         Row: {
+          announcement_enabled: boolean;
+          announcement_link_href: string | null;
+          announcement_link_text: string | null;
+          announcement_message: string | null;
           created_at: string;
           hero_subtitle: string | null;
           hero_title: string | null;

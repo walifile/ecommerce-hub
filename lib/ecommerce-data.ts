@@ -125,7 +125,19 @@ export type StoreSettings = {
   heroTitle: string;
   heroSubtitle: string;
   theme: ThemeId;
+  announcementEnabled: boolean;
+  announcementMessage: string;
+  announcementLinkText: string;
+  announcementLinkHref: string;
 };
+
+export type StoreBanner = Pick<
+  StoreSettings,
+  | "announcementEnabled"
+  | "announcementMessage"
+  | "announcementLinkText"
+  | "announcementLinkHref"
+>;
 
 export type CatalogData = {
   categories: Category[];
@@ -492,6 +504,10 @@ const mockSettings: StoreSettings = {
   heroSubtitle:
     "Phase 1 combines the storefront, product engine, order workflow, customer history, and profit tracking in a single Next.js plus Supabase stack.",
   theme: DEFAULT_THEME,
+  announcementEnabled: true,
+  announcementMessage: "Limited drops are live. Free delivery on orders over Rs. 5,000.",
+  announcementLinkText: "Shop now",
+  announcementLinkHref: "/shop",
 };
 
 /** Lightweight read of just the active storefront theme (used by the layout). */
@@ -537,6 +553,81 @@ export async function updateStoreTheme(
     console.error("[settings] theme update failed:", error.message);
     return { ok: false, error: error.message };
   }
+  return { ok: true };
+}
+
+export async function getStoreBanner(): Promise<StoreBanner> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return mockSettings;
+
+  const { data, error } = await supabase
+    .from("settings")
+    .select(
+      "announcement_enabled, announcement_message, announcement_link_text, announcement_link_href"
+    )
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return mockSettings;
+
+  const row = data as Partial<
+    Pick<
+      Database["public"]["Tables"]["settings"]["Row"],
+      | "announcement_enabled"
+      | "announcement_message"
+      | "announcement_link_text"
+      | "announcement_link_href"
+    >
+  >;
+
+  return {
+    announcementEnabled:
+      row.announcement_enabled ?? mockSettings.announcementEnabled,
+    announcementMessage:
+      row.announcement_message ?? mockSettings.announcementMessage,
+    announcementLinkText:
+      row.announcement_link_text ?? mockSettings.announcementLinkText,
+    announcementLinkHref:
+      row.announcement_link_href ?? mockSettings.announcementLinkHref,
+  };
+}
+
+export async function updateStoreBanner(input: StoreBanner): Promise<{
+  ok: boolean;
+  error?: string;
+}> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) {
+    return { ok: false, error: "Supabase is not configured." };
+  }
+
+  const payload = {
+    announcement_enabled: input.announcementEnabled,
+    announcement_message: input.announcementMessage,
+    announcement_link_text: input.announcementLinkText,
+    announcement_link_href: input.announcementLinkHref,
+  };
+
+  const { data: existing } = await supabase
+    .from("settings")
+    .select("id")
+    .limit(1)
+    .maybeSingle();
+
+  const existingId = (existing as { id?: string } | null)?.id;
+
+  const { error } = existingId
+    ? await supabase
+        .from("settings")
+        .update(payload as never)
+        .eq("id", existingId)
+    : await supabase.from("settings").insert(payload as never);
+
+  if (error) {
+    console.error("[settings] banner update failed:", error.message);
+    return { ok: false, error: error.message };
+  }
+
   return { ok: true };
 }
 
@@ -738,6 +829,14 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       heroTitle: settingsRow?.hero_title ?? mockSettings.heroTitle,
       heroSubtitle: settingsRow?.hero_subtitle ?? mockSettings.heroSubtitle,
       theme: resolveTheme(settingsRow?.theme),
+      announcementEnabled:
+        settingsRow?.announcement_enabled ?? mockSettings.announcementEnabled,
+      announcementMessage:
+        settingsRow?.announcement_message ?? mockSettings.announcementMessage,
+      announcementLinkText:
+        settingsRow?.announcement_link_text ?? mockSettings.announcementLinkText,
+      announcementLinkHref:
+        settingsRow?.announcement_link_href ?? mockSettings.announcementLinkHref,
     },
   };
 }

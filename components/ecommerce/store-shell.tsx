@@ -2,8 +2,10 @@ import Link from "next/link";
 import { ShoppingCart, Store, User } from "lucide-react";
 import { NavLinks, MobileNav } from "@/components/ecommerce/nav-links";
 import { ProfileMenu } from "@/components/ecommerce/profile-menu";
+import { SiteBanner } from "@/components/ecommerce/site-banner";
 import { SiteFooter } from "@/components/ecommerce/site-footer";
 import { getCurrentProfile } from "@/lib/auth";
+import { getStoreBanner } from "@/lib/ecommerce-data";
 
 export async function StoreShell({
   children,
@@ -12,11 +14,15 @@ export async function StoreShell({
   children: React.ReactNode;
   cartCount?: number;
 }) {
-  const profile = await getCurrentProfile();
+  const [profile, banner] = await Promise.all([
+    getCurrentProfile(),
+    getStoreBanner(),
+  ]);
   const firstName = profile?.fullName?.trim().split(" ")[0] || "Account";
 
   return (
     <div className="min-h-screen bg-surface">
+      <SiteBanner banner={banner} />
       <header className="sticky top-0 z-50 border-b border-white/6 bg-surface/80 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">

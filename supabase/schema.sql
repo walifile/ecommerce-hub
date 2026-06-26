@@ -110,11 +110,19 @@ create table if not exists public.settings (
   whatsapp_template_order_shipped text,
   whatsapp_template_order_delivered text,
   theme text not null default 'midnight',
+  announcement_enabled boolean not null default false,
+  announcement_message text,
+  announcement_link_text text,
+  announcement_link_href text,
   created_at timestamptz not null default now()
 );
 
 -- For existing installs: add the storefront theme column if missing.
 alter table public.settings add column if not exists theme text not null default 'midnight';
+alter table public.settings add column if not exists announcement_enabled boolean not null default false;
+alter table public.settings add column if not exists announcement_message text;
+alter table public.settings add column if not exists announcement_link_text text;
+alter table public.settings add column if not exists announcement_link_href text;
 
 create table if not exists public.ai_generations (
   id uuid primary key default gen_random_uuid(),
