@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { OrderActions } from "@/app/admin/orders/_components/order-actions";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
@@ -41,7 +42,14 @@ export default async function AdminOrdersPage() {
             <TableBody>
               {catalog.orders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell className="font-medium">{order.orderNumber}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="transition-colors hover:text-primary"
+                    >
+                      {order.orderNumber}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <div>
                       <p>{order.customerName}</p>
@@ -79,6 +87,46 @@ export default async function AdminOrdersPage() {
               ))}
             </TableBody>
           </Table>
+        </CardContent>
+      </Card>
+
+      {/* WhatsApp notifications log */}
+      <Card className="mt-6 rounded-lg border-border/70 py-0">
+        <CardHeader>
+          <CardTitle>Order notifications</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {catalog.whatsappLogs.length === 0 ? (
+            <p className="py-6 text-sm text-muted-foreground">
+              No notifications yet. They are sent automatically on order
+              placement and status changes.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Template</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Sent</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {catalog.whatsappLogs.slice(0, 12).map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="font-medium capitalize">
+                      {log.templateName.replace(/_/g, " ")}
+                    </TableCell>
+                    <TableCell>{log.phone || "—"}</TableCell>
+                    <TableCell className="capitalize">{log.status}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {log.sentAt ? new Date(log.sentAt).toLocaleString() : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </AdminShell>

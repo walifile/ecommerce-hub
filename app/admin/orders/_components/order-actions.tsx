@@ -1,9 +1,11 @@
 "use client";
 
-import { Printer } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { updateOrderStatusAction } from "@/app/admin/actions";
+import { cn } from "@/lib/utils";
 
 const STATUSES = [
   "pending",
@@ -23,6 +25,16 @@ export function OrderActions({
 }) {
   return (
     <div className="flex items-center gap-2">
+      <Link
+        href={`/admin/orders/${orderId}`}
+        className={cn(
+          buttonVariants({ variant: "outline", size: "sm" }),
+          "rounded-md"
+        )}
+      >
+        <ExternalLink className="size-4" />
+        View
+      </Link>
       <form action={updateOrderStatusAction} className="flex items-center gap-2">
         <input type="hidden" name="orderId" value={orderId} />
         <NativeSelect
@@ -41,16 +53,15 @@ export function OrderActions({
           Update
         </Button>
       </form>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="rounded-md"
-        onClick={() => window.print()}
+      <Link
+        href={`/admin/orders/${orderId}/invoice`}
+        className={cn(
+          buttonVariants({ variant: "ghost", size: "sm" }),
+          "rounded-md"
+        )}
       >
-        <Printer className="size-4" />
         Invoice
-      </Button>
+      </Link>
     </div>
   );
 }

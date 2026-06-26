@@ -66,6 +66,8 @@ export type Order = {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
+  customerAddress: string;
+  customerCity: string;
   status:
     | "pending"
     | "confirmed"
@@ -403,6 +405,8 @@ const mockOrders: Order[] = [
     customerName: "Ayesha Khan",
     customerPhone: "+92 300 1112233",
     customerEmail: "ayesha@example.com",
+    customerAddress: "12 Main Boulevard",
+    customerCity: "Lahore",
     status: "processing",
     paymentMethod: "cod",
     shippingCost: 6,
@@ -422,6 +426,8 @@ const mockOrders: Order[] = [
     customerName: "Usman Ali",
     customerPhone: "+92 333 4455667",
     customerEmail: "usman@example.com",
+    customerAddress: "44 Shahrah-e-Faisal",
+    customerCity: "Karachi",
     status: "shipped",
     paymentMethod: "stripe",
     shippingCost: 8,
@@ -441,6 +447,8 @@ const mockOrders: Order[] = [
     customerName: "Sana Noor",
     customerPhone: "+92 321 8899001",
     customerEmail: "sana@example.com",
+    customerAddress: "9 Blue Area",
+    customerCity: "Islamabad",
     status: "delivered",
     paymentMethod: "cod",
     shippingCost: 5,
@@ -807,6 +815,8 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       customerName: customer?.name ?? "Guest customer",
       customerPhone: customer?.phone ?? "",
       customerEmail: customer?.email ?? "",
+      customerAddress: customer?.address ?? "",
+      customerCity: customer?.city ?? "",
       status: (order.status as Order["status"]) ?? "pending",
       paymentMethod: order.payment_method === "stripe" ? "stripe" : "cod",
       shippingCost: Number(order.shipping_cost),
@@ -1003,6 +1013,15 @@ export async function getOrderByNumber(orderNumber?: string) {
   return orders.find(
     (order) => order.orderNumber.toLowerCase() === orderNumber.toLowerCase()
   );
+}
+
+export async function getOrderById(id?: string) {
+  if (!id) {
+    return null;
+  }
+
+  const { orders } = await getCatalogData();
+  return orders.find((order) => order.id === id) ?? null;
 }
 
 export async function getDashboardData() {

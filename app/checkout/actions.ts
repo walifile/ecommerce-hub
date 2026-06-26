@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { notifyOrder } from "@/lib/whatsapp";
 
 export type CheckoutState = {
   status: "idle" | "success" | "error";
@@ -295,6 +296,17 @@ export async function createOrderAction(
   for (const item of orderItems) {
     revalidatePath(`/products/${item.slug}`);
   }
+
+  // Best-effort order confirmation notification (WhatsApp Cloud API or simulated).
+  await notifyOrder({
+    orderId: order.id,
+    orderNumber,
+    customerName: name,
+    phone,
+    total,
+    templateKey: "order_created",
+  });
+
   return {
     status: "success",
     message: `Order ${orderNumber} placed!`,

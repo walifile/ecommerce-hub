@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { notifyOrder, templateForStatus } from "@/lib/whatsapp";
 
 export type AdminActionState = {
   status: "idle" | "success" | "error";
@@ -246,7 +247,41 @@ export async function updateOrderStatusAction(formData: FormData) {
     .update({ status } as never)
     .eq("id", id);
 
-  if (error) console.error("[admin] updateOrderStatus failed:", error.message);
+  if (error) {
+    console.error("[admin] updateOrderStatus failed:", error.message);
+    revalidatePath("/admin/orders");
+    return;
+  }
+
+  // Notify the customer about the new status (WhatsApp Cloud API or simulated).
+  const templateKey = templateForStatus(status);
+  if (templateKey) {
+    const { data } = await supabase
+      .from("orders")
+      .select("order_number, total, customers(name, phone)")
+      .eq("id", id)
+      .maybeSingle();
+
+    const order = data as
+      | {
+          order_number: string;
+          total: number;
+          customers: { name: string | null; phone: string | null } | null;
+        }
+      | null;
+
+    if (order) {
+      await notifyOrder({
+        orderId: id,
+        orderNumber: order.order_number,
+        customerName: order.customers?.name ?? "there",
+        phone: order.customers?.phone ?? null,
+        total: Number(order.total),
+        templateKey,
+      });
+    }
+  }
+
   revalidatePath("/admin/orders");
 }
 
