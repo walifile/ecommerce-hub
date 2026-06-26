@@ -252,6 +252,17 @@
   img {
     @apply block;
   }
+
+  /* Custom cursor: hide the native pointer everywhere, keep the caret in text fields */
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none !important;
+  }
+  html.has-custom-cursor input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
+  html.has-custom-cursor textarea,
+  html.has-custom-cursor [contenteditable="true"] {
+    cursor: text !important;
+  }
 }
 
 @layer utilities {
