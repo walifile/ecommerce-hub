@@ -4,6 +4,7 @@ import {
   toggleCouponAction,
 } from "@/app/admin/actions";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { TableEmpty } from "@/app/admin/_components/table-empty";
 import { CouponForm } from "@/app/admin/coupons/_components/coupon-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,13 +48,13 @@ export default async function AdminCouponsPage() {
       description="Create campaign codes, control discount rules, and manage active promotions."
     >
       <div className="grid gap-6">
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardContent className="p-6">
             <CouponForm />
           </CardContent>
         </Card>
 
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Coupon campaigns</CardTitle>
           </CardHeader>
@@ -71,6 +72,9 @@ export default async function AdminCouponsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {catalog.coupons.length === 0 ? (
+                  <TableEmpty colSpan={7} message="No coupons yet. Create one above." />
+                ) : null}
                 {catalog.coupons.map((coupon) => (
                   <TableRow key={coupon.id}>
                     <TableCell className="pl-6 font-semibold">

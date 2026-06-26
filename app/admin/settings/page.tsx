@@ -13,7 +13,7 @@ export default async function AdminSettingsPage() {
       description="Control the storefront appearance and global website announcements from one place."
     >
       <div className="grid gap-6">
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Website banner</CardTitle>
           </CardHeader>
@@ -22,7 +22,7 @@ export default async function AdminSettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Storefront theme</CardTitle>
           </CardHeader>

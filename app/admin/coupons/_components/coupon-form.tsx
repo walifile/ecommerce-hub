@@ -1,43 +1,69 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, TicketPercent } from "lucide-react";
 import { toast } from "sonner";
-import {
-  createCouponAction,
-  type AdminActionState,
-} from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
-
-const initialState: AdminActionState = { status: "idle", message: "" };
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { FormRow } from "@/app/admin/_components/form-row";
+import { createCouponAction } from "@/app/admin/actions";
+import { couponSchema, type CouponFormInput } from "@/lib/validations/admin";
 
 export function CouponForm() {
-  const [state, formAction, pending] = useActionState(
-    createCouponAction,
-    initialState
-  );
   const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<CouponFormInput>({
+    resolver: zodResolver(couponSchema),
+    defaultValues: {
+      code: "",
+      discountType: "fixed",
+      discountValue: "",
+      minOrderAmount: "",
+      maxDiscountAmount: "",
+      usageLimit: "",
+      startsAt: "",
+      expiresAt: "",
+      active: true,
+    },
+  });
 
-  useEffect(() => {
-    if (state.status === "success") {
-      toast.success(state.message);
-      router.refresh();
-    } else if (state.status === "error") {
-      toast.error(state.message);
-    }
-  }, [state, router]);
+  function onSubmit(values: CouponFormInput) {
+    startTransition(async () => {
+      const fd = new FormData();
+      fd.set("code", values.code);
+      fd.set("discountType", values.discountType);
+      fd.set("discountValue", values.discountValue);
+      fd.set("minOrderAmount", values.minOrderAmount);
+      fd.set("maxDiscountAmount", values.maxDiscountAmount);
+      fd.set("usageLimit", values.usageLimit);
+      fd.set("startsAt", values.startsAt);
+      fd.set("expiresAt", values.expiresAt);
+      if (values.active) fd.set("active", "on");
+
+      const result = await createCouponAction({ status: "idle", message: "" }, fd);
+      if (result.status === "success") {
+        toast.success(result.message);
+        reset();
+        router.refresh();
+      } else if (result.status === "error") {
+        toast.error(result.message);
+      }
+    });
+  }
 
   return (
-    <form action={formAction} className="grid gap-5">
-      <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-muted/40 p-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5" noValidate>
+      <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/40 p-4">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <TicketPercent className="size-5" />
         </div>
         <div>
@@ -49,92 +75,87 @@ export function CouponForm() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="code">Code</Label>
-          <Input id="code" name="code" placeholder="TOY10" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="discountType">Discount type</Label>
-          <NativeSelect id="discountType" name="discountType" className="w-full">
+        <FormRow label="Code" htmlFor="code" error={errors.code?.message}>
+          <Input id="code" placeholder="TOY10" className="uppercase" {...register("code")} />
+        </FormRow>
+        <FormRow label="Discount type" htmlFor="discountType">
+          <NativeSelect id="discountType" className="w-full" {...register("discountType")}>
             <NativeSelectOption value="fixed">Fixed amount</NativeSelectOption>
             <NativeSelectOption value="percentage">Percentage</NativeSelectOption>
           </NativeSelect>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="discountValue">Discount value</Label>
+        </FormRow>
+        <FormRow
+          label="Discount value"
+          htmlFor="discountValue"
+          error={errors.discountValue?.message}
+        >
           <Input
             id="discountValue"
-            name="discountValue"
             type="number"
             min="0"
             step="0.01"
             placeholder="10"
+            {...register("discountValue")}
           />
-        </div>
+        </FormRow>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="minOrderAmount">Minimum order</Label>
+        <FormRow label="Minimum order" htmlFor="minOrderAmount">
           <Input
             id="minOrderAmount"
-            name="minOrderAmount"
             type="number"
             min="0"
             step="0.01"
             placeholder="50"
+            {...register("minOrderAmount")}
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="maxDiscountAmount">Max discount</Label>
+        </FormRow>
+        <FormRow label="Max discount" htmlFor="maxDiscountAmount">
           <Input
             id="maxDiscountAmount"
-            name="maxDiscountAmount"
             type="number"
             min="0"
             step="0.01"
             placeholder="Optional"
+            {...register("maxDiscountAmount")}
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="usageLimit">Usage limit</Label>
+        </FormRow>
+        <FormRow label="Usage limit" htmlFor="usageLimit">
           <Input
             id="usageLimit"
-            name="usageLimit"
             type="number"
             min="1"
             step="1"
             placeholder="Optional"
+            {...register("usageLimit")}
           />
-        </div>
+        </FormRow>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="startsAt">Starts at</Label>
-          <Input id="startsAt" name="startsAt" type="datetime-local" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="expiresAt">Expires at</Label>
-          <Input id="expiresAt" name="expiresAt" type="datetime-local" />
-        </div>
+        <FormRow label="Starts at" htmlFor="startsAt">
+          <Input id="startsAt" type="datetime-local" {...register("startsAt")} />
+        </FormRow>
+        <FormRow label="Expires at" htmlFor="expiresAt">
+          <Input id="expiresAt" type="datetime-local" {...register("expiresAt")} />
+        </FormRow>
       </div>
 
-      <label className="flex items-center gap-3 rounded-2xl border border-border/70 bg-muted/30 p-4 text-sm font-medium text-foreground">
+      <label className="flex items-center gap-3 rounded-xl border border-border/70 bg-muted/30 p-4 text-sm font-medium text-foreground">
         <input
-          name="active"
           type="checkbox"
-          defaultChecked
           className="size-4 rounded border-border accent-primary"
+          {...register("active")}
         />
         Active immediately
       </label>
 
-      <Button type="submit" disabled={pending} className="w-fit">
+      <Button type="submit" disabled={pending} className="w-fit rounded-md">
         {pending ? (
           <>
             <Loader2 className="size-4 animate-spin" />
-            Creating...
+            Creating…
           </>
         ) : (
           "Create coupon"

@@ -1,4 +1,5 @@
 import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { TableEmpty } from "@/app/admin/_components/table-empty";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -21,7 +22,7 @@ export default async function AdminCustomersPage() {
       <div className="grid gap-6">
         <div className="grid gap-4 lg:grid-cols-3">
           {catalog.customers.map((customer) => (
-            <Card key={customer.id} className="rounded-lg border-border/70 py-0">
+            <Card key={customer.id} className="rounded-xl border-border/70 py-0">
               <CardContent className="space-y-3 p-5">
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">
@@ -41,7 +42,7 @@ export default async function AdminCustomersPage() {
           ))}
         </div>
 
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Customer history</CardTitle>
           </CardHeader>
@@ -57,6 +58,9 @@ export default async function AdminCustomersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {catalog.customers.length === 0 ? (
+                  <TableEmpty colSpan={5} message="No customers yet." />
+                ) : null}
                 {catalog.customers.map((customer) => (
                   <TableRow key={customer.id}>
                     <TableCell className="font-medium">{customer.name}</TableCell>

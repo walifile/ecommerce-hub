@@ -103,7 +103,7 @@ export default async function AdminOrderDetailPage(
 
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <div className="space-y-6">
-            <Card className="rounded-lg border-border/70 py-0">
+            <Card className="rounded-xl border-border/70 py-0">
               <CardHeader>
                 <CardTitle>Line items</CardTitle>
               </CardHeader>
@@ -133,7 +133,7 @@ export default async function AdminOrderDetailPage(
               </CardContent>
             </Card>
 
-            <Card className="rounded-lg border-border/70 py-0">
+            <Card className="rounded-xl border-border/70 py-0">
               <CardHeader>
                 <CardTitle>Pricing summary</CardTitle>
               </CardHeader>
@@ -193,7 +193,7 @@ export default async function AdminOrderDetailPage(
           </div>
 
           <div className="space-y-6">
-            <Card className="rounded-lg border-border/70 py-0">
+            <Card className="rounded-xl border-border/70 py-0">
               <CardHeader>
                 <CardTitle>Order overview</CardTitle>
               </CardHeader>
@@ -248,7 +248,7 @@ export default async function AdminOrderDetailPage(
               </CardContent>
             </Card>
 
-            <Card className="rounded-lg border-border/70 py-0">
+            <Card className="rounded-xl border-border/70 py-0">
               <CardHeader>
                 <CardTitle>Customer</CardTitle>
               </CardHeader>
@@ -283,7 +283,7 @@ export default async function AdminOrderDetailPage(
               </CardContent>
             </Card>
 
-            <Card className="rounded-lg border-border/70 py-0">
+            <Card className="rounded-xl border-border/70 py-0">
               <CardHeader>
                 <CardTitle>Fulfillment snapshot</CardTitle>
               </CardHeader>
@@ -337,7 +337,7 @@ export default async function AdminOrderDetailPage(
               </CardContent>
             </Card>
 
-            <Card className="rounded-lg border-border/70 py-0">
+            <Card className="rounded-xl border-border/70 py-0">
               <CardHeader>
                 <CardTitle>Return or cancellation</CardTitle>
               </CardHeader>

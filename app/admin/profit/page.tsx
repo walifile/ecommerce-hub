@@ -25,7 +25,7 @@ export default async function AdminProfitPage() {
             { label: "Weekly Profit", value: dashboard.metrics.weeklyProfit },
             { label: "Monthly Profit", value: dashboard.metrics.monthlyProfit },
           ].map((item) => (
-            <Card key={item.label} className="rounded-lg border-border/70 py-0">
+            <Card key={item.label} className="rounded-xl border-border/70 py-0">
               <CardContent className="p-5">
                 <p className="text-sm text-muted-foreground">{item.label}</p>
                 <p className="mt-2 text-2xl font-semibold text-foreground">
@@ -36,7 +36,7 @@ export default async function AdminProfitPage() {
           ))}
         </div>
 
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Per-order profit calculation</CardTitle>
           </CardHeader>

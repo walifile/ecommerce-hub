@@ -125,6 +125,8 @@ export type Coupon = {
   usedCount: number;
 };
 
+export type AiFaq = { question: string; answer: string };
+
 export type AiGeneration = {
   id: string;
   productName: string;
@@ -133,7 +135,7 @@ export type AiGeneration = {
   longDescription: string;
   metaTitle: string;
   metaDescription: string;
-  faq: string[];
+  faq: AiFaq[];
   createdAt: string;
 };
 
@@ -520,7 +522,11 @@ const mockAiGenerations: AiGeneration[] = [
       "An overnight serum that combines ceramides, niacinamide, and squalane to reduce visible irritation while improving moisture retention and texture.",
     metaTitle: "Barrier Repair Night Serum | Ecommerce Hub",
     metaDescription: "Restore stressed skin overnight with a ceramide and niacinamide powered serum.",
-    faq: ["Is it fragrance free?", "Can it be used daily?", "Is it safe for sensitive skin?"],
+    faq: [
+      { question: "Is it fragrance free?", answer: "Yes, the formula is completely fragrance free." },
+      { question: "Can it be used daily?", answer: "Yes, it is gentle enough for nightly use." },
+      { question: "Is it safe for sensitive skin?", answer: "Yes, it is dermatologist tested for sensitive skin." },
+    ],
     createdAt: "2026-06-20",
   },
 ];
@@ -914,7 +920,16 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     longDescription: row.long_description ?? "",
     metaTitle: row.meta_title ?? "",
     metaDescription: row.meta_description ?? "",
-    faq: Array.isArray(row.faq) ? row.faq.map((item) => String(item)) : [],
+    faq: Array.isArray(row.faq)
+      ? row.faq.map((item): AiFaq =>
+          item && typeof item === "object"
+            ? {
+                question: String((item as Record<string, unknown>).question ?? ""),
+                answer: String((item as Record<string, unknown>).answer ?? ""),
+              }
+            : { question: String(item), answer: "" }
+        )
+      : [],
     createdAt: row.created_at.slice(0, 10),
   }));
 

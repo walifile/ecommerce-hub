@@ -1,5 +1,6 @@
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { ExpenseForm } from "@/app/admin/expenses/_components/expense-form";
+import { TableEmpty } from "@/app/admin/_components/table-empty";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -20,7 +21,7 @@ export default async function AdminExpensesPage() {
       description="Advertising, shipping, salary, and miscellaneous expenses are modeled separately so profit reporting can stay defensible."
     >
       <div className="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Add expense</CardTitle>
           </CardHeader>
@@ -29,7 +30,7 @@ export default async function AdminExpensesPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Expense log</CardTitle>
           </CardHeader>
@@ -44,6 +45,9 @@ export default async function AdminExpensesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {catalog.expenses.length === 0 ? (
+                  <TableEmpty colSpan={4} message="No expenses logged yet." />
+                ) : null}
                 {catalog.expenses.map((expense) => (
                   <TableRow key={expense.id}>
                     <TableCell className="font-medium">{expense.title}</TableCell>

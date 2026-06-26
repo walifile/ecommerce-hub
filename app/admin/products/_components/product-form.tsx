@@ -1,20 +1,21 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useTransition } from "react";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, WandSparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { FormRow, FormSection } from "@/app/admin/_components/form-row";
 import {
   createProductAction,
   generateProductContentAction,
   updateProductAction,
-  type AdminActionState,
 } from "@/app/admin/actions";
-
-const initialState: AdminActionState = { status: "idle", message: "" };
+import { productSchema, type ProductFormInput } from "@/lib/validations/admin";
 
 export type ProductFormValues = {
   id: string;
@@ -34,6 +35,9 @@ export type ProductFormValues = {
   status: "draft" | "published";
 };
 
+const numOrEmpty = (value: number | null | undefined) =>
+  value === null || value === undefined ? "" : String(value);
+
 export function ProductForm({
   categories,
   product,
@@ -42,111 +46,173 @@ export function ProductForm({
   product?: ProductFormValues;
 }) {
   const isEdit = Boolean(product);
-  const [state, formAction, pending] = useActionState(
-    isEdit ? updateProductAction : createProductAction,
-    initialState
-  );
-  const formRef = useRef<HTMLFormElement>(null);
+  const [pending, startTransition] = useTransition();
   const [generating, startGenerating] = useTransition();
 
-  useEffect(() => {
-    if (state.status === "success") {
-      toast.success(state.message);
-      if (!isEdit) formRef.current?.reset();
-    } else if (state.status === "error") {
-      toast.error(state.message);
-    }
-  }, [state, isEdit]);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    getValues,
+    setValue,
+    formState: { errors },
+  } = useForm<ProductFormInput>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: product?.name ?? "",
+      slug: product?.slug ?? "",
+      sku: product?.sku ?? "",
+      category: product?.category ?? "",
+      costPrice: numOrEmpty(product?.costPrice),
+      sellingPrice: numOrEmpty(product?.price),
+      comparePrice: numOrEmpty(product?.comparePrice),
+      stockQuantity: numOrEmpty(product?.stockQuantity),
+      lowStockLimit: numOrEmpty(product?.lowStockLimit),
+      imageUrl: product?.image ?? "",
+      shortDescription: product?.shortDescription ?? "",
+      description: product?.description ?? "",
+      specifications: product?.specifications.join("\n") ?? "",
+      metaTitle: "",
+      metaDescription: "",
+      status: product?.status ?? "published",
+    },
+  });
 
-  function setField(name: string, value: string) {
-    const el = formRef.current?.elements.namedItem(name) as
-      | HTMLInputElement
-      | HTMLTextAreaElement
-      | null;
-    if (el) el.value = value;
+  function onSubmit(values: ProductFormInput) {
+    startTransition(async () => {
+      const fd = new FormData();
+      if (product) fd.set("id", product.id);
+      fd.set("name", values.name);
+      fd.set("slug", values.slug);
+      fd.set("sku", values.sku);
+      fd.set("category", values.category);
+      fd.set("costPrice", values.costPrice);
+      fd.set("sellingPrice", values.sellingPrice);
+      fd.set("comparePrice", values.comparePrice);
+      fd.set("stockQuantity", values.stockQuantity);
+      fd.set("lowStockLimit", values.lowStockLimit);
+      fd.set("imageUrl", values.imageUrl);
+      fd.set("shortDescription", values.shortDescription);
+      fd.set("description", values.description);
+      fd.set("specifications", values.specifications);
+      fd.set("metaTitle", values.metaTitle);
+      fd.set("metaDescription", values.metaDescription);
+      fd.set("status", values.status);
+
+      const action = isEdit ? updateProductAction : createProductAction;
+      const result = await action({ status: "idle", message: "" }, fd);
+      if (result.status === "success") {
+        toast.success(result.message);
+        if (!isEdit) reset();
+      } else if (result.status === "error") {
+        toast.error(result.message);
+      }
+    });
   }
 
   function handleGenerate() {
-    const form = formRef.current;
-    if (!form) return;
-    const productName =
-      (form.elements.namedItem("name") as HTMLInputElement | null)?.value.trim() ??
-      "";
-    const category =
-      (form.elements.namedItem("category") as HTMLInputElement | null)?.value.trim() ??
-      "";
-
+    const productName = getValues("name").trim();
     if (!productName) {
       toast.error("Enter a product name first.");
       return;
     }
-
     startGenerating(async () => {
-      const result = await generateProductContentAction(productName, category);
+      const result = await generateProductContentAction(
+        productName,
+        getValues("category").trim()
+      );
       if (result.status === "error") {
         toast.error(result.message);
         return;
       }
       const c = result.content;
-      setField("shortDescription", c.shortDescription);
-      setField("description", c.longDescription);
-      setField("specifications", c.specifications.join("\n"));
-      setField("metaTitle", c.metaTitle);
-      setField("metaDescription", c.metaDescription);
+      setValue("shortDescription", c.shortDescription, { shouldDirty: true });
+      setValue("description", c.longDescription, { shouldDirty: true });
+      setValue("specifications", c.specifications.join("\n"), { shouldDirty: true });
+      setValue("metaTitle", c.metaTitle, { shouldDirty: true });
+      setValue("metaDescription", c.metaDescription, { shouldDirty: true });
       toast.success("AI content generated. Review and save.");
     });
   }
 
   return (
-    <form ref={formRef} action={formAction} className="grid gap-4">
-      {isEdit && <input type="hidden" name="id" value={product!.id} />}
+    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-7" noValidate>
+      <FormSection title="Basics" description="Name, identifiers, and category.">
+        <FormRow label="Product name" htmlFor="name" error={errors.name?.message}>
+          <Input id="name" placeholder="Wooden Building Blocks Set" {...register("name")} />
+        </FormRow>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormRow label="Slug" htmlFor="slug" hint="Auto-generated if left blank.">
+            <Input id="slug" placeholder="wooden-building-blocks" {...register("slug")} />
+          </FormRow>
+          <FormRow label="SKU" htmlFor="sku" hint="Auto-generated if left blank.">
+            <Input id="sku" placeholder="SKU-XXXX" {...register("sku")} />
+          </FormRow>
+        </div>
+        <FormRow label="Category" htmlFor="category">
+          <Input id="category" placeholder="Building toys" list="admin-categories" {...register("category")} />
+          <datalist id="admin-categories">
+            {categories.map((c) => (
+              <option key={c} value={c} />
+            ))}
+          </datalist>
+        </FormRow>
+      </FormSection>
 
-      <Input name="name" placeholder="Product name" required defaultValue={product?.name} />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input name="slug" placeholder="Slug (auto if blank)" defaultValue={product?.slug} />
-        <Input name="sku" placeholder="SKU (auto if blank)" defaultValue={product?.sku} />
-      </div>
-      <Input
-        name="category"
-        placeholder="Category"
-        list="admin-categories"
-        defaultValue={product?.category}
-      />
-      <datalist id="admin-categories">
-        {categories.map((c) => (
-          <option key={c} value={c} />
-        ))}
-      </datalist>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Input name="costPrice" type="number" step="0.01" min="0" placeholder="Cost price" defaultValue={product?.costPrice} />
-        <Input name="sellingPrice" type="number" step="0.01" min="0" placeholder="Selling price" required defaultValue={product?.price} />
-        <Input name="comparePrice" type="number" step="0.01" min="0" placeholder="Compare price" defaultValue={product?.comparePrice} />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input name="stockQuantity" type="number" min="0" placeholder="Stock quantity" defaultValue={product?.stockQuantity} />
-        <Input name="lowStockLimit" type="number" min="0" placeholder="Low stock limit" defaultValue={product?.lowStockLimit} />
-      </div>
-      <Input name="imageUrl" placeholder="Image URL" defaultValue={product?.image} />
-      <Input name="shortDescription" placeholder="Short description" defaultValue={product?.shortDescription} />
-      <Textarea name="description" placeholder="Description" className="min-h-28" defaultValue={product?.description} />
-      <Textarea
-        name="specifications"
-        placeholder="Specifications, one per line"
-        className="min-h-24"
-        defaultValue={product?.specifications.join("\n")}
-      />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input name="metaTitle" placeholder="Meta title" />
-        <NativeSelect
-          name="status"
-          defaultValue={product?.status ?? "published"}
-          className="w-full"
-        >
-          <NativeSelectOption value="published">Published</NativeSelectOption>
-          <NativeSelectOption value="draft">Draft</NativeSelectOption>
-        </NativeSelect>
-      </div>
-      <Textarea name="metaDescription" placeholder="Meta description" className="min-h-20" />
+      <FormSection title="Pricing" description="All amounts in store currency.">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <FormRow label="Cost price" htmlFor="costPrice">
+            <Input id="costPrice" type="number" step="0.01" min="0" placeholder="0.00" {...register("costPrice")} />
+          </FormRow>
+          <FormRow label="Selling price" htmlFor="sellingPrice" error={errors.sellingPrice?.message}>
+            <Input id="sellingPrice" type="number" step="0.01" min="0" placeholder="0.00" {...register("sellingPrice")} />
+          </FormRow>
+          <FormRow label="Compare price" htmlFor="comparePrice" hint="Shown struck-through.">
+            <Input id="comparePrice" type="number" step="0.01" min="0" placeholder="0.00" {...register("comparePrice")} />
+          </FormRow>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormRow label="Stock quantity" htmlFor="stockQuantity">
+            <Input id="stockQuantity" type="number" min="0" placeholder="0" {...register("stockQuantity")} />
+          </FormRow>
+          <FormRow label="Low stock limit" htmlFor="lowStockLimit" hint="Alerts when stock drops below this.">
+            <Input id="lowStockLimit" type="number" min="0" placeholder="5" {...register("lowStockLimit")} />
+          </FormRow>
+        </div>
+      </FormSection>
+
+      <FormSection title="Content & media" description="What shoppers see on the product page.">
+        <FormRow label="Image URL" htmlFor="imageUrl">
+          <Input id="imageUrl" placeholder="https://…" {...register("imageUrl")} />
+        </FormRow>
+        <FormRow label="Short description" htmlFor="shortDescription">
+          <Input id="shortDescription" placeholder="One-line tagline" {...register("shortDescription")} />
+        </FormRow>
+        <FormRow label="Description" htmlFor="description">
+          <Textarea id="description" placeholder="Full product description" className="min-h-28" {...register("description")} />
+        </FormRow>
+        <FormRow label="Specifications" htmlFor="specifications" hint="One per line.">
+          <Textarea id="specifications" placeholder={"Material: Beechwood\nAge: 3+"} className="min-h-24" {...register("specifications")} />
+        </FormRow>
+      </FormSection>
+
+      <FormSection title="SEO & visibility" description="Search metadata and publish state.">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormRow label="Meta title" htmlFor="metaTitle">
+            <Input id="metaTitle" placeholder="SEO title" {...register("metaTitle")} />
+          </FormRow>
+          <FormRow label="Status" htmlFor="status">
+            <NativeSelect id="status" className="w-full" {...register("status")}>
+              <NativeSelectOption value="published">Published</NativeSelectOption>
+              <NativeSelectOption value="draft">Draft</NativeSelectOption>
+            </NativeSelect>
+          </FormRow>
+        </div>
+        <FormRow label="Meta description" htmlFor="metaDescription">
+          <Textarea id="metaDescription" placeholder="SEO description" className="min-h-20" {...register("metaDescription")} />
+        </FormRow>
+      </FormSection>
+
       <div className="grid gap-3 sm:grid-cols-2">
         <Button type="submit" disabled={pending} className="rounded-md">
           {pending ? (

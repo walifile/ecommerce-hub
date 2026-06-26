@@ -1,6 +1,7 @@
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { ProductForm } from "@/app/admin/products/_components/product-form";
 import { ProductRowActions } from "@/app/admin/products/_components/product-row-actions";
+import { TableEmpty } from "@/app/admin/_components/table-empty";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +25,7 @@ export default async function AdminProductsPage() {
       description="Product records follow the spec: basic info, pricing, inventory, media, SEO, draft/published state, and an AI content path."
     >
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Current products</CardTitle>
           </CardHeader>
@@ -42,6 +43,9 @@ export default async function AdminProductsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {catalog.products.length === 0 ? (
+                  <TableEmpty colSpan={7} message="No products yet. Create your first product on the right." />
+                ) : null}
                 {catalog.products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
@@ -85,7 +89,7 @@ export default async function AdminProductsPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-lg border-border/70 py-0">
+        <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Create / edit product</CardTitle>
           </CardHeader>

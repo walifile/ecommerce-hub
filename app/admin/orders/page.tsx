@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { OrderActions } from "@/app/admin/orders/_components/order-actions";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
+import { TableEmpty } from "@/app/admin/_components/table-empty";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -21,7 +22,7 @@ export default async function AdminOrdersPage() {
       title="Orders Module"
       description="Orders expose the lifecycle in the spec: pending, confirmed, processing, shipped, delivered, cancelled, and returned, with profit and invoice actions."
     >
-      <Card className="rounded-lg border-border/70 py-0">
+      <Card className="rounded-xl border-border/70 py-0">
         <CardHeader>
           <CardTitle>Orders</CardTitle>
         </CardHeader>
@@ -40,6 +41,9 @@ export default async function AdminOrdersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {catalog.orders.length === 0 ? (
+                <TableEmpty colSpan={8} message="No orders yet." />
+              ) : null}
               {catalog.orders.map((order) => (
                 <TableRow key={order.id}>
                   <TableCell className="font-medium">
@@ -91,7 +95,7 @@ export default async function AdminOrdersPage() {
       </Card>
 
       {/* WhatsApp notifications log */}
-      <Card className="mt-6 rounded-lg border-border/70 py-0">
+      <Card className="mt-6 rounded-xl border-border/70 py-0">
         <CardHeader>
           <CardTitle>Order notifications</CardTitle>
         </CardHeader>

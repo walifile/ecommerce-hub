@@ -30,7 +30,7 @@ export default async function EditProductPage(
         Back to products
       </Link>
 
-      <Card className="rounded-lg border-border/70 py-0">
+      <Card className="rounded-xl border-border/70 py-0">
         <CardHeader>
           <CardTitle>Edit “{product.name}”</CardTitle>
         </CardHeader>

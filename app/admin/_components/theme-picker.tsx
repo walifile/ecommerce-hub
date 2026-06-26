@@ -1,36 +1,41 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { THEMES, type ThemeId } from "@/lib/themes";
-import { saveThemeAction, type ThemeActionState } from "@/app/actions/theme";
-
-const initialState: ThemeActionState = { status: "idle", message: "" };
+import { saveThemeAction } from "@/app/actions/theme";
+import { themeSchema, type ThemeFormInput } from "@/lib/validations/admin";
 
 export function ThemePicker({ current }: { current: ThemeId }) {
-  const [selected, setSelected] = useState<ThemeId>(current);
-  const [state, formAction, pending] = useActionState(
-    saveThemeAction,
-    initialState
-  );
   const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const { control, setValue, handleSubmit } = useForm<ThemeFormInput>({
+    resolver: zodResolver(themeSchema),
+    defaultValues: { theme: current },
+  });
+  const selected = useWatch({ control, name: "theme" });
 
-  useEffect(() => {
-    if (state.status === "success") {
-      toast.success(state.message);
-      router.refresh();
-    } else if (state.status === "error") {
-      toast.error(state.message);
-    }
-  }, [state, router]);
+  function onSubmit(values: ThemeFormInput) {
+    startTransition(async () => {
+      const fd = new FormData();
+      fd.set("theme", values.theme);
+      const result = await saveThemeAction({ status: "idle", message: "" }, fd);
+      if (result.status === "success") {
+        toast.success(result.message);
+        router.refresh();
+      } else if (result.status === "error") {
+        toast.error(result.message);
+      }
+    });
+  }
 
   return (
-    <form action={formAction} className="space-y-6">
-      <input type="hidden" name="theme" value={selected} />
-
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {THEMES.map((theme) => {
           const active = selected === theme.id;
@@ -38,7 +43,9 @@ export function ThemePicker({ current }: { current: ThemeId }) {
             <button
               type="button"
               key={theme.id}
-              onClick={() => setSelected(theme.id)}
+              onClick={() =>
+                setValue("theme", theme.id, { shouldValidate: true, shouldDirty: true })
+              }
               aria-pressed={active}
               className={`relative rounded-xl border p-4 text-left transition-all ${
                 active
@@ -75,7 +82,7 @@ export function ThemePicker({ current }: { current: ThemeId }) {
         })}
       </div>
 
-      <Button type="submit" disabled={pending || selected === current}>
+      <Button type="submit" disabled={pending || selected === current} className="rounded-md">
         {pending ? (
           <>
             <Loader2 className="size-4 animate-spin" />

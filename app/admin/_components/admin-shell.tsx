@@ -79,9 +79,9 @@ function AdminNav({
         const active = isActive(pathname, link.href);
         const Icon = link.icon;
         const itemClass = cn(
-          "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium transition-colors",
+          "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
           active
-            ? "bg-foreground text-background shadow-sm dark:bg-white dark:text-black"
+            ? "bg-linear-to-r from-[#f97316] to-[#ea580c] text-white shadow-[0_6px_16px_-4px_rgba(249,115,22,0.45)]"
             : "text-muted-foreground hover:bg-muted hover:text-foreground"
         );
 
@@ -128,8 +128,12 @@ export function AdminShell({
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="flex min-h-screen">
+    <div className="relative min-h-screen bg-background text-foreground">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-x-0 top-0 h-72 bg-linear-to-b from-[#f97316]/[0.05] via-[#f97316]/[0.015] to-transparent"
+      />
+      <div className="relative flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-[290px] shrink-0 border-r border-border/70 bg-card/80 px-4 py-5 backdrop-blur-xl lg:flex lg:flex-col">
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-3 rounded-3xl border border-border/70 bg-background/80 px-4 py-4 shadow-sm">
@@ -262,11 +266,16 @@ export function AdminShell({
           </header>
 
           <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-            <div className="mb-6 space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Admin Dashboard
-              </p>
-              <h1 className="text-3xl font-semibold text-foreground sm:text-4xl">{title}</h1>
+            <div className="mb-6 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <span className="h-4 w-1 rounded-full bg-linear-to-b from-[#f97316] to-[#ea580c]" />
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Admin Dashboard
+                </p>
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                {title}
+              </h1>
               <p className="max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
                 {description}
               </p>
