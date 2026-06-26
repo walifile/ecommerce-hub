@@ -1,35 +1,59 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { Coffee, Mail, Sparkles } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { StoreBanner } from "@/lib/ecommerce-data";
 
 export function SiteBanner({ banner }: { banner: StoreBanner }) {
   const message = banner.announcementMessage.trim();
-  const linkText = banner.announcementLinkText.trim();
-  const linkHref = banner.announcementLinkHref.trim();
-  const showLink = linkText && linkHref;
 
   if (!banner.announcementEnabled || !message) {
     return null;
   }
 
   return (
-    <div className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,color-mix(in_srgb,var(--brand)_45%,transparent),transparent_30%),linear-gradient(90deg,#050505,#111014,#050505)]">
-      <div className="absolute inset-y-0 left-1/4 w-48 bg-brand/20 blur-3xl" />
-      <div className="relative mx-auto flex min-h-11 w-full max-w-7xl flex-col items-center justify-center gap-2 px-4 py-2 text-center sm:min-h-12 sm:flex-row sm:px-6 lg:px-8">
-        <div className="flex min-w-0 items-center justify-center gap-2 text-sm font-semibold text-white">
-          <Sparkles className="size-4 shrink-0 text-brand" />
-          <span className="max-w-4xl text-balance">{message}</span>
+    <div className="site-banner-bg group relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_10%_0%,color-mix(in_srgb,var(--brand)_45%,transparent),transparent_30%),linear-gradient(90deg,#050505,#111014,#050505)]">
+      <div className="site-banner-glow absolute inset-y-0 left-1/4 w-48 bg-brand/20 blur-3xl" />
+      <div className="site-banner-flow absolute inset-0" />
+
+      <div className="relative mx-auto flex min-h-11 w-full max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:min-h-12 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-2 text-left text-sm font-semibold text-white">
+          <Sparkles className="site-banner-sparkle size-4 shrink-0 text-brand" />
+          <span className="truncate sm:max-w-4xl sm:text-balance">{message}</span>
         </div>
 
-        {showLink ? (
-          <Link
-            href={linkHref}
-            className="group inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-black text-black transition-colors hover:bg-white/90"
-          >
-            {linkText}
-            <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
-          </Link>
-        ) : null}
+        <div className="flex shrink-0 items-center gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                href="/contact"
+                aria-label="Contact ToyVerse"
+                className="site-banner-cta inline-flex size-8 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_0_18px_color-mix(in_srgb,var(--brand)_22%,transparent)] transition-colors hover:bg-white hover:text-black"
+              >
+                <Mail className="size-4" />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>Contact us</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                href="https://buymeacoffee.com/waliahmad9"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Support on Buy Me a Coffee"
+                className="site-banner-cta inline-flex size-8 items-center justify-center rounded-full bg-white text-black shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_35%,transparent)] transition-colors hover:bg-white/90"
+              >
+                <Coffee className="size-4" />
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>Buy me a coffee</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     </div>
   );
