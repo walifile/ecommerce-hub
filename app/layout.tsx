@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Sora, Outfit } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { getActiveTheme } from "@/lib/ecommerce-data";
 import "./globals.css";
 
 const sora = Sora({
@@ -25,14 +26,17 @@ export const metadata: Metadata = {
     "ToyVerse is a premium toy store with bright visuals, playful products, and a compact conversion-focused ecommerce experience.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const theme = await getActiveTheme();
+
   return (
     <html
       lang="en"
+      data-theme={theme}
       className={`${sora.variable} ${outfit.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

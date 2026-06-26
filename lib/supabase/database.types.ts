@@ -127,6 +127,7 @@ export type Database = {
           store_name: string;
           support_email: string | null;
           support_phone: string | null;
+          theme: string | null;
           whatsapp_template_order_confirmed: string | null;
           whatsapp_template_order_created: string | null;
           whatsapp_template_order_delivered: string | null;

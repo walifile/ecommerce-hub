@@ -32,28 +32,28 @@ const trustCards = [
     desc: "Non-toxic, BPA-free materials on every single product — independently lab-tested.",
     proof: "ASTM & CE Certified",
     icon: ShieldCheck,
-    accent: "#06b6d4",
+    accent: "var(--brand-3)",
   },
   {
     title: "48-Hour Dispatch",
     desc: "Orders ship within 48 hours and are tracked door-to-door, every time.",
     proof: "Free over $50",
     icon: Truck,
-    accent: "#f97316",
+    accent: "var(--brand)",
   },
   {
     title: "12-Point Quality Check",
     desc: "Drop, finish and safety tested before anything leaves our warehouse.",
     proof: "Under 0.4% defect rate",
     icon: BadgeCheck,
-    accent: "#8b5cf6",
+    accent: "var(--brand-2)",
   },
   {
     title: "30-Day Easy Returns",
     desc: "Changed your mind? Send it back — no questions, no restocking fees.",
     proof: "Hassle-free window",
     icon: Undo2,
-    accent: "#f97316",
+    accent: "var(--brand)",
   },
 ];
 
@@ -67,12 +67,12 @@ const trustBadges = [
 export default function HomePage() {
   return (
     <StoreShell cartCount={2}>
-      <main className="overflow-hidden bg-[#07070f]">
+      <main className="overflow-hidden bg-surface">
 
         {/* ══════════════════════════════════════
             HERO
         ══════════════════════════════════════ */}
-        <section className="relative overflow-hidden bg-[#07070f]">
+        <section className="relative overflow-hidden bg-surface">
 
           {/* Orange circle — large enough to bleed off top + right, curved left edge visible */}
           <div
@@ -82,23 +82,23 @@ export default function HomePage() {
               height: "60vw",
               borderRadius: "50%",
               transform: "translate(25%, -36%)",
-              background: "radial-gradient(circle at 45% 50%, #fb923c 0%, #ea580c 52%, #c2410c 100%)",
+              background: "radial-gradient(circle at 45% 50%, var(--brand-light) 0%, var(--brand-strong) 52%, var(--brand-deep) 100%)",
               boxShadow: "inset -50px -50px 100px rgba(0,0,0,0.28)",
               zIndex: 0,
             }}
           />
 
           {/* Subtle left glow */}
-          <div className="pointer-events-none absolute -left-40 top-1/2 h-125 w-125 -translate-y-1/2 rounded-full bg-[#8b5cf6]/5 blur-[120px]" />
+          <div className="pointer-events-none absolute -left-40 top-1/2 h-125 w-125 -translate-y-1/2 rounded-full bg-brand-2/5 blur-[120px]" />
 
           {/* Grid */}
           <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-10 px-4 pb-10 pt-16 sm:px-6 sm:pb-12 sm:pt-20 lg:grid-cols-2 lg:gap-8 lg:px-8">
 
             {/* Left */}
             <MotionFade className="space-y-7" delay={0.05}>
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#f97316]/25 bg-[#f97316]/8 px-4 py-1.5">
-                <Zap className="size-3.5 text-[#f97316]" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#f97316]">
+              <div className="inline-flex items-center gap-2 rounded-full border border-brand/25 bg-brand/8 px-4 py-1.5">
+                <Zap className="size-3.5 text-brand" />
+                <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-brand">
                   New Season Drops
                 </span>
               </div>
@@ -107,7 +107,7 @@ export default function HomePage() {
                 <h1 className="text-5xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
                   Toys That
                   <br />
-                  <span className="bg-linear-to-r from-[#f97316] via-[#fb923c] to-[#8b5cf6] bg-clip-text text-transparent">
+                  <span className="bg-linear-to-r from-brand via-brand-light to-brand-2 bg-clip-text text-transparent">
                     Spark Joy.
                   </span>
                 </h1>
@@ -121,7 +121,7 @@ export default function HomePage() {
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/shop"
-                  className="flex items-center gap-2 rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] px-7 py-3.5 text-sm font-bold text-white shadow-[0_0_35px_rgba(249,115,22,0.35)] transition-shadow hover:shadow-[0_0_50px_rgba(249,115,22,0.5)]"
+                  className="flex items-center gap-2 rounded-full bg-linear-to-r from-brand to-brand-strong px-7 py-3.5 text-sm font-bold text-white shadow-[0_0_35px_color-mix(in_srgb,var(--brand)_35%,transparent)] transition-shadow hover:shadow-[0_0_50px_color-mix(in_srgb,var(--brand)_50%,transparent)]"
                 >
                   Shop Now
                   <ArrowRight className="size-4" />
@@ -178,16 +178,16 @@ export default function HomePage() {
         {/* ══════════════════════════════════════
             TRUST
         ══════════════════════════════════════ */}
-        <section className="bg-[#07070f] py-20 sm:py-24">
+        <section className="bg-surface py-20 sm:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <MotionFade className="space-y-10">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#06b6d4]">
+                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand-3">
                   Why Parents Love Us
                 </p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
                   Built for kids.{" "}
-                  <span className="bg-linear-to-r from-[#06b6d4] to-[#8b5cf6] bg-clip-text text-transparent">
+                  <span className="bg-linear-to-r from-brand-3 to-brand-2 bg-clip-text text-transparent">
                     Designed for parents.
                   </span>
                 </h2>
@@ -200,7 +200,7 @@ export default function HomePage() {
                       <div className="group flex h-full flex-col rounded-2xl border border-white/[0.07] bg-white/3 p-6 transition-all duration-300 hover:border-white/12">
                         <div
                           className="mb-5 flex size-12 items-center justify-center rounded-xl"
-                          style={{ background: `${item.accent}16`, boxShadow: `0 0 16px ${item.accent}18` }}
+                          style={{ background: `color-mix(in srgb, ${item.accent} 9%, transparent)`, boxShadow: `0 0 16px color-mix(in srgb, ${item.accent} 9%, transparent)` }}
                         >
                           <Icon className="size-5" style={{ color: item.accent }} />
                         </div>
@@ -208,7 +208,7 @@ export default function HomePage() {
                         <p className="mt-2 flex-1 text-sm leading-6 text-white/38">{item.desc}</p>
                         <div
                           className="mt-5 inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold"
-                          style={{ background: `${item.accent}14`, color: item.accent }}
+                          style={{ background: `color-mix(in srgb, ${item.accent} 8%, transparent)`, color: item.accent }}
                         >
                           <BadgeCheck className="size-3.5" />
                           {item.proof}
@@ -248,23 +248,23 @@ export default function HomePage() {
         {/* ══════════════════════════════════════
             CTA
         ══════════════════════════════════════ */}
-        <section className="bg-[#07070f] py-20 sm:py-24">
+        <section className="bg-surface py-20 sm:py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <MotionFade>
-              <div className="relative overflow-hidden rounded-3xl border border-white/[0.07] bg-linear-to-br from-[#f97316]/8 via-[#07070f] to-[#8b5cf6]/8 p-8 sm:p-12">
-                <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-[#f97316]/10 blur-[80px]" />
-                <div className="pointer-events-none absolute -bottom-16 -left-16 size-64 rounded-full bg-[#8b5cf6]/10 blur-[80px]" />
-                <div className="absolute inset-x-0 top-0 h-0.5 bg-linear-to-r from-[#f97316] via-[#8b5cf6] to-[#06b6d4]" />
+              <div className="relative overflow-hidden rounded-3xl border border-white/[0.07] bg-linear-to-br from-brand/8 via-surface to-brand-2/8 p-8 sm:p-12">
+                <div className="pointer-events-none absolute -right-16 -top-16 size-64 rounded-full bg-brand/10 blur-[80px]" />
+                <div className="pointer-events-none absolute -bottom-16 -left-16 size-64 rounded-full bg-brand-2/10 blur-[80px]" />
+                <div className="absolute inset-x-0 top-0 h-0.5 bg-linear-to-r from-brand via-brand-2 to-brand-3" />
 
                 <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
                   <div className="max-w-xl">
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f97316]/25 bg-[#f97316]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#f97316]">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/25 bg-brand/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand">
                       <Zap className="size-3" />
                       Free shipping over $50
                     </span>
                     <h2 className="mt-4 text-3xl font-black tracking-tight text-white sm:text-4xl">
                       Make Playtime{" "}
-                      <span className="bg-linear-to-r from-[#f97316] to-[#8b5cf6] bg-clip-text text-transparent">
+                      <span className="bg-linear-to-r from-brand to-brand-2 bg-clip-text text-transparent">
                         More Magical
                       </span>
                     </h2>
@@ -281,7 +281,7 @@ export default function HomePage() {
                         { icon: ShieldCheck, label: "Lab-safe certified" },
                       ].map(({ icon: Icon, label }) => (
                         <div key={label} className="flex items-center gap-2 text-xs font-semibold text-white/55">
-                          <Icon className="size-4 text-[#f97316]" />
+                          <Icon className="size-4 text-brand" />
                           {label}
                         </div>
                       ))}
@@ -291,7 +291,7 @@ export default function HomePage() {
                   <div className="flex shrink-0 flex-col items-stretch gap-3 sm:flex-row lg:flex-col xl:flex-row">
                     <Link
                       href="/shop"
-                      className="flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] px-8 py-3.5 text-sm font-bold text-white shadow-[0_0_30px_rgba(249,115,22,0.3)] transition-shadow hover:shadow-[0_0_45px_rgba(249,115,22,0.5)]"
+                      className="flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-brand to-brand-strong px-8 py-3.5 text-sm font-bold text-white shadow-[0_0_30px_color-mix(in_srgb,var(--brand)_30%,transparent)] transition-shadow hover:shadow-[0_0_45px_color-mix(in_srgb,var(--brand)_50%,transparent)]"
                     >
                       Start Shopping
                       <ArrowRight className="size-4" />

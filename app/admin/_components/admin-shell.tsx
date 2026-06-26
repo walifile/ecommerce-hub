@@ -4,6 +4,7 @@ import {
   ChartColumn,
   LayoutGrid,
   Package2,
+  Palette,
   Receipt,
   Users,
   Wallet,
@@ -17,6 +18,7 @@ const adminLinks = [
   { href: "/admin/profit", label: "Profit", icon: ChartColumn },
   { href: "/admin/expenses", label: "Expenses", icon: Wallet },
   { href: "/admin/ai", label: "AI", icon: Bot },
+  { href: "/admin/settings", label: "Settings", icon: Palette },
 ];
 
 export function AdminShell({

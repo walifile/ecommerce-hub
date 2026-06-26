@@ -40,12 +40,12 @@ export function NewsletterForm() {
         placeholder="Email address"
         aria-label="Email address"
         aria-invalid={state.status === "error"}
-        className="h-12 rounded-full border-white/10 bg-black/30 px-5 text-white placeholder:text-white/30 focus-visible:ring-[#f97316]/40"
+        className="h-12 rounded-full border-white/10 bg-black/30 px-5 text-white placeholder:text-white/30 focus-visible:ring-brand/40"
       />
       <Button
         type="submit"
         disabled={pending}
-        className="h-12 w-full rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] text-sm font-bold text-white shadow-[0_0_24px_rgba(249,115,22,0.24)] transition-transform hover:-translate-y-px hover:shadow-[0_0_34px_rgba(249,115,22,0.34)] disabled:opacity-70"
+        className="h-12 w-full rounded-full bg-linear-to-r from-brand to-brand-strong text-sm font-bold text-white shadow-[0_0_24px_color-mix(in_srgb,var(--brand)_24%,transparent)] transition-transform hover:-translate-y-px hover:shadow-[0_0_34px_color-mix(in_srgb,var(--brand)_34%,transparent)] disabled:opacity-70"
       >
         {pending ? (
           <>
@@ -71,7 +71,7 @@ export function NewsletterForm() {
           state.status === "error"
             ? "text-red-400"
             : state.status === "success"
-              ? "text-[#06b6d4]"
+              ? "text-brand-3"
               : "text-white/35"
         }`}
       >

@@ -3,10 +3,17 @@ import Link from "next/link";
 import { Mail, Phone, ShieldCheck, Store } from "lucide-react";
 import { NewsletterForm } from "@/components/ecommerce/newsletter-form";
 
-/* Brand marks — lucide dropped social logos, so these are inline. */
 function InstagramIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       <rect x="2" y="2" width="20" height="20" rx="5" />
       <circle cx="12" cy="12" r="4" />
       <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
@@ -60,10 +67,10 @@ const footerColumns = [
   {
     title: "Company",
     links: [
-      { label: "About ToyVerse", href: "/contact" },
+      { label: "About ToyVerse", href: "/about-us" },
       { label: "Careers", href: "/contact" },
-      { label: "Reviews", href: "/" },
-      { label: "Blog", href: "/" },
+      { label: "Reviews", href: "/shop" },
+      { label: "Blog", href: "/shop" },
     ],
   },
 ];
@@ -79,22 +86,21 @@ const paymentMethods = ["COD", "Easypaisa", "JazzCash", "Visa", "Mastercard"];
 
 export function SiteFooter() {
   return (
-    <footer id="footer" className="relative border-t border-white/8 bg-[#06060d]">
-      <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#f97316]/80 to-transparent" />
+    <footer id="footer" className="relative border-t border-white/8 bg-surface-deep">
+      <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-brand/80 to-transparent" />
 
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-        {/* Newsletter band */}
         <div className="mb-12 flex flex-col gap-6 border-b border-white/8 pb-12 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-md">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#f97316]/25 bg-[#f97316]/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#f97316]">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-brand/25 bg-brand/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-brand">
               Get 10% off
             </span>
             <h3 className="mt-3 text-2xl font-black tracking-tight text-white sm:text-3xl">
               10% off your first order.
             </h3>
             <p className="mt-2 text-sm leading-7 text-white/50">
-              Join the list for new drops, restocks and gift picks — plus a
-              welcome code for your first purchase.
+              Join the list for new drops, restocks and gift picks, plus a welcome
+              code for your first purchase.
             </p>
           </div>
           <div className="w-full lg:max-w-sm">
@@ -102,16 +108,14 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* Brand + link columns */}
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
-          {/* Brand */}
           <div className="space-y-5">
             <Link href="/" className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-[#f97316] to-[#ea580c] shadow-[0_0_18px_rgba(249,115,22,0.4)]">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-brand to-brand-strong shadow-[0_0_18px_color-mix(in_srgb,var(--brand)_40%,transparent)]">
                 <Store className="size-5 text-white" />
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f97316]/70">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand/70">
                   Play · Learn · Repeat
                 </p>
                 <p className="text-base font-black leading-tight text-white">ToyVerse</p>
@@ -119,44 +123,41 @@ export function SiteFooter() {
             </Link>
 
             <p className="max-w-xs text-sm leading-7 text-white/50">
-              Premium toys for curious kids — cleaner discovery, faster checkout,
-              and a calmer shopping experience for modern parents.
+              Premium toys for curious kids, with cleaner discovery, faster
+              checkout, and a calmer shopping experience for modern parents.
             </p>
 
-            {/* Social */}
             <div className="flex flex-wrap gap-2.5">
               {socials.map(({ label, href, icon: Icon }) => (
                 <Link
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/4 text-white/55 transition-all hover:border-[#f97316]/40 hover:bg-[#f97316]/10 hover:text-[#f97316]"
+                  className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/4 text-white/55 transition-all hover:border-brand/40 hover:bg-brand/10 hover:text-brand"
                 >
                   <Icon className="size-4" />
                 </Link>
               ))}
             </div>
 
-            {/* Direct contact */}
             <div className="flex flex-col gap-2 text-sm text-white/55">
               <Link
                 href="mailto:hello@toyverse.shop"
                 className="flex items-center gap-2 transition-colors hover:text-white"
               >
-                <Mail className="size-4 text-[#f97316]" />
+                <Mail className="size-4 text-brand" />
                 hello@toyverse.shop
               </Link>
               <Link
                 href="tel:+15551234567"
                 className="flex items-center gap-2 transition-colors hover:text-white"
               >
-                <Phone className="size-4 text-[#f97316]" />
+                <Phone className="size-4 text-brand" />
                 +1 (555) 123-4567
               </Link>
             </div>
           </div>
 
-          {/* Link columns */}
           {footerColumns.map((column) => (
             <div key={column.title} className="space-y-4">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/55">
@@ -177,7 +178,6 @@ export function SiteFooter() {
           ))}
         </div>
 
-        {/* Payment methods */}
         <div className="mt-10 flex flex-col items-start gap-4 border-t border-white/8 pt-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-white/40">
@@ -195,22 +195,24 @@ export function SiteFooter() {
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs font-medium text-white/45">
-            <ShieldCheck className="size-4 text-[#06b6d4]" />
+            <ShieldCheck className="size-4 text-brand-3" />
             Secure SSL-encrypted checkout
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="mt-8 flex flex-col gap-4 border-t border-white/8 pt-6 text-sm text-white/35 md:flex-row md:items-center md:justify-between">
           <p>© 2026 ToyVerse. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <Link href="/contact" className="transition-colors hover:text-white">
+            <Link href="/privacy-policy" className="transition-colors hover:text-white">
               Privacy Policy
             </Link>
-            <Link href="/contact" className="transition-colors hover:text-white">
+            <Link
+              href="/terms-and-conditions"
+              className="transition-colors hover:text-white"
+            >
               Terms of Service
             </Link>
-            <Link href="/contact" className="transition-colors hover:text-white">
+            <Link href="/privacy-policy" className="transition-colors hover:text-white">
               Cookie Policy
             </Link>
           </div>

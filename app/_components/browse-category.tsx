@@ -15,32 +15,32 @@ const categories: Category[] = [
   {
     name: "Educational Toys",
     image: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80",
-    accent: "#f97316",
+    accent: "var(--brand)",
   },
   {
     name: "Building Sets",
     image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=900&q=80",
-    accent: "#8b5cf6",
+    accent: "var(--brand-2)",
   },
   {
     name: "RC Toys",
     image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=900&q=80",
-    accent: "#06b6d4",
+    accent: "var(--brand-3)",
   },
   {
     name: "Creative Play",
     image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80",
-    accent: "#f97316",
+    accent: "var(--brand)",
   },
   {
     name: "Outdoor Fun",
     image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80",
-    accent: "#8b5cf6",
+    accent: "var(--brand-2)",
   },
   {
     name: "Board Games",
     image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?auto=format&fit=crop&w=900&q=80",
-    accent: "#06b6d4",
+    accent: "var(--brand-3)",
   },
 ];
 
@@ -56,7 +56,7 @@ export function BrowseCategory() {
   };
 
   return (
-    <section className="bg-[#07070f] py-20 sm:py-24">
+    <section className="bg-surface py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
@@ -67,7 +67,7 @@ export function BrowseCategory() {
           className="flex items-end justify-between gap-4"
         >
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#8b5cf6]">
+            <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand-2">
               Explore the Range
             </p>
             <h2 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">
@@ -99,7 +99,7 @@ export function BrowseCategory() {
             >
               <Link href="/shop" className="group block">
                 <div className="relative aspect-3/4 overflow-hidden rounded-2xl border border-white/[0.07]">
-                  <div className="absolute inset-0 z-10 bg-linear-to-t from-[#07070f]/70 via-transparent to-transparent" />
+                  <div className="absolute inset-0 z-10 bg-linear-to-t from-surface/70 via-transparent to-transparent" />
                   <Image
                     src={category.image}
                     alt={category.name}
@@ -127,7 +127,7 @@ export function BrowseCategory() {
             style={{
               width: "28%",
               transform: `translateX(${progress * 257}%)`,
-              background: "linear-gradient(90deg, #f97316, #8b5cf6)",
+              background: "linear-gradient(90deg, var(--brand), var(--brand-2))",
             }}
           />
         </div>

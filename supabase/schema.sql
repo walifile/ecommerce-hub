@@ -117,8 +117,12 @@ create table if not exists public.settings (
   whatsapp_template_order_confirmed text,
   whatsapp_template_order_shipped text,
   whatsapp_template_order_delivered text,
+  theme text not null default 'midnight',
   created_at timestamptz not null default now()
 );
+
+-- For existing installs: add the storefront theme column if missing.
+alter table public.settings add column if not exists theme text not null default 'midnight';
 
 create table if not exists public.ai_generations (
   id uuid primary key default gen_random_uuid(),

@@ -19,7 +19,7 @@ const reviews: Review[] = [
     name: "Maha R.",
     role: "Karachi parent",
     rating: 5,
-    accent: "#f97316",
+    accent: "var(--brand)",
   },
   {
     quote:
@@ -27,7 +27,7 @@ const reviews: Review[] = [
     name: "Areeba S.",
     role: "Lahore parent",
     rating: 5,
-    accent: "#8b5cf6",
+    accent: "var(--brand-2)",
   },
   {
     quote:
@@ -35,7 +35,7 @@ const reviews: Review[] = [
     name: "Usman K.",
     role: "Islamabad parent",
     rating: 5,
-    accent: "#06b6d4",
+    accent: "var(--brand-3)",
   },
   {
     quote:
@@ -43,7 +43,7 @@ const reviews: Review[] = [
     name: "Sana M.",
     role: "Rawalpindi parent",
     rating: 5,
-    accent: "#f97316",
+    accent: "var(--brand)",
   },
   {
     quote:
@@ -51,7 +51,7 @@ const reviews: Review[] = [
     name: "Bilal A.",
     role: "Multan parent",
     rating: 5,
-    accent: "#8b5cf6",
+    accent: "var(--brand-2)",
   },
   {
     quote:
@@ -59,7 +59,7 @@ const reviews: Review[] = [
     name: "Hira N.",
     role: "Faisalabad parent",
     rating: 5,
-    accent: "#06b6d4",
+    accent: "var(--brand-3)",
   },
 ];
 
@@ -106,7 +106,7 @@ export function ReviewsCarousel() {
   }, [paused, page, pages]);
 
   return (
-    <section className="bg-[#07070f] py-20 sm:py-24">
+    <section className="bg-surface py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
@@ -116,19 +116,19 @@ export function ReviewsCarousel() {
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center text-center"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#f97316]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand">
             Customer Reviews
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
             Loved by parents{" "}
-            <span className="bg-linear-to-r from-[#f97316] to-[#8b5cf6] bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-brand to-brand-2 bg-clip-text text-transparent">
               everywhere.
             </span>
           </h2>
           <div className="mt-4 flex items-center gap-2">
             <div className="flex items-center gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className="size-4 fill-[#f97316] text-[#f97316]" />
+                <Star key={i} className="size-4 fill-brand text-brand" />
               ))}
             </div>
             <span className="text-sm font-semibold text-white/55">
@@ -167,7 +167,7 @@ export function ReviewsCarousel() {
 
                   <div className="flex items-center gap-0.5">
                     {Array.from({ length: review.rating }).map((_, i) => (
-                      <Star key={i} className="size-3.5 fill-[#f97316] text-[#f97316]" />
+                      <Star key={i} className="size-3.5 fill-brand text-brand" />
                     ))}
                   </div>
 
@@ -178,7 +178,7 @@ export function ReviewsCarousel() {
                   <div className="mt-6 flex items-center gap-3">
                     <div
                       className="flex size-10 items-center justify-center rounded-full text-sm font-black text-white"
-                      style={{ background: `linear-gradient(135deg, ${review.accent}, #8b5cf6)` }}
+                      style={{ background: `linear-gradient(135deg, ${review.accent}, var(--brand-2))` }}
                     >
                       {review.name[0]}
                     </div>
@@ -188,7 +188,7 @@ export function ReviewsCarousel() {
                     </div>
                     <span
                       className="ml-auto hidden items-center rounded-full px-2.5 py-1 text-[10px] font-bold lg:inline-flex"
-                      style={{ background: `${review.accent}16`, color: review.accent }}
+                      style={{ background: `color-mix(in srgb, ${review.accent} 9%, transparent)`, color: review.accent }}
                     >
                       Verified
                     </span>
@@ -209,7 +209,7 @@ export function ReviewsCarousel() {
                 className="h-1.5 rounded-full transition-all duration-300"
                 style={{
                   width: page === i ? "28px" : "14px",
-                  background: page === i ? "#f97316" : "rgba(255,255,255,0.18)",
+                  background: page === i ? "var(--brand)" : "rgba(255,255,255,0.18)",
                 }}
               />
             ))}

@@ -24,7 +24,7 @@ const products: Product[] = [
     price: "$139.00",
     image: "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=1000&q=80",
     tag: "Online exclusive",
-    accent: "#f97316",
+    accent: "var(--brand)",
   },
   {
     name: "Dream Canvas Kit",
@@ -32,7 +32,7 @@ const products: Product[] = [
     meta: ["One size only", "6.2 oz"],
     price: "$50.00",
     image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1000&q=80",
-    accent: "#8b5cf6",
+    accent: "var(--brand-2)",
   },
   {
     name: "Mini Drift Racer",
@@ -41,7 +41,7 @@ const products: Product[] = [
     price: "$200.00",
     image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1000&q=80",
     tag: "New addition",
-    accent: "#06b6d4",
+    accent: "var(--brand-3)",
   },
   {
     name: "Adventure Bounce Set",
@@ -50,7 +50,7 @@ const products: Product[] = [
     price: "$44.00",
     image: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=1000&q=80",
     tag: "Online exclusive",
-    accent: "#f97316",
+    accent: "var(--brand)",
   },
   {
     name: "Skyline Block Tower",
@@ -58,7 +58,7 @@ const products: Product[] = [
     meta: ["Ages 5+", "240 pcs"],
     price: "$72.00",
     image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=1000&q=80",
-    accent: "#8b5cf6",
+    accent: "var(--brand-2)",
   },
   {
     name: "Pixel Pet Companion",
@@ -67,7 +67,7 @@ const products: Product[] = [
     price: "$89.00",
     image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1000&q=80",
     tag: "New addition",
-    accent: "#06b6d4",
+    accent: "var(--brand-3)",
   },
 ];
 
@@ -92,7 +92,7 @@ export function NewNotable() {
   };
 
   return (
-    <section className="bg-[#07070f] py-20 sm:py-24">
+    <section className="bg-surface py-20 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Heading */}
         <motion.div
@@ -102,7 +102,7 @@ export function NewNotable() {
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className="mx-auto max-w-2xl text-center"
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#f97316]">
+          <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand">
             Best Sellers
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
@@ -130,7 +130,7 @@ export function NewNotable() {
                 <div className="group flex h-full flex-col overflow-hidden rounded-3xl border border-white/[0.07] bg-white/3 transition-all duration-300 hover:border-white/12 hover:-translate-y-1">
                   {/* Image */}
                   <div className="relative aspect-3/2 overflow-hidden">
-                    <div className="absolute inset-0 z-10 bg-linear-to-t from-[#07070f]/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 z-10 bg-linear-to-t from-surface/60 via-transparent to-transparent" />
                     <Image
                       src={product.image}
                       alt={product.name}
@@ -143,8 +143,8 @@ export function NewNotable() {
                         className="absolute left-4 top-4 z-20 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-widest backdrop-blur-sm"
                         style={{
                           color: product.accent,
-                          borderColor: `${product.accent}30`,
-                          background: `${product.accent}15`,
+                          borderColor: `color-mix(in srgb, ${product.accent} 19%, transparent)`,
+                          background: `color-mix(in srgb, ${product.accent} 8%, transparent)`,
                         }}
                       >
                         {product.tag}
@@ -181,7 +181,7 @@ export function NewNotable() {
 
                     <Link
                       href="/cart"
-                      className="mt-3 w-full rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] py-2.5 text-xs font-bold text-white shadow-[0_0_25px_rgba(249,115,22,0.25)] transition-shadow hover:shadow-[0_0_40px_rgba(249,115,22,0.45)]"
+                      className="mt-3 w-full rounded-full bg-linear-to-r from-brand to-brand-strong py-2.5 text-xs font-bold text-white shadow-[0_0_25px_color-mix(in_srgb,var(--brand)_25%,transparent)] transition-shadow hover:shadow-[0_0_40px_color-mix(in_srgb,var(--brand)_45%,transparent)]"
                     >
                       Add to cart
                     </Link>
@@ -202,7 +202,7 @@ export function NewNotable() {
                 className="h-1.5 rounded-full transition-all duration-300"
                 style={{
                   width: page === i ? "28px" : "14px",
-                  background: page === i ? "#f97316" : "rgba(255,255,255,0.18)",
+                  background: page === i ? "var(--brand)" : "rgba(255,255,255,0.18)",
                 }}
               />
             ))}

@@ -40,7 +40,7 @@ export function NavLinks() {
           >
             {item.label}
             {active && (
-              <span className="absolute -bottom-1.5 left-0 h-0.5 w-full rounded-full bg-linear-to-r from-[#f97316] to-[#8b5cf6]" />
+              <span className="absolute -bottom-1.5 left-0 h-0.5 w-full rounded-full bg-linear-to-r from-brand to-brand-2" />
             )}
           </Link>
         );
@@ -71,14 +71,14 @@ export function MobileNav({ cartCount = 0 }: { cartCount?: number }) {
       <SheetContent
         side="right"
         showCloseButton
-        className="w-80 border-white/10 bg-[#07070f] text-white"
+        className="w-80 border-white/10 bg-surface text-white"
       >
         <div className="flex items-center gap-3 border-b border-white/8 p-5">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-linear-to-br from-[#f97316] to-[#ea580c]">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-linear-to-br from-brand to-brand-strong">
             <Store className="size-4 text-white" />
           </div>
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f97316]/70">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand/70">
               Play · Learn · Repeat
             </p>
             <p className="text-base font-black leading-tight text-white">ToyVerse</p>
@@ -113,7 +113,7 @@ export function MobileNav({ cartCount = 0 }: { cartCount?: number }) {
             render={
               <Link
                 href="/cart"
-                className="flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-[#f97316] to-[#ea580c] px-5 py-3 text-sm font-bold text-white shadow-[0_0_20px_rgba(249,115,22,0.3)]"
+                className="flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-brand to-brand-strong px-5 py-3 text-sm font-bold text-white shadow-[0_0_20px_color-mix(in_srgb,var(--brand)_30%,transparent)]"
               />
             }
           >

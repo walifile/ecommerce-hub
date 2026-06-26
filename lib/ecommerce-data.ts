@@ -1,5 +1,6 @@
 import type { Database } from "@/lib/supabase/database.types";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { DEFAULT_THEME, resolveTheme, type ThemeId } from "@/lib/themes";
 
 export type Category = {
   id: string;
@@ -123,6 +124,7 @@ export type StoreSettings = {
   supportPhone: string;
   heroTitle: string;
   heroSubtitle: string;
+  theme: ThemeId;
 };
 
 export type CatalogData = {
@@ -489,7 +491,54 @@ const mockSettings: StoreSettings = {
   heroTitle: "Operate one store with the control surface it actually needs.",
   heroSubtitle:
     "Phase 1 combines the storefront, product engine, order workflow, customer history, and profit tracking in a single Next.js plus Supabase stack.",
+  theme: DEFAULT_THEME,
 };
+
+/** Lightweight read of just the active storefront theme (used by the layout). */
+export async function getActiveTheme(): Promise<ThemeId> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return DEFAULT_THEME;
+
+  const { data, error } = await supabase
+    .from("settings")
+    .select("theme")
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) return DEFAULT_THEME;
+  return resolveTheme((data as { theme?: unknown }).theme);
+}
+
+/** Persist the active storefront theme (used by the admin settings action). */
+export async function updateStoreTheme(
+  theme: ThemeId
+): Promise<{ ok: boolean; error?: string }> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) {
+    return { ok: false, error: "Supabase is not configured." };
+  }
+
+  const { data: existing } = await supabase
+    .from("settings")
+    .select("id")
+    .limit(1)
+    .maybeSingle();
+
+  const existingId = (existing as { id?: string } | null)?.id;
+
+  const { error } = existingId
+    ? await supabase
+        .from("settings")
+        .update({ theme } as never)
+        .eq("id", existingId)
+    : await supabase.from("settings").insert({ theme } as never);
+
+  if (error) {
+    console.error("[settings] theme update failed:", error.message);
+    return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
 
 function calculateOrderProfit(order: Order) {
   const productCost = order.items.reduce(
@@ -688,6 +737,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       supportPhone: settingsRow?.support_phone ?? mockSettings.supportPhone,
       heroTitle: settingsRow?.hero_title ?? mockSettings.heroTitle,
       heroSubtitle: settingsRow?.hero_subtitle ?? mockSettings.heroSubtitle,
+      theme: resolveTheme(settingsRow?.theme),
     },
   };
 }

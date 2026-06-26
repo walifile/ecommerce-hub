@@ -39,12 +39,12 @@ export function CategoryCard({
       <Link
         href="/shop"
         className="group block overflow-hidden rounded-2xl border border-white/[0.07] bg-white/3 transition-all duration-300 hover:border-white/12 hover:-translate-y-1"
-        style={{ boxShadow: hovered ? `0 8px 30px ${accent}28` : "none" }}
+        style={{ boxShadow: hovered ? `0 8px 30px color-mix(in srgb, ${accent} 16%, transparent)` : "none" }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         <div className="relative aspect-4/3 overflow-hidden">
-          <div className="absolute inset-0 z-10 bg-linear-to-t from-[#07070f]/80 via-transparent to-transparent" />
+          <div className="absolute inset-0 z-10 bg-linear-to-t from-surface/80 via-transparent to-transparent" />
           <Image
             src={image}
             alt={name}
@@ -60,7 +60,7 @@ export function CategoryCard({
           </div>
           <div
             className="flex size-9 shrink-0 items-center justify-center rounded-xl"
-            style={{ background: `${accent}18` }}
+            style={{ background: `color-mix(in srgb, ${accent} 9%, transparent)` }}
           >
             <Icon className="size-4" style={{ color: accent }} />
           </div>
