@@ -27,30 +27,34 @@ export function SiteBanner({ banner }: { banner: StoreBanner }) {
 
         <div className="flex shrink-0 items-center gap-2">
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="/contact"
-                aria-label="Contact ToyVerse"
-                className="site-banner-cta inline-flex size-8 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_0_18px_color-mix(in_srgb,var(--brand)_22%,transparent)] transition-colors hover:bg-white hover:text-black"
-              >
-                <Mail className="size-4" />
-              </Link>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <Link
+                  href="/contact"
+                  aria-label="Contact ToyVerse"
+                  className="site-banner-cta inline-flex size-8 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_0_18px_color-mix(in_srgb,var(--brand)_22%,transparent)] transition-colors hover:bg-white hover:text-black"
+                >
+                  <Mail className="size-4" />
+                </Link>
+              }
+            />
             <TooltipContent>Contact us</TooltipContent>
           </Tooltip>
 
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="https://buymeacoffee.com/waliahmad9"
-                target="_blank"
-                rel="noreferrer"
-                aria-label="Support on Buy Me a Coffee"
-                className="site-banner-cta inline-flex size-8 items-center justify-center rounded-full bg-white text-black shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_35%,transparent)] transition-colors hover:bg-white/90"
-              >
-                <Coffee className="size-4" />
-              </Link>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <Link
+                  href="https://buymeacoffee.com/waliahmad9"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Support on Buy Me a Coffee"
+                  className="site-banner-cta inline-flex size-8 items-center justify-center rounded-full bg-white text-black shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_35%,transparent)] transition-colors hover:bg-white/90"
+                >
+                  <Coffee className="size-4" />
+                </Link>
+              }
+            />
             <TooltipContent>Buy me a coffee</TooltipContent>
           </Tooltip>
         </div>

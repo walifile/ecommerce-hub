@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Check, Star, Truck } from "lucide-react";
+import { AddToCartButton } from "@/components/cart/add-to-cart";
 import { ProductCard } from "@/components/ecommerce/product-card";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getProductBySlug, getRelatedProducts, formatCurrency } from "@/lib/ecommerce-data";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,8 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
   }
 
   const gallery = product.gallery.length ? product.gallery : [product.image];
+  const isOutOfStock = product.stockQuantity <= 0;
+  const isLowStock = !isOutOfStock && product.stockQuantity <= product.lowStockLimit;
 
   return (
     <StoreShell cartCount={3}>
@@ -92,9 +95,11 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
                     {
                       label: "Stock",
                       value:
-                        product.stockQuantity > product.lowStockLimit
-                          ? `${product.stockQuantity} available`
-                          : `${product.stockQuantity} left`,
+                        isOutOfStock
+                          ? "Out of stock"
+                          : isLowStock
+                            ? `${product.stockQuantity} left`
+                            : `${product.stockQuantity} available`,
                     },
                     {
                       label: "Status",
@@ -130,17 +135,35 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <Button className="h-12 rounded-full bg-linear-to-r from-brand to-brand-strong text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_24%,transparent)]">
-                      Add to cart
-                    </Button>
+                    <AddToCartButton
+                      disabled={isOutOfStock}
+                      item={{
+                        id: product.id,
+                        name: product.name,
+                        slug: product.slug,
+                        price: product.price,
+                        costPrice: product.costPrice,
+                        image: product.image,
+                        category: product.category,
+                      }}
+                      className={cn(
+                        buttonVariants(),
+                        "h-12 rounded-full text-white",
+                        isOutOfStock
+                          ? "cursor-not-allowed bg-white/10 text-white/35 shadow-none"
+                          : "bg-linear-to-r from-brand to-brand-strong shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_24%,transparent)]"
+                      )}
+                    >
+                      {isOutOfStock ? "Out of stock" : "Add to cart"}
+                    </AddToCartButton>
                     <Link
-                      href="/checkout"
+                      href="/cart"
                       className={cn(
                         buttonVariants({ variant: "outline" }),
                         "h-12 rounded-full border-white/10 bg-white/[0.04] text-white hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
                       )}
                     >
-                      Buy now
+                      View cart
                       <ArrowRight className="size-4" />
                     </Link>
                   </div>

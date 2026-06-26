@@ -1,6 +1,8 @@
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { ProductForm } from "@/app/admin/products/_components/product-form";
+import { ProductRowActions } from "@/app/admin/products/_components/product-row-actions";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -34,7 +36,9 @@ export default async function AdminProductsPage() {
                   <TableHead>SKU</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
+                  <TableHead>Inventory</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -48,9 +52,31 @@ export default async function AdminProductsPage() {
                     </TableCell>
                     <TableCell>{product.sku}</TableCell>
                     <TableCell>{formatCurrency(product.price)}</TableCell>
-                    <TableCell>{product.stockQuantity}</TableCell>
+                    <TableCell>
+                      {product.stockQuantity} / limit {product.lowStockLimit}
+                    </TableCell>
+                    <TableCell>
+                      {product.stockQuantity <= 0 ? (
+                        <Badge variant="destructive" className="rounded-full">
+                          Out of stock
+                        </Badge>
+                      ) : product.stockQuantity <= product.lowStockLimit ? (
+                        <Badge variant="outline" className="rounded-full border-amber-500/30 text-amber-600 dark:text-amber-400">
+                          Low stock
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="rounded-full">
+                          Healthy
+                        </Badge>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <StatusBadge status={product.status} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end">
+                        <ProductRowActions id={product.id} name={product.name} />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

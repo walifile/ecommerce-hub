@@ -1,4 +1,4 @@
-import { AlertTriangle, DollarSign, Package2, ShoppingCart, Users } from "lucide-react";
+import { AlertTriangle, DollarSign, ShoppingCart, Users } from "lucide-react";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { DashboardTrendChart } from "@/app/admin/_components/dashboard-trend-chart";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
@@ -20,7 +20,7 @@ export default async function AdminOverviewPage() {
     { label: "Total Revenue", value: formatCurrency(dashboard.metrics.totalRevenue), icon: DollarSign },
     { label: "Total Orders", value: String(dashboard.metrics.totalOrders), icon: ShoppingCart },
     { label: "Total Customers", value: String(dashboard.metrics.totalCustomers), icon: Users },
-    { label: "Total Profit", value: formatCurrency(dashboard.metrics.totalProfit), icon: Package2 },
+    { label: "Low Stock Alerts", value: String(dashboard.lowStockProducts.length), icon: AlertTriangle },
   ];
 
   return (

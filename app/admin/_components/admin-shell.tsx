@@ -13,6 +13,7 @@ import {
   Palette,
   Receipt,
   SunMedium,
+  TicketPercent,
   Users,
   Wallet,
 } from "lucide-react";
@@ -31,6 +32,7 @@ import { cn } from "@/lib/utils";
 const adminLinks = [
   { href: "/admin", label: "Overview", icon: LayoutGrid },
   { href: "/admin/products", label: "Products", icon: Package2 },
+  { href: "/admin/coupons", label: "Coupons", icon: TicketPercent },
   { href: "/admin/orders", label: "Orders", icon: Receipt },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/profit", label: "Profit", icon: ChartColumn },

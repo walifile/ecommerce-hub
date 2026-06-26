@@ -3,7 +3,6 @@ import { ArrowRight, ShieldCheck, Truck, Undo2 } from "lucide-react";
 import { CartClient } from "@/app/cart/_components/cart-client";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
-import { listProducts } from "@/lib/ecommerce-data";
 
 const trustItems = [
   { label: "Secure checkout", icon: ShieldCheck },
@@ -11,11 +10,9 @@ const trustItems = [
   { label: "Easy returns", icon: Undo2 },
 ];
 
-export default async function CartPage() {
-  const products = await listProducts();
-
+export default function CartPage() {
   return (
-    <StoreShell cartCount={3}>
+    <StoreShell>
       <main className="bg-surface">
         <section className="relative overflow-hidden border-b border-white/[0.06]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--brand)_16%,transparent),transparent_28%),radial-gradient(circle_at_top_right,color-mix(in_srgb,var(--brand-2)_10%,transparent),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent_70%)]" />
@@ -62,7 +59,7 @@ export default async function CartPage() {
         </section>
 
         <section className="section-shell py-8 sm:py-10">
-          <CartClient initialItems={products.slice(0, 3)} />
+          <CartClient />
         </section>
       </main>
     </StoreShell>

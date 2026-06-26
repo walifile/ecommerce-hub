@@ -56,6 +56,22 @@ export type Database = {
           title: string;
         };
       };
+      coupons: {
+        Row: {
+          id: string;
+          code: string;
+          discount_type: string;
+          discount_value: number;
+          min_order_amount: number;
+          max_discount_amount: number | null;
+          active: boolean;
+          starts_at: string | null;
+          expires_at: string | null;
+          usage_limit: number | null;
+          used_count: number;
+          created_at: string;
+        };
+      };
       order_items: {
         Row: {
           id: string;
@@ -70,6 +86,7 @@ export type Database = {
       orders: {
         Row: {
           ad_cost: number;
+          coupon_code: string | null;
           created_at: string;
           customer_id: string | null;
           discount_amount: number;

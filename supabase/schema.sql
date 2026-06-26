@@ -64,11 +64,14 @@ create table if not exists public.orders (
   shipping_cost numeric(12, 2) not null default 0,
   ad_cost numeric(12, 2) not null default 0,
   discount_amount numeric(12, 2) not null default 0,
+  coupon_code text,
   revenue numeric(12, 2) not null default 0,
   total numeric(12, 2) not null default 0,
   notes text,
   created_at timestamptz not null default now()
 );
+
+alter table public.orders add column if not exists coupon_code text;
 
 create table if not exists public.order_items (
   id uuid primary key default gen_random_uuid(),
@@ -94,9 +97,22 @@ create table if not exists public.coupons (
   code text not null unique,
   discount_type text not null default 'fixed',
   discount_value numeric(12, 2) not null default 0,
+  min_order_amount numeric(12, 2) not null default 0,
+  max_discount_amount numeric(12, 2),
   active boolean not null default true,
-  expires_at timestamptz
+  starts_at timestamptz,
+  expires_at timestamptz,
+  usage_limit integer,
+  used_count integer not null default 0,
+  created_at timestamptz not null default now()
 );
+
+alter table public.coupons add column if not exists min_order_amount numeric(12, 2) not null default 0;
+alter table public.coupons add column if not exists max_discount_amount numeric(12, 2);
+alter table public.coupons add column if not exists starts_at timestamptz;
+alter table public.coupons add column if not exists usage_limit integer;
+alter table public.coupons add column if not exists used_count integer not null default 0;
+alter table public.coupons add column if not exists created_at timestamptz not null default now();
 
 create table if not exists public.settings (
   id uuid primary key default gen_random_uuid(),

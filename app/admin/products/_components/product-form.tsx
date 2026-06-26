@@ -7,13 +7,42 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { createProductAction, type AdminActionState } from "@/app/admin/actions";
+import {
+  createProductAction,
+  updateProductAction,
+  type AdminActionState,
+} from "@/app/admin/actions";
 
 const initialState: AdminActionState = { status: "idle", message: "" };
 
-export function ProductForm({ categories }: { categories: string[] }) {
+export type ProductFormValues = {
+  id: string;
+  name: string;
+  slug: string;
+  sku: string;
+  category: string;
+  costPrice: number;
+  price: number;
+  comparePrice?: number;
+  stockQuantity: number;
+  lowStockLimit: number;
+  image: string;
+  shortDescription: string;
+  description: string;
+  specifications: string[];
+  status: "draft" | "published";
+};
+
+export function ProductForm({
+  categories,
+  product,
+}: {
+  categories: string[];
+  product?: ProductFormValues;
+}) {
+  const isEdit = Boolean(product);
   const [state, formAction, pending] = useActionState(
-    createProductAction,
+    isEdit ? updateProductAction : createProductAction,
     initialState
   );
   const formRef = useRef<HTMLFormElement>(null);
@@ -21,45 +50,57 @@ export function ProductForm({ categories }: { categories: string[] }) {
   useEffect(() => {
     if (state.status === "success") {
       toast.success(state.message);
-      formRef.current?.reset();
+      if (!isEdit) formRef.current?.reset();
     } else if (state.status === "error") {
       toast.error(state.message);
     }
-  }, [state]);
+  }, [state, isEdit]);
 
   return (
     <form ref={formRef} action={formAction} className="grid gap-4">
-      <Input name="name" placeholder="Product name" required />
+      {isEdit && <input type="hidden" name="id" value={product!.id} />}
+
+      <Input name="name" placeholder="Product name" required defaultValue={product?.name} />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Input name="slug" placeholder="Slug (auto if blank)" />
-        <Input name="sku" placeholder="SKU (auto if blank)" />
+        <Input name="slug" placeholder="Slug (auto if blank)" defaultValue={product?.slug} />
+        <Input name="sku" placeholder="SKU (auto if blank)" defaultValue={product?.sku} />
       </div>
-      <Input name="category" placeholder="Category" list="admin-categories" />
+      <Input
+        name="category"
+        placeholder="Category"
+        list="admin-categories"
+        defaultValue={product?.category}
+      />
       <datalist id="admin-categories">
         {categories.map((c) => (
           <option key={c} value={c} />
         ))}
       </datalist>
       <div className="grid gap-4 sm:grid-cols-3">
-        <Input name="costPrice" type="number" step="0.01" min="0" placeholder="Cost price" />
-        <Input name="sellingPrice" type="number" step="0.01" min="0" placeholder="Selling price" required />
-        <Input name="comparePrice" type="number" step="0.01" min="0" placeholder="Compare price" />
+        <Input name="costPrice" type="number" step="0.01" min="0" placeholder="Cost price" defaultValue={product?.costPrice} />
+        <Input name="sellingPrice" type="number" step="0.01" min="0" placeholder="Selling price" required defaultValue={product?.price} />
+        <Input name="comparePrice" type="number" step="0.01" min="0" placeholder="Compare price" defaultValue={product?.comparePrice} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Input name="stockQuantity" type="number" min="0" placeholder="Stock quantity" />
-        <Input name="lowStockLimit" type="number" min="0" placeholder="Low stock limit" />
+        <Input name="stockQuantity" type="number" min="0" placeholder="Stock quantity" defaultValue={product?.stockQuantity} />
+        <Input name="lowStockLimit" type="number" min="0" placeholder="Low stock limit" defaultValue={product?.lowStockLimit} />
       </div>
-      <Input name="imageUrl" placeholder="Image URL" />
-      <Input name="shortDescription" placeholder="Short description" />
-      <Textarea name="description" placeholder="Description" className="min-h-28" />
+      <Input name="imageUrl" placeholder="Image URL" defaultValue={product?.image} />
+      <Input name="shortDescription" placeholder="Short description" defaultValue={product?.shortDescription} />
+      <Textarea name="description" placeholder="Description" className="min-h-28" defaultValue={product?.description} />
       <Textarea
         name="specifications"
         placeholder="Specifications, one per line"
         className="min-h-24"
+        defaultValue={product?.specifications.join("\n")}
       />
       <div className="grid gap-4 sm:grid-cols-2">
         <Input name="metaTitle" placeholder="Meta title" />
-        <NativeSelect name="status" defaultValue="published" className="w-full">
+        <NativeSelect
+          name="status"
+          defaultValue={product?.status ?? "published"}
+          className="w-full"
+        >
           <NativeSelectOption value="published">Published</NativeSelectOption>
           <NativeSelectOption value="draft">Draft</NativeSelectOption>
         </NativeSelect>
@@ -72,6 +113,8 @@ export function ProductForm({ categories }: { categories: string[] }) {
               <Loader2 className="size-4 animate-spin" />
               Saving…
             </>
+          ) : isEdit ? (
+            "Update product"
           ) : (
             "Save product"
           )}

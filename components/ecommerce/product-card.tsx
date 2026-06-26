@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ShoppingCart, Star } from "lucide-react";
+import { AddToCartButton } from "@/components/cart/add-to-cart";
 import { buttonVariants } from "@/components/ui/button";
 import { formatCurrency, type Product } from "@/lib/ecommerce-data";
 import { cn } from "@/lib/utils";
@@ -9,7 +10,8 @@ export function ProductCard({ product }: { product: Product }) {
     product.comparePrice && product.comparePrice > product.price
       ? Math.round((1 - product.price / product.comparePrice) * 100)
       : 0;
-  const inStock = product.stockQuantity > product.lowStockLimit;
+  const isOutOfStock = product.stockQuantity <= 0;
+  const isLowStock = !isOutOfStock && product.stockQuantity <= product.lowStockLimit;
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-3xl border border-white/8 bg-white/[0.03] transition-all duration-300 hover:-translate-y-1 hover:border-white/15">
@@ -44,11 +46,15 @@ export function ProductCard({ product }: { product: Product }) {
         )}
 
         {/* Out-of-stock veil */}
-        {!inStock && (
+        {isOutOfStock ? (
+          <span className="absolute bottom-3 left-3 rounded-full border border-red-400/20 bg-red-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-red-100 backdrop-blur-md">
+            Out of stock
+          </span>
+        ) : isLowStock ? (
           <span className="absolute bottom-3 left-3 rounded-full border border-white/15 bg-black/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white/80 backdrop-blur-md">
             Low stock
           </span>
-        )}
+        ) : null}
       </Link>
 
       {/* Body */}
@@ -97,13 +103,27 @@ export function ProductCard({ product }: { product: Product }) {
           >
             View details
           </Link>
-          <Link
-            href="/cart"
+          <AddToCartButton
             aria-label="Add to cart"
-            className="flex h-11 w-11 items-center justify-center rounded-xl bg-linear-to-r from-brand to-brand-strong text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_28%,transparent)] transition-shadow hover:shadow-[0_0_30px_color-mix(in_srgb,var(--brand)_42%,transparent)]"
+            disabled={isOutOfStock}
+            item={{
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              price: product.price,
+              costPrice: product.costPrice,
+              image: product.image,
+              category: product.category,
+            }}
+            className={cn(
+              "flex h-11 w-11 items-center justify-center rounded-xl text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_28%,transparent)] transition-shadow",
+              isOutOfStock
+                ? "cursor-not-allowed bg-white/10 text-white/35 shadow-none"
+                : "bg-linear-to-r from-brand to-brand-strong hover:shadow-[0_0_30px_color-mix(in_srgb,var(--brand)_42%,transparent)]"
+            )}
           >
             <ShoppingCart className="size-4" />
-          </Link>
+          </AddToCartButton>
         </div>
       </div>
     </div>

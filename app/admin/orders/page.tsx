@@ -32,6 +32,7 @@ export default async function AdminOrdersPage() {
                 <TableHead>Customer</TableHead>
                 <TableHead>Products</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Discount</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Profit</TableHead>
                 <TableHead>Actions</TableHead>
@@ -52,6 +53,22 @@ export default async function AdminOrdersPage() {
                   <TableCell>{order.items.reduce((sum, item) => sum + item.quantity, 0)} items</TableCell>
                   <TableCell>
                     <StatusBadge status={order.status} />
+                  </TableCell>
+                  <TableCell>
+                    {order.discount > 0 ? (
+                      <div>
+                        <p className="font-medium text-emerald-600 dark:text-emerald-400">
+                          -{formatCurrency(order.discount)}
+                        </p>
+                        {order.couponCode ? (
+                          <p className="text-xs text-muted-foreground">
+                            {order.couponCode}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </TableCell>
                   <TableCell>{formatCurrency(order.total)}</TableCell>
                   <TableCell>{formatCurrency(getOrderProfit(order))}</TableCell>

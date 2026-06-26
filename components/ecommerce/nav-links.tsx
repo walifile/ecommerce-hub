@@ -12,6 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { signOutAction } from "@/app/actions/auth";
+import { useCart } from "@/components/cart/cart-provider";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -51,18 +52,17 @@ export function NavLinks() {
 }
 
 export function MobileNav({
-  cartCount = 0,
   signedIn = false,
   accountName = "Account",
   isAdmin = false,
 }: {
-  cartCount?: number;
   signedIn?: boolean;
   accountName?: string;
   isAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { count } = useCart();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -182,7 +182,7 @@ export function MobileNav({
             }
           >
             <ShoppingCart className="size-4" />
-            View Cart ({cartCount})
+            View Cart ({count})
           </SheetClose>
         </div>
       </SheetContent>

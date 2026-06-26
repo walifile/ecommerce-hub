@@ -77,6 +77,7 @@ export type Order = {
   shippingCost: number;
   adCost: number;
   discount: number;
+  couponCode?: string;
   revenue: number;
   total: number;
   createdAt: string;
@@ -89,6 +90,20 @@ export type Expense = {
   expenseType: "advertising" | "shipping" | "salary" | "miscellaneous";
   amount: number;
   date: string;
+};
+
+export type Coupon = {
+  id: string;
+  code: string;
+  discountType: "fixed" | "percentage";
+  discountValue: number;
+  minOrderAmount: number;
+  maxDiscountAmount?: number;
+  active: boolean;
+  startsAt?: string;
+  expiresAt?: string;
+  usageLimit?: number;
+  usedCount: number;
 };
 
 export type AiGeneration = {
@@ -145,6 +160,7 @@ export type CatalogData = {
   customers: Customer[];
   orders: Order[];
   expenses: Expense[];
+  coupons: Coupon[];
   aiGenerations: AiGeneration[];
   whatsappLogs: WhatsAppLog[];
   testimonials: Testimonial[];
@@ -447,6 +463,28 @@ const mockExpenses: Expense[] = [
   { id: "exp-4", title: "Packaging restock", expenseType: "miscellaneous", amount: 76, date: "2026-06-20" },
 ];
 
+const mockCoupons: Coupon[] = [
+  {
+    id: "coupon-1",
+    code: "TOY10",
+    discountType: "percentage",
+    discountValue: 10,
+    minOrderAmount: 50,
+    maxDiscountAmount: 25,
+    active: true,
+    usedCount: 12,
+  },
+  {
+    id: "coupon-2",
+    code: "PLAY500",
+    discountType: "fixed",
+    discountValue: 5,
+    minOrderAmount: 40,
+    active: true,
+    usedCount: 4,
+  },
+];
+
 const mockAiGenerations: AiGeneration[] = [
   {
     id: "ai-1",
@@ -655,7 +693,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     return null;
   }
 
-  const [categoriesResult, productsResult, productImagesResult, customersResult, ordersResult, expensesResult, aiResult, whatsappResult, settingsResult] =
+  const [categoriesResult, productsResult, productImagesResult, customersResult, ordersResult, expensesResult, couponsResult, aiResult, whatsappResult, settingsResult] =
     await Promise.all([
       supabase.from("categories").select("*").order("name"),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
@@ -663,6 +701,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       supabase.from("customers").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
       supabase.from("expenses").select("*").order("expense_date", { ascending: false }),
+      supabase.from("coupons").select("*").order("created_at", { ascending: false }),
       supabase.from("ai_generations").select("*").order("created_at", { ascending: false }),
       supabase.from("whatsapp_logs").select("*").order("created_at", { ascending: false }),
       supabase.from("settings").select("*").limit(1).maybeSingle(),
@@ -675,6 +714,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     customersResult.error ||
     ordersResult.error ||
     expensesResult.error ||
+    couponsResult.error ||
     aiResult.error ||
     whatsappResult.error ||
     settingsResult.error
@@ -695,6 +735,8 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
   })[];
   const expensesRows =
     (expensesResult.data ?? []) as Database["public"]["Tables"]["expenses"]["Row"][];
+  const couponRows =
+    (couponsResult.data ?? []) as Database["public"]["Tables"]["coupons"]["Row"][];
   const aiRows =
     (aiResult.data ?? []) as Database["public"]["Tables"]["ai_generations"]["Row"][];
   const whatsappRows =
@@ -770,6 +812,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       shippingCost: Number(order.shipping_cost),
       adCost: Number(order.ad_cost),
       discount: Number(order.discount_amount),
+      couponCode: order.coupon_code ?? undefined,
       revenue: Number(order.revenue),
       total: Number(order.total),
       createdAt: order.created_at.slice(0, 10),
@@ -789,6 +832,28 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     amount: Number(expense.amount),
     date: expense.expense_date,
   }));
+
+  const coupons = couponRows.map((coupon) => ({
+    id: coupon.id,
+    code: coupon.code,
+    discountType:
+      coupon.discount_type === "percentage" ? "percentage" : "fixed",
+    discountValue: Number(coupon.discount_value),
+    minOrderAmount: Number(coupon.min_order_amount ?? 0),
+    maxDiscountAmount:
+      coupon.max_discount_amount === null ||
+      coupon.max_discount_amount === undefined
+        ? undefined
+        : Number(coupon.max_discount_amount),
+    active: coupon.active,
+    startsAt: coupon.starts_at ?? undefined,
+    expiresAt: coupon.expires_at ?? undefined,
+    usageLimit:
+      coupon.usage_limit === null || coupon.usage_limit === undefined
+        ? undefined
+        : coupon.usage_limit,
+    usedCount: coupon.used_count ?? 0,
+  } satisfies Coupon));
 
   const aiGenerations = aiRows.map((row) => ({
     id: row.id,
@@ -818,6 +883,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     customers: customers.length ? customers : mockCustomers,
     orders: orders.length ? orders : mockOrders,
     expenses: expenses.length ? expenses : mockExpenses,
+    coupons: coupons.length ? coupons : mockCoupons,
     aiGenerations: aiGenerations.length ? aiGenerations : mockAiGenerations,
     whatsappLogs: whatsappLogs.length ? whatsappLogs : mockWhatsAppLogs,
     testimonials: mockTestimonials,
@@ -854,6 +920,7 @@ export async function getCatalogData(): Promise<CatalogData> {
     customers: mockCustomers,
     orders: mockOrders,
     expenses: mockExpenses,
+    coupons: mockCoupons,
     aiGenerations: mockAiGenerations,
     whatsappLogs: mockWhatsAppLogs,
     testimonials: mockTestimonials,
