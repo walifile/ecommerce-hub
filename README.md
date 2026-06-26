@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ecommerce OS
+
+ToyVerse is the storefront layer for an ecommerce operating system built with Next.js, TypeScript, Tailwind CSS, shadcn/ui, and Supabase.
+
+## Phase 1
+
+This repo currently implements the Phase 1 scope from the spec:
+
+- Premium storefront landing page
+- Shop catalog with filters and product cards
+- Product detail pages
+- Cart and checkout flow
+- Order tracking page
+- Contact page with a real form action
+- About, privacy policy, and terms pages
+- Admin dashboard with responsive sidebar navigation
+- Light and dark admin mode support
+- Storefront theme switching from the admin settings page
+- Supabase-backed catalog, auth, newsletter, and support workflows
+
+## Buy Me a Coffee
+
+If this project helps you, support it here:
+
+[Buy me a coffee](https://buymeacoffee.com/waliahmad9)
+
+## Tech Stack
+
+- Next.js 16 App Router
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui style components
+- Supabase for data, auth, and storage
+- Framer Motion for motion polish
+- Recharts for dashboard charts
+
+## Key Routes
+
+- `/` - Storefront landing page
+- `/shop` - Catalog
+- `/products/[slug]` - Product detail
+- `/cart` - Cart
+- `/checkout` - Checkout
+- `/track-order` - Order tracking
+- `/contact` - Contact form
+- `/about-us` - About page
+- `/privacy-policy` - Privacy policy
+- `/terms-and-conditions` - Terms
+- `/admin` - Admin dashboard
+- `/admin/settings` - Theme and store settings
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Use the values in `.env.example` as the baseline. The app expects Supabase keys for live data and auth flows.
 
-## Learn More
+## Phase 1 Notes
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The current codebase is structured to keep public storefront pages, admin surfaces, and shared ecommerce data in one app. The next Phase 1 work should continue inside the existing routes and shared components rather than introducing a second shell.

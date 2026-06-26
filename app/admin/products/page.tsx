@@ -1,10 +1,7 @@
-import { WandSparkles } from "lucide-react";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { ProductForm } from "@/app/admin/products/_components/product-form";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -17,6 +14,7 @@ import { formatCurrency, getCatalogData } from "@/lib/ecommerce-data";
 
 export default async function AdminProductsPage() {
   const catalog = await getCatalogData();
+  const categoryNames = catalog.categories.map((c) => c.name);
 
   return (
     <AdminShell
@@ -65,34 +63,8 @@ export default async function AdminProductsPage() {
           <CardHeader>
             <CardTitle>Create / edit product</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 p-6">
-            <Input placeholder="Product name" />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Input placeholder="Slug" />
-              <Input placeholder="SKU" />
-            </div>
-            <Input placeholder="Category" />
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Input placeholder="Cost price" />
-              <Input placeholder="Selling price" />
-              <Input placeholder="Compare price" />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Input placeholder="Stock quantity" />
-              <Input placeholder="Low stock limit" />
-            </div>
-            <Input placeholder="Image URL" />
-            <Textarea placeholder="Description" className="min-h-28" />
-            <Textarea placeholder="Specifications, one per line" className="min-h-24" />
-            <Input placeholder="Meta title" />
-            <Textarea placeholder="Meta description" className="min-h-20" />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button className="rounded-md">Save product</Button>
-              <Button variant="outline" className="rounded-md">
-                <WandSparkles className="size-4" />
-                Generate with AI
-              </Button>
-            </div>
+          <CardContent className="p-6">
+            <ProductForm categories={categoryNames} />
           </CardContent>
         </Card>
       </div>

@@ -1,7 +1,6 @@
-import { Printer } from "lucide-react";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { OrderActions } from "@/app/admin/orders/_components/order-actions";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -57,15 +56,7 @@ export default async function AdminOrdersPage() {
                   <TableCell>{formatCurrency(order.total)}</TableCell>
                   <TableCell>{formatCurrency(getOrderProfit(order))}</TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="rounded-md">
-                        Update Status
-                      </Button>
-                      <Button variant="ghost" size="sm" className="rounded-md">
-                        <Printer className="size-4" />
-                        Invoice
-                      </Button>
-                    </div>
+                    <OrderActions orderId={order.id} status={order.status} />
                   </TableCell>
                 </TableRow>
               ))}

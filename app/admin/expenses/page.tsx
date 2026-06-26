@@ -1,7 +1,6 @@
 import { AdminShell } from "@/app/admin/_components/admin-shell";
-import { Button } from "@/components/ui/button";
+import { ExpenseForm } from "@/app/admin/expenses/_components/expense-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -25,17 +24,8 @@ export default async function AdminExpensesPage() {
           <CardHeader>
             <CardTitle>Add expense</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 p-6">
-            <Input placeholder="Title" />
-            <select className="flex h-10 rounded-md border border-input bg-background px-3 text-sm">
-              <option>Advertising</option>
-              <option>Shipping</option>
-              <option>Salary</option>
-              <option>Miscellaneous</option>
-            </select>
-            <Input placeholder="Amount" />
-            <Input type="date" />
-            <Button>Save expense</Button>
+          <CardContent className="p-6">
+            <ExpenseForm />
           </CardContent>
         </Card>
 
