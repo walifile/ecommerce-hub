@@ -123,6 +123,45 @@
   --brand-3: #fb923c;
 }
 
+/* Golden Hour — pure gold-yellow luxury (distinct from orange/red themes) */
+[data-theme="golden"] {
+  --surface: #0c0b07;
+  --surface-deep: #080702;
+  --surface-2: #18150c;
+  --brand: #eab308;
+  --brand-strong: #ca8a04;
+  --brand-light: #fde047;
+  --brand-deep: #a16207;
+  --brand-2: #f59e0b;
+  --brand-3: #fbbf24;
+}
+
+/* Neon Pulse — magenta on neutral black (distinct from purple Violet) */
+[data-theme="neon"] {
+  --surface: #0a0a0f;
+  --surface-deep: #060609;
+  --surface-2: #16161f;
+  --brand: #d946ef;
+  --brand-strong: #c026d3;
+  --brand-light: #e879f9;
+  --brand-deep: #a21caf;
+  --brand-2: #22d3ee;
+  --brand-3: #a3e635;
+}
+
+/* Lagoon — teal / aqua (no other theme is teal-led) */
+[data-theme="lagoon"] {
+  --surface: #04100f;
+  --surface-deep: #020b0a;
+  --surface-2: #0a1a18;
+  --brand: #06b6d4;
+  --brand-strong: #0891b2;
+  --brand-light: #22d3ee;
+  --brand-deep: #0e7490;
+  --brand-2: #2dd4bf;
+  --brand-3: #38bdf8;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

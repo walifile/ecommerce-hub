@@ -3,7 +3,15 @@
  * app/globals.css. The admin panel picks one and it is applied site-wide
  * via the `data-theme` attribute on <html>.
  */
-export type ThemeId = "midnight" | "ocean" | "violet" | "emerald" | "crimson";
+export type ThemeId =
+  | "midnight"
+  | "ocean"
+  | "violet"
+  | "emerald"
+  | "crimson"
+  | "golden"
+  | "neon"
+  | "lagoon";
 
 export const DEFAULT_THEME: ThemeId = "midnight";
 
@@ -45,6 +53,24 @@ export const THEMES: ThemeOption[] = [
     name: "Crimson Ember",
     description: "Dark maroon with rose, amber and orange accents.",
     swatches: ["#100708", "#f43f5e", "#f59e0b", "#fb923c"],
+  },
+  {
+    id: "golden",
+    name: "Golden Hour",
+    description: "Warm black with pure gold-yellow and amber accents.",
+    swatches: ["#0c0b07", "#eab308", "#f59e0b", "#fde047"],
+  },
+  {
+    id: "neon",
+    name: "Neon Pulse",
+    description: "Neutral black with electric fuchsia, cyan and lime accents.",
+    swatches: ["#0a0a0f", "#d946ef", "#22d3ee", "#a3e635"],
+  },
+  {
+    id: "lagoon",
+    name: "Lagoon",
+    description: "Deep teal-black with aqua, teal and sky accents.",
+    swatches: ["#04100f", "#06b6d4", "#2dd4bf", "#38bdf8"],
   },
 ];
 
