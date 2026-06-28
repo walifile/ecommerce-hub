@@ -81,9 +81,9 @@ export type BannerFormInput = z.infer<typeof bannerSchema>;
 
 // ── Storefront theme ──────────────────────────────────────────────────
 export const themeSchema = z.object({
-  // Wrap in an arrow so the predicate is a plain boolean check (not a type
-  // guard) — keeps the schema input/output types both `string` for RHF.
-  theme: z.string().refine((v) => isThemeId(v), "Pick a valid theme."),
+  // Plain string keeps RHF input/output types aligned; the server action
+  // re-validates the value via resolveTheme().
+  theme: z.string().min(1, "Pick a theme."),
 });
 
 export type ThemeFormInput = z.infer<typeof themeSchema>;
