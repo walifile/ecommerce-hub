@@ -167,12 +167,24 @@ export function ProductForm({
           </FormRow>
         </div>
         <FormRow label="Category" htmlFor="category">
-          <Input id="category" placeholder="Building toys" list="admin-categories" {...register("category")} />
-          <datalist id="admin-categories">
-            {categories.map((c) => (
-              <option key={c} value={c} />
-            ))}
-          </datalist>
+          <Controller
+            control={control}
+            name="category"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="category" className="w-full">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
         </FormRow>
       </FormSection>
 
