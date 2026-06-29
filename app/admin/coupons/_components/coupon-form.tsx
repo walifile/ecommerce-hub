@@ -2,15 +2,23 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, TicketPercent } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FormRow } from "@/app/admin/_components/form-row";
-import { createCouponAction } from "@/app/admin/actions";
+import { createCouponAction } from "@/app/admin/coupons/actions";
 import { couponSchema, type CouponFormInput } from "@/lib/validations/admin";
 
 export function CouponForm() {
@@ -20,6 +28,7 @@ export function CouponForm() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<CouponFormInput>({
     resolver: zodResolver(couponSchema),
@@ -79,10 +88,21 @@ export function CouponForm() {
           <Input id="code" placeholder="TOY10" className="uppercase" {...register("code")} />
         </FormRow>
         <FormRow label="Discount type" htmlFor="discountType">
-          <NativeSelect id="discountType" className="w-full" {...register("discountType")}>
-            <NativeSelectOption value="fixed">Fixed amount</NativeSelectOption>
-            <NativeSelectOption value="percentage">Percentage</NativeSelectOption>
-          </NativeSelect>
+          <Controller
+            control={control}
+            name="discountType"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="discountType" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fixed">Fixed amount</SelectItem>
+                  <SelectItem value="percentage">Percentage</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
         </FormRow>
         <FormRow
           label="Discount value"
@@ -142,14 +162,22 @@ export function CouponForm() {
         </FormRow>
       </div>
 
-      <label className="flex items-center gap-3 rounded-xl border border-border/70 bg-muted/30 p-4 text-sm font-medium text-foreground">
-        <input
-          type="checkbox"
-          className="size-4 rounded border-border accent-primary"
-          {...register("active")}
+      <div className="flex items-center gap-3 rounded-xl border border-border/70 bg-muted/30 p-4">
+        <Controller
+          control={control}
+          name="active"
+          render={({ field }) => (
+            <Checkbox
+              id="active"
+              checked={field.value}
+              onCheckedChange={(checked) => field.onChange(checked === true)}
+            />
+          )}
         />
-        Active immediately
-      </label>
+        <Label htmlFor="active" className="text-sm font-medium text-foreground">
+          Active immediately
+        </Label>
+      </div>
 
       <Button type="submit" disabled={pending} className="w-fit rounded-md">
         {pending ? (

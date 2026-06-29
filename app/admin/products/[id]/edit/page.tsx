@@ -49,6 +49,7 @@ export default async function EditProductPage(
               stockQuantity: product.stockQuantity,
               lowStockLimit: product.lowStockLimit,
               image: product.image,
+              gallery: product.gallery,
               shortDescription: product.shortDescription,
               description: product.description,
               specifications: product.specifications,

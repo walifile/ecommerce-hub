@@ -2,7 +2,7 @@ import { Power, Trash2 } from "lucide-react";
 import {
   deleteCouponAction,
   toggleCouponAction,
-} from "@/app/admin/actions";
+} from "@/app/admin/coupons/actions";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { TableEmpty } from "@/app/admin/_components/table-empty";
 import { CouponForm } from "@/app/admin/coupons/_components/coupon-form";

@@ -8,7 +8,7 @@ import {
   Phone,
   User,
 } from "lucide-react";
-import { updateOrderStatusAction } from "@/app/admin/actions";
+import { updateOrderStatusAction } from "@/app/admin/orders/actions";
 import { PrintOrderButton } from "@/app/admin/orders/_components/print-order-button";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { StatusBadge } from "@/components/ecommerce/status-badge";

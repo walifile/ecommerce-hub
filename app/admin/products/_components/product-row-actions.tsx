@@ -1,45 +1,95 @@
 "use client";
 
 import Link from "next/link";
-import { Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { deleteProductAction } from "@/app/admin/actions";
+import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { deleteProductAction } from "@/app/admin/products/actions";
+import { cn } from "@/lib/utils";
 
 export function ProductRowActions({
   id,
   name,
+  slug,
 }: {
   id: string;
   name: string;
+  slug?: string;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <Link
-        href={`/admin/products/${id}/edit`}
-        className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border/70 px-2.5 text-[0.8rem] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      >
-        <Pencil className="size-3.5" />
-        Edit
-      </Link>
-      <form
-        action={deleteProductAction}
-        onSubmit={(e) => {
-          if (!window.confirm(`Delete “${name}”? This cannot be undone.`)) {
-            e.preventDefault();
-          }
-        }}
-      >
-        <input type="hidden" name="id" value={id} />
-        <Button
-          type="submit"
-          variant="ghost"
-          size="sm"
-          className="rounded-md text-destructive hover:bg-destructive/10 hover:text-destructive"
+    <TooltipProvider delay={150}>
+      <div className="flex items-center justify-end gap-1.5">
+        {slug ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Link
+                  href={`/products/${slug}`}
+                  target="_blank"
+                  aria-label={`View ${name}`}
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "icon-sm" }),
+                    "rounded-md text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Eye className="size-4" />
+                </Link>
+              }
+            />
+            <TooltipContent>View</TooltipContent>
+          </Tooltip>
+        ) : null}
+
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Link
+                href={`/admin/products/${id}/edit`}
+                aria-label={`Edit ${name}`}
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "icon-sm" }),
+                  "rounded-md text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Pencil className="size-4" />
+              </Link>
+            }
+          />
+          <TooltipContent>Edit</TooltipContent>
+        </Tooltip>
+
+        <form
+          action={deleteProductAction}
+          onSubmit={(e) => {
+            if (!window.confirm(`Delete “${name}”? This cannot be undone.`)) {
+              e.preventDefault();
+            }
+          }}
         >
-          <Trash2 className="size-3.5" />
-          Delete
-        </Button>
-      </form>
-    </div>
+          <input type="hidden" name="id" value={id} />
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="submit"
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label={`Delete ${name}`}
+                  className="rounded-md text-destructive hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              }
+            />
+            <TooltipContent>Delete</TooltipContent>
+          </Tooltip>
+        </form>
+      </div>
+    </TooltipProvider>
   );
 }

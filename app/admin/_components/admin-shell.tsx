@@ -6,12 +6,15 @@ import { useMemo, useState } from "react";
 import {
   Bot,
   ChartColumn,
+  ExternalLink,
+  FolderTree,
   LayoutGrid,
   Menu,
   MoonStar,
   Package2,
   Palette,
   Receipt,
+  Store,
   SunMedium,
   TicketPercent,
   Users,
@@ -20,7 +23,6 @@ import {
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Sheet,
   SheetClose,
@@ -32,6 +34,7 @@ import { cn } from "@/lib/utils";
 const adminLinks = [
   { href: "/admin", label: "Overview", icon: LayoutGrid },
   { href: "/admin/products", label: "Products", icon: Package2 },
+  { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/coupons", label: "Coupons", icon: TicketPercent },
   { href: "/admin/orders", label: "Orders", icon: Receipt },
   { href: "/admin/customers", label: "Customers", icon: Users },
@@ -135,7 +138,7 @@ export function AdminShell({
       />
       <div className="relative flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-[290px] shrink-0 border-r border-border/70 bg-card/80 px-4 py-5 backdrop-blur-xl lg:flex lg:flex-col">
-          <div className="space-y-4">
+          <div className="flex-1 min-h-0 space-y-4 overflow-y-auto">
             <div className="flex items-center justify-between gap-3 rounded-3xl border border-border/70 bg-background/80 px-4 py-4 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="flex size-10 items-center justify-center rounded-2xl bg-linear-to-br from-[#f97316] to-[#ea580c] text-white shadow-[0_0_18px_rgba(249,115,22,0.18)]">
@@ -161,31 +164,18 @@ export function AdminShell({
             </div>
           </div>
 
-          <div className="mt-auto space-y-4">
-            <div className="rounded-3xl border border-border/70 bg-background/80 p-4 shadow-sm">
-              <div className="flex items-center gap-3">
-                <Avatar className="size-10">
-                  <AvatarFallback className="bg-muted text-foreground">
-                    TV
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-foreground">
-                    Admin workspace
-                  </p>
-                  <p className="text-xs text-muted-foreground">Theme: light / dark</p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-between rounded-3xl border border-border/70 bg-background/80 px-4 py-3 shadow-sm">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Appearance
-                </p>
-                <p className="text-sm font-medium text-foreground">Toggle theme</p>
-              </div>
-              <ThemeButton />
-            </div>
+          <div className="mt-auto">
+            <Link
+              href="/"
+              target="_blank"
+              className="flex items-center justify-between rounded-2xl border border-border/70 bg-background/80 px-4 py-3 text-sm font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <span className="flex items-center gap-2.5">
+                <Store className="size-4" />
+                View store
+              </span>
+              <ExternalLink className="size-3.5" />
+            </Link>
           </div>
         </aside>
 
@@ -214,15 +204,18 @@ export function AdminShell({
 
               <Separator />
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    Appearance
-                  </p>
-                  <p className="text-sm font-medium text-foreground">Theme toggle</p>
-                </div>
-                <ThemeButton />
-              </div>
+              <Link
+                href="/"
+                target="_blank"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between rounded-xl border border-border/70 bg-background/80 px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <span className="flex items-center gap-2.5">
+                  <Store className="size-4" />
+                  View store
+                </span>
+                <ExternalLink className="size-3.5" />
+              </Link>
             </div>
           </SheetContent>
         </Sheet>

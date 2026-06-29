@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { generateProductContentAction } from "@/app/admin/actions";
+import { generateProductContentAction } from "@/app/admin/ai/actions";
 import type { AiFaq, AiGeneration } from "@/lib/ecommerce-data";
 
 type Fields = {

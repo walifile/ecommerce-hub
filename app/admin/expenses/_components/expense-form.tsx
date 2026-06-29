@@ -1,15 +1,21 @@
 "use client";
 
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FormRow } from "@/app/admin/_components/form-row";
-import { createExpenseAction } from "@/app/admin/actions";
+import { createExpenseAction } from "@/app/admin/expenses/actions";
 import { expenseSchema, type ExpenseFormInput } from "@/lib/validations/admin";
 
 export function ExpenseForm() {
@@ -18,6 +24,7 @@ export function ExpenseForm() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<ExpenseFormInput>({
     resolver: zodResolver(expenseSchema),
@@ -53,12 +60,23 @@ export function ExpenseForm() {
         <Input id="title" placeholder="Facebook ads" {...register("title")} />
       </FormRow>
       <FormRow label="Type" htmlFor="expenseType">
-        <NativeSelect id="expenseType" className="w-full" {...register("expenseType")}>
-          <NativeSelectOption value="advertising">Advertising</NativeSelectOption>
-          <NativeSelectOption value="shipping">Shipping</NativeSelectOption>
-          <NativeSelectOption value="salary">Salary</NativeSelectOption>
-          <NativeSelectOption value="miscellaneous">Miscellaneous</NativeSelectOption>
-        </NativeSelect>
+        <Controller
+          control={control}
+          name="expenseType"
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger id="expenseType" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="advertising">Advertising</SelectItem>
+                <SelectItem value="shipping">Shipping</SelectItem>
+                <SelectItem value="salary">Salary</SelectItem>
+                <SelectItem value="miscellaneous">Miscellaneous</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
       </FormRow>
       <FormRow label="Amount" htmlFor="amount" error={errors.amount?.message}>
         <Input

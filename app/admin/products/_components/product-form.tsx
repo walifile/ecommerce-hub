@@ -1,20 +1,28 @@
 "use client";
 
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, WandSparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FormRow, FormSection } from "@/app/admin/_components/form-row";
+import { ImageInput } from "@/app/admin/_components/image-input";
+import { UploadButton } from "@/app/admin/_components/upload-button";
+import { generateProductContentAction } from "@/app/admin/ai/actions";
 import {
   createProductAction,
-  generateProductContentAction,
   updateProductAction,
-} from "@/app/admin/actions";
+} from "@/app/admin/products/actions";
 import { productSchema, type ProductFormInput } from "@/lib/validations/admin";
 
 export type ProductFormValues = {
@@ -29,6 +37,7 @@ export type ProductFormValues = {
   stockQuantity: number;
   lowStockLimit: number;
   image: string;
+  gallery: string[];
   shortDescription: string;
   description: string;
   specifications: string[];
@@ -41,9 +50,11 @@ const numOrEmpty = (value: number | null | undefined) =>
 export function ProductForm({
   categories,
   product,
+  onSuccess,
 }: {
   categories: string[];
   product?: ProductFormValues;
+  onSuccess?: () => void;
 }) {
   const isEdit = Boolean(product);
   const [pending, startTransition] = useTransition();
@@ -55,6 +66,7 @@ export function ProductForm({
     reset,
     getValues,
     setValue,
+    control,
     formState: { errors },
   } = useForm<ProductFormInput>({
     resolver: zodResolver(productSchema),
@@ -69,6 +81,9 @@ export function ProductForm({
       stockQuantity: numOrEmpty(product?.stockQuantity),
       lowStockLimit: numOrEmpty(product?.lowStockLimit),
       imageUrl: product?.image ?? "",
+      gallery:
+        product?.gallery.filter((url) => url && url !== product.image).join("\n") ??
+        "",
       shortDescription: product?.shortDescription ?? "",
       description: product?.description ?? "",
       specifications: product?.specifications.join("\n") ?? "",
@@ -92,6 +107,7 @@ export function ProductForm({
       fd.set("stockQuantity", values.stockQuantity);
       fd.set("lowStockLimit", values.lowStockLimit);
       fd.set("imageUrl", values.imageUrl);
+      fd.set("gallery", values.gallery);
       fd.set("shortDescription", values.shortDescription);
       fd.set("description", values.description);
       fd.set("specifications", values.specifications);
@@ -104,6 +120,7 @@ export function ProductForm({
       if (result.status === "success") {
         toast.success(result.message);
         if (!isEdit) reset();
+        onSuccess?.();
       } else if (result.status === "error") {
         toast.error(result.message);
       }
@@ -182,8 +199,37 @@ export function ProductForm({
       </FormSection>
 
       <FormSection title="Content & media" description="What shoppers see on the product page.">
-        <FormRow label="Image URL" htmlFor="imageUrl">
-          <Input id="imageUrl" placeholder="https://…" {...register("imageUrl")} />
+        <FormRow label="Main image" htmlFor="imageUrl" hint="Used as the thumbnail. Upload a file or paste a URL.">
+          <Controller
+            control={control}
+            name="imageUrl"
+            render={({ field }) => (
+              <ImageInput value={field.value} onChange={field.onChange} folder="products" />
+            )}
+          />
+        </FormRow>
+        <FormRow
+          label="Gallery images"
+          htmlFor="gallery"
+          hint="Extra photos (different angles), one URL per line — or upload to add."
+        >
+          <div className="space-y-2">
+            <Textarea
+              id="gallery"
+              placeholder={"https://…/front.jpg\nhttps://…/side.jpg"}
+              className="min-h-20"
+              {...register("gallery")}
+            />
+            <UploadButton
+              label="Upload &amp; add image"
+              onUploaded={(url) => {
+                const current = getValues("gallery").trim();
+                setValue("gallery", current ? `${current}\n${url}` : url, {
+                  shouldDirty: true,
+                });
+              }}
+            />
+          </div>
         </FormRow>
         <FormRow label="Short description" htmlFor="shortDescription">
           <Input id="shortDescription" placeholder="One-line tagline" {...register("shortDescription")} />
@@ -202,10 +248,21 @@ export function ProductForm({
             <Input id="metaTitle" placeholder="SEO title" {...register("metaTitle")} />
           </FormRow>
           <FormRow label="Status" htmlFor="status">
-            <NativeSelect id="status" className="w-full" {...register("status")}>
-              <NativeSelectOption value="published">Published</NativeSelectOption>
-              <NativeSelectOption value="draft">Draft</NativeSelectOption>
-            </NativeSelect>
+            <Controller
+              control={control}
+              name="status"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="status" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </FormRow>
         </div>
         <FormRow label="Meta description" htmlFor="metaDescription">

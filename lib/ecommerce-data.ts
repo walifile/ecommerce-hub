@@ -189,354 +189,6 @@ export type CatalogData = {
   settings: StoreSettings;
 };
 
-const mockCategories: Category[] = [
-  {
-    id: "cat-1",
-    name: "Performance Skincare",
-    slug: "performance-skincare",
-    description: "Serums, cleansers, and recovery kits for high-repeat buyers.",
-    image:
-      "https://images.unsplash.com/photo-1526758097130-bab247274f58?auto=format&fit=crop&w=1200&q=80",
-    productCount: 2,
-  },
-  {
-    id: "cat-2",
-    name: "Wellness Bundles",
-    slug: "wellness-bundles",
-    description: "Subscription-friendly bundles designed for average order value growth.",
-    image:
-      "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=1200&q=80",
-    productCount: 2,
-  },
-  {
-    id: "cat-3",
-    name: "Home Essentials",
-    slug: "home-essentials",
-    description: "Utility-driven products for steady margin and consistent restock cycles.",
-    image:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-    productCount: 2,
-  },
-];
-
-const mockProducts: Product[] = [
-  {
-    id: "prod-1",
-    name: "Barrier Repair Night Serum",
-    slug: "barrier-repair-night-serum",
-    sku: "BNS-001",
-    category: "Performance Skincare",
-    price: 48,
-    comparePrice: 59,
-    costPrice: 18,
-    stockQuantity: 44,
-    lowStockLimit: 12,
-    rating: 4.8,
-    reviewsCount: 128,
-    shortDescription: "Recovery serum tuned for dry, stressed skin.",
-    description:
-      "A fast-absorbing serum with ceramides, niacinamide, and squalane to reduce irritation and restore barrier strength overnight.",
-    specifications: ["Ceramides", "Niacinamide", "Squalane", "30ml bottle"],
-    image:
-      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1556228578-dd3e4f63317f?auto=format&fit=crop&w=1200&q=80",
-    ],
-    status: "published",
-    featured: true,
-    isNew: true,
-    bestSeller: true,
-  },
-  {
-    id: "prod-2",
-    name: "Morning Reset Cleanser",
-    slug: "morning-reset-cleanser",
-    sku: "MRC-102",
-    category: "Performance Skincare",
-    price: 26,
-    comparePrice: 32,
-    costPrice: 9,
-    stockQuantity: 61,
-    lowStockLimit: 10,
-    rating: 4.7,
-    reviewsCount: 94,
-    shortDescription: "Low-foam cleanser for daily use.",
-    description:
-      "A balanced gel cleanser that removes oil and residue without stripping skin, tuned for repeat purchase routines.",
-    specifications: ["Amino-acid surfactants", "pH balanced", "150ml tube"],
-    image:
-      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=1200&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1556228578-dd3e4f63317f?auto=format&fit=crop&w=1200&q=80",
-    ],
-    status: "published",
-    featured: true,
-  },
-  {
-    id: "prod-3",
-    name: "Calm Focus Supplement Stack",
-    slug: "calm-focus-supplement-stack",
-    sku: "CFS-220",
-    category: "Wellness Bundles",
-    price: 72,
-    comparePrice: 89,
-    costPrice: 31,
-    stockQuantity: 27,
-    lowStockLimit: 8,
-    rating: 4.9,
-    reviewsCount: 77,
-    shortDescription: "Two-part bundle for steady daytime energy.",
-    description:
-      "Combines magnesium support with a nootropic daytime capsule to improve repeatability for busy operators and professionals.",
-    specifications: ["2 SKUs bundled", "30-day supply", "Subscription-ready"],
-    image:
-      "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=1200&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80",
-    ],
-    status: "published",
-    featured: true,
-    bestSeller: true,
-  },
-  {
-    id: "prod-4",
-    name: "Sleep Recovery Bundle",
-    slug: "sleep-recovery-bundle",
-    sku: "SRB-208",
-    category: "Wellness Bundles",
-    price: 64,
-    comparePrice: 78,
-    costPrice: 28,
-    stockQuantity: 9,
-    lowStockLimit: 10,
-    rating: 4.6,
-    reviewsCount: 58,
-    shortDescription: "Evening routine kit with sleep tea and supplement support.",
-    description:
-      "A margin-efficient bundle built for upsells and post-purchase retention, combining calming tea, magnesium, and a reusable scoop set.",
-    specifications: ["Tea blend", "Magnesium capsules", "Reusable scoop"],
-    image:
-      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=1200&q=80",
-    ],
-    status: "published",
-    isNew: true,
-  },
-  {
-    id: "prod-5",
-    name: "Precision Pour Kettle",
-    slug: "precision-pour-kettle",
-    sku: "PPK-310",
-    category: "Home Essentials",
-    price: 89,
-    comparePrice: 104,
-    costPrice: 43,
-    stockQuantity: 14,
-    lowStockLimit: 6,
-    rating: 4.7,
-    reviewsCount: 43,
-    shortDescription: "Countertop kettle for ritual-driven coffee routines.",
-    description:
-      "A matte stainless kettle with precise temperature control and a balanced handle, designed for premium positioning.",
-    specifications: ["1L capacity", "Temperature hold", "Stainless steel"],
-    image:
-      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
-      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80",
-    ],
-    status: "published",
-    bestSeller: true,
-  },
-  {
-    id: "prod-6",
-    name: "Modular Pantry Set",
-    slug: "modular-pantry-set",
-    sku: "MPS-411",
-    category: "Home Essentials",
-    price: 54,
-    comparePrice: 68,
-    costPrice: 20,
-    stockQuantity: 33,
-    lowStockLimit: 9,
-    rating: 4.5,
-    reviewsCount: 39,
-    shortDescription: "Storage set tuned for bundle-driven AOV lifts.",
-    description:
-      "Stackable containers and labeled lids for operational home organization, built for bundle offers and gifting campaigns.",
-    specifications: ["8 containers", "Label pack", "BPA-free"],
-    image:
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-    gallery: [
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
-    ],
-    status: "published",
-    featured: true,
-  },
-];
-
-const mockCustomers: Customer[] = [
-  {
-    id: "cust-1",
-    name: "Ayesha Khan",
-    phone: "+92 300 1112233",
-    email: "ayesha@example.com",
-    address: "12 Main Boulevard",
-    city: "Lahore",
-    totalOrders: 6,
-    totalRevenue: 412,
-    lifetimeValue: 412,
-  },
-  {
-    id: "cust-2",
-    name: "Usman Ali",
-    phone: "+92 333 4455667",
-    email: "usman@example.com",
-    address: "44 Shahrah-e-Faisal",
-    city: "Karachi",
-    totalOrders: 4,
-    totalRevenue: 268,
-    lifetimeValue: 268,
-  },
-  {
-    id: "cust-3",
-    name: "Sana Noor",
-    phone: "+92 321 8899001",
-    email: "sana@example.com",
-    address: "9 Blue Area",
-    city: "Islamabad",
-    totalOrders: 3,
-    totalRevenue: 198,
-    lifetimeValue: 198,
-  },
-];
-
-const mockOrders: Order[] = [
-  {
-    id: "ord-1",
-    orderNumber: "ECO-1001",
-    customerName: "Ayesha Khan",
-    customerPhone: "+92 300 1112233",
-    customerEmail: "ayesha@example.com",
-    customerAddress: "12 Main Boulevard",
-    customerCity: "Lahore",
-    status: "processing",
-    paymentMethod: "cod",
-    shippingCost: 6,
-    adCost: 12,
-    discount: 8,
-    revenue: 136,
-    total: 134,
-    createdAt: "2026-06-18",
-    items: [
-      { productName: "Barrier Repair Night Serum", quantity: 2, unitPrice: 48, productCost: 18 },
-      { productName: "Morning Reset Cleanser", quantity: 2, unitPrice: 26, productCost: 9 },
-    ],
-  },
-  {
-    id: "ord-2",
-    orderNumber: "ECO-1002",
-    customerName: "Usman Ali",
-    customerPhone: "+92 333 4455667",
-    customerEmail: "usman@example.com",
-    customerAddress: "44 Shahrah-e-Faisal",
-    customerCity: "Karachi",
-    status: "shipped",
-    paymentMethod: "stripe",
-    shippingCost: 8,
-    adCost: 16,
-    discount: 0,
-    revenue: 161,
-    total: 161,
-    createdAt: "2026-06-19",
-    items: [
-      { productName: "Precision Pour Kettle", quantity: 1, unitPrice: 89, productCost: 43 },
-      { productName: "Sleep Recovery Bundle", quantity: 1, unitPrice: 64, productCost: 28 },
-    ],
-  },
-  {
-    id: "ord-3",
-    orderNumber: "ECO-1003",
-    customerName: "Sana Noor",
-    customerPhone: "+92 321 8899001",
-    customerEmail: "sana@example.com",
-    customerAddress: "9 Blue Area",
-    customerCity: "Islamabad",
-    status: "delivered",
-    paymentMethod: "cod",
-    shippingCost: 5,
-    adCost: 10,
-    discount: 4,
-    revenue: 120,
-    total: 115,
-    createdAt: "2026-06-20",
-    items: [
-      { productName: "Calm Focus Supplement Stack", quantity: 1, unitPrice: 72, productCost: 31 },
-      { productName: "Morning Reset Cleanser", quantity: 2, unitPrice: 26, productCost: 9 },
-    ],
-  },
-];
-
-const mockExpenses: Expense[] = [
-  { id: "exp-1", title: "Meta ads retargeting", expenseType: "advertising", amount: 280, date: "2026-06-18" },
-  { id: "exp-2", title: "Courier settlements", expenseType: "shipping", amount: 112, date: "2026-06-19" },
-  { id: "exp-3", title: "Operations assistant", expenseType: "salary", amount: 340, date: "2026-06-20" },
-  { id: "exp-4", title: "Packaging restock", expenseType: "miscellaneous", amount: 76, date: "2026-06-20" },
-];
-
-const mockCoupons: Coupon[] = [
-  {
-    id: "coupon-1",
-    code: "TOY10",
-    discountType: "percentage",
-    discountValue: 10,
-    minOrderAmount: 50,
-    maxDiscountAmount: 25,
-    active: true,
-    usedCount: 12,
-  },
-  {
-    id: "coupon-2",
-    code: "PLAY500",
-    discountType: "fixed",
-    discountValue: 5,
-    minOrderAmount: 40,
-    active: true,
-    usedCount: 4,
-  },
-];
-
-const mockAiGenerations: AiGeneration[] = [
-  {
-    id: "ai-1",
-    productName: "Barrier Repair Night Serum",
-    productTitle: "Barrier Repair Night Serum for Dry and Sensitive Skin",
-    shortDescription: "Restores hydration overnight without leaving residue.",
-    longDescription:
-      "An overnight serum that combines ceramides, niacinamide, and squalane to reduce visible irritation while improving moisture retention and texture.",
-    metaTitle: "Barrier Repair Night Serum | Ecommerce Hub",
-    metaDescription: "Restore stressed skin overnight with a ceramide and niacinamide powered serum.",
-    faq: [
-      { question: "Is it fragrance free?", answer: "Yes, the formula is completely fragrance free." },
-      { question: "Can it be used daily?", answer: "Yes, it is gentle enough for nightly use." },
-      { question: "Is it safe for sensitive skin?", answer: "Yes, it is dermatologist tested for sensitive skin." },
-    ],
-    createdAt: "2026-06-20",
-  },
-];
-
-const mockWhatsAppLogs: WhatsAppLog[] = [
-  { id: "wa-1", templateName: "order_created", phone: "+92 300 1112233", status: "sent", sentAt: "2026-06-18 10:20" },
-  { id: "wa-2", templateName: "order_shipped", phone: "+92 333 4455667", status: "sent", sentAt: "2026-06-19 15:05" },
-  { id: "wa-3", templateName: "order_delivered", phone: "+92 321 8899001", status: "queued", sentAt: "Pending" },
-];
-
 const mockTestimonials: Testimonial[] = [
   {
     name: "Rimsha Siddiqui",
@@ -738,20 +390,28 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       supabase.from("settings").select("*").limit(1).maybeSingle(),
     ]);
 
-  if (
-    categoriesResult.error ||
-    productsResult.error ||
-    productImagesResult.error ||
-    customersResult.error ||
-    ordersResult.error ||
-    expensesResult.error ||
-    couponsResult.error ||
-    aiResult.error ||
-    whatsappResult.error ||
-    settingsResult.error
-  ) {
-    return null;
-  }
+  // Log any per-table errors but keep whatever loaded — a single failing table
+  // must not blank the whole catalog or fall back to static/mock data.
+  if (categoriesResult.error)
+    console.error("[catalog] categories read failed:", categoriesResult.error.message);
+  if (productsResult.error)
+    console.error("[catalog] products read failed:", productsResult.error.message);
+  if (productImagesResult.error)
+    console.error("[catalog] product_images read failed:", productImagesResult.error.message);
+  if (customersResult.error)
+    console.error("[catalog] customers read failed:", customersResult.error.message);
+  if (ordersResult.error)
+    console.error("[catalog] orders read failed:", ordersResult.error.message);
+  if (expensesResult.error)
+    console.error("[catalog] expenses read failed:", expensesResult.error.message);
+  if (couponsResult.error)
+    console.error("[catalog] coupons read failed:", couponsResult.error.message);
+  if (aiResult.error)
+    console.error("[catalog] ai_generations read failed:", aiResult.error.message);
+  if (whatsappResult.error)
+    console.error("[catalog] whatsapp_logs read failed:", whatsappResult.error.message);
+  if (settingsResult.error)
+    console.error("[catalog] settings read failed:", settingsResult.error.message);
 
   const categoriesRows =
     (categoriesResult.data ?? []) as Database["public"]["Tables"]["categories"]["Row"][];
@@ -782,7 +442,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     name: category.name,
     slug: category.slug,
     description: category.description ?? "",
-    image: category.image_url ?? mockCategories[0].image,
+    image: category.image_url ?? "",
     productCount: productsRows.filter((product) => product.category_id === category.id).length,
   }));
 
@@ -808,8 +468,12 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       shortDescription: product.short_description ?? "",
       description: product.description ?? "",
       specifications: mapSpecifications(product.specifications),
-      image: product.image_url ?? mockProducts[0].image,
-      gallery: gallery.length ? gallery : [product.image_url ?? mockProducts[0].image],
+      image: product.image_url ?? "",
+      gallery: gallery.length
+        ? gallery
+        : product.image_url
+          ? [product.image_url]
+          : [],
       status: product.status === "published" ? "published" : "draft",
       featured: product.featured,
       isNew: product.is_new,
@@ -944,14 +608,14 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
   const trend = mockTrend;
 
   return {
-    categories: categories.length ? categories : mockCategories,
-    products: products.length ? products : mockProducts,
-    customers: customers.length ? customers : mockCustomers,
-    orders: orders.length ? orders : mockOrders,
-    expenses: expenses.length ? expenses : mockExpenses,
-    coupons: coupons.length ? coupons : mockCoupons,
-    aiGenerations: aiGenerations.length ? aiGenerations : mockAiGenerations,
-    whatsappLogs: whatsappLogs.length ? whatsappLogs : mockWhatsAppLogs,
+    categories,
+    products,
+    customers,
+    orders,
+    expenses,
+    coupons,
+    aiGenerations,
+    whatsappLogs,
     testimonials: mockTestimonials,
     trend,
     settings: {
@@ -973,6 +637,40 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
   };
 }
 
+export type StoreCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  image: string;
+};
+
+/** Storefront categories from the DB (used by the homepage "Browse by category"). */
+export async function getCategories(): Promise<StoreCategory[]> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id, name, slug, image_url")
+    .order("name");
+
+  if (error || !data) return [];
+
+  return (
+    data as {
+      id: string;
+      name: string;
+      slug: string;
+      image_url: string | null;
+    }[]
+  ).map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    image: c.image_url ?? "",
+  }));
+}
+
 export async function getCatalogData(): Promise<CatalogData> {
   const supabaseData = await readSupabaseCatalog();
 
@@ -980,15 +678,18 @@ export async function getCatalogData(): Promise<CatalogData> {
     return supabaseData;
   }
 
+  // Supabase is not configured — return an empty catalog (never static/mock
+  // entities). testimonials/trend have no DB table and stay as presentational
+  // defaults; settings falls back to its default banner/theme.
   return {
-    categories: mockCategories,
-    products: mockProducts,
-    customers: mockCustomers,
-    orders: mockOrders,
-    expenses: mockExpenses,
-    coupons: mockCoupons,
-    aiGenerations: mockAiGenerations,
-    whatsappLogs: mockWhatsAppLogs,
+    categories: [],
+    products: [],
+    customers: [],
+    orders: [],
+    expenses: [],
+    coupons: [],
+    aiGenerations: [],
+    whatsappLogs: [],
     testimonials: mockTestimonials,
     trend: mockTrend,
     settings: mockSettings,

@@ -5,48 +5,22 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 
-type Category = {
+type StoreCategory = {
+  id: string;
   name: string;
+  slug: string;
   image: string;
-  accent: string;
 };
 
-const categories: Category[] = [
-  {
-    name: "Educational Toys",
-    image: "https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80",
-    accent: "var(--brand)",
-  },
-  {
-    name: "Building Sets",
-    image: "https://images.unsplash.com/photo-1587654780291-39c9404d746b?auto=format&fit=crop&w=900&q=80",
-    accent: "var(--brand-2)",
-  },
-  {
-    name: "RC Toys",
-    image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=900&q=80",
-    accent: "var(--brand-3)",
-  },
-  {
-    name: "Creative Play",
-    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80",
-    accent: "var(--brand)",
-  },
-  {
-    name: "Outdoor Fun",
-    image: "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80",
-    accent: "var(--brand-2)",
-  },
-  {
-    name: "Board Games",
-    image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?auto=format&fit=crop&w=900&q=80",
-    accent: "var(--brand-3)",
-  },
-];
+const ACCENTS = ["var(--brand)", "var(--brand-2)", "var(--brand-3)"];
 
-export function BrowseCategory() {
+export function BrowseCategory({ categories }: { categories: StoreCategory[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
+
+  // Only categories that have a cover image render in this visual section.
+  const items = categories.filter((category) => category.image);
+  if (items.length === 0) return null;
 
   const onScroll = () => {
     const track = trackRef.current;
@@ -88,36 +62,42 @@ export function BrowseCategory() {
           onScroll={onScroll}
           className="mt-10 flex gap-5 overflow-x-auto scroll-smooth pb-2 scrollbar-none [&::-webkit-scrollbar]:hidden"
         >
-          {categories.map((category, index) => (
-            <motion.div
-              key={category.name}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-              className="w-[60%] shrink-0 sm:w-[38%] lg:w-[calc((100%-5rem)/5)]"
-            >
-              <Link href="/shop" className="group block">
-                <div className="relative aspect-3/4 overflow-hidden rounded-2xl border border-white/[0.07]">
-                  <div className="absolute inset-0 z-10 bg-linear-to-t from-surface/70 via-transparent to-transparent" />
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    fill
-                    sizes="(max-width: 640px) 60vw, (max-width: 1024px) 38vw, 20vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <span
-                    className="absolute left-3 top-3 z-20 size-2 rounded-full"
-                    style={{ background: category.accent, boxShadow: `0 0 10px ${category.accent}` }}
-                  />
-                </div>
-                <p className="mt-3 text-sm font-bold text-white/80 transition-colors group-hover:text-white">
-                  {category.name}
-                </p>
-              </Link>
-            </motion.div>
-          ))}
+          {items.map((category, index) => {
+            const accent = ACCENTS[index % ACCENTS.length];
+            return (
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.5, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                className="w-[60%] shrink-0 sm:w-[38%] lg:w-[calc((100%-5rem)/5)]"
+              >
+                <Link
+                  href={`/shop?category=${encodeURIComponent(category.name)}`}
+                  className="group block"
+                >
+                  <div className="relative aspect-3/4 overflow-hidden rounded-2xl border border-white/[0.07]">
+                    <div className="absolute inset-0 z-10 bg-linear-to-t from-surface/70 via-transparent to-transparent" />
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      sizes="(max-width: 640px) 60vw, (max-width: 1024px) 38vw, 20vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <span
+                      className="absolute left-3 top-3 z-20 size-2 rounded-full"
+                      style={{ background: accent, boxShadow: `0 0 10px ${accent}` }}
+                    />
+                  </div>
+                  <p className="mt-3 text-sm font-bold text-white/80 transition-colors group-hover:text-white">
+                    {category.name}
+                  </p>
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Progress bar */}

@@ -19,6 +19,7 @@ import { NewNotable } from "@/app/_components/new-notable";
 import { BrowseCategory } from "@/app/_components/browse-category";
 import { ReviewsCarousel } from "@/app/_components/reviews-carousel";
 import { StoreShell } from "@/components/ecommerce/store-shell";
+import { getCategories } from "@/lib/ecommerce-data";
 
 export const metadata: Metadata = {
   // Absolute title so the homepage doesn't get the "| ToyVerse" template suffix.
@@ -106,7 +107,9 @@ const structuredData = {
   ],
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const categories = await getCategories();
+
   return (
     <StoreShell cartCount={2}>
       <script
@@ -219,7 +222,7 @@ export default function HomePage() {
         {/* ══════════════════════════════════════
             CATEGORIES
         ══════════════════════════════════════ */}
-        <BrowseCategory />
+        <BrowseCategory categories={categories} />
 
         {/* ══════════════════════════════════════
             TRUST

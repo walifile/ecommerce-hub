@@ -20,6 +20,7 @@ export const productSchema = z.object({
   stockQuantity: z.string().trim(),
   lowStockLimit: z.string().trim(),
   imageUrl: z.string().trim(),
+  gallery: z.string(),
   shortDescription: z.string().trim(),
   description: z.string(),
   specifications: z.string(),
@@ -29,6 +30,16 @@ export const productSchema = z.object({
 });
 
 export type ProductFormInput = z.infer<typeof productSchema>;
+
+// ── Category ──────────────────────────────────────────────────────────
+export const categorySchema = z.object({
+  name: z.string().trim().min(1, "Category name is required"),
+  slug: z.string().trim(),
+  description: z.string().trim(),
+  imageUrl: z.string().trim(),
+});
+
+export type CategoryFormInput = z.infer<typeof categorySchema>;
 
 // ── Expense ───────────────────────────────────────────────────────────
 export const expenseSchema = z.object({

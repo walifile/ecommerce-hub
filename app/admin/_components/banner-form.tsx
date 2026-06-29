@@ -2,12 +2,13 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Megaphone } from "lucide-react";
 import { toast } from "sonner";
 import { saveBannerAction } from "@/app/actions/banner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +22,7 @@ export function BannerForm({ banner }: { banner: StoreBanner }) {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<BannerFormInput>({
     resolver: zodResolver(bannerSchema),
@@ -69,11 +71,17 @@ export function BannerForm({ banner }: { banner: StoreBanner }) {
             </p>
           </div>
         </div>
-        <input
-          id="announcementEnabled"
-          type="checkbox"
-          className="mt-1 size-5 rounded border-border accent-primary"
-          {...register("announcementEnabled")}
+        <Controller
+          control={control}
+          name="announcementEnabled"
+          render={({ field }) => (
+            <Checkbox
+              id="announcementEnabled"
+              className="mt-1 size-5"
+              checked={field.value}
+              onCheckedChange={(checked) => field.onChange(checked === true)}
+            />
+          )}
         />
       </div>
 

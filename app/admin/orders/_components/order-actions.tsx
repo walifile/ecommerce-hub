@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { updateOrderStatusAction } from "@/app/admin/actions";
+import { updateOrderStatusAction } from "@/app/admin/orders/actions";
 import { cn } from "@/lib/utils";
 
 const STATUSES = [
