@@ -19,7 +19,7 @@ import { NewNotable } from "@/app/_components/new-notable";
 import { BrowseCategory } from "@/app/_components/browse-category";
 import { ReviewsCarousel } from "@/app/_components/reviews-carousel";
 import { StoreShell } from "@/components/ecommerce/store-shell";
-import { getCategories } from "@/lib/ecommerce-data";
+import { getCatalogData } from "@/lib/ecommerce-data";
 
 export const metadata: Metadata = {
   // Absolute title so the homepage doesn't get the "| ToyVerse" template suffix.
@@ -108,7 +108,8 @@ const structuredData = {
 };
 
 export default async function HomePage() {
-  const categories = await getCategories();
+  const catalog = await getCatalogData();
+  const categories = catalog.categories;
 
   return (
     <StoreShell cartCount={2}>
@@ -217,7 +218,7 @@ export default async function HomePage() {
         {/* ══════════════════════════════════════
             NEW & NOTABLE
         ══════════════════════════════════════ */}
-        <NewNotable />
+        <NewNotable products={catalog.products} />
 
         {/* ══════════════════════════════════════
             CATEGORIES

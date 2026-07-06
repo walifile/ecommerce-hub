@@ -231,6 +231,15 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+[data-admin-theme] {
+  --primary: var(--brand);
+  --primary-foreground: #ffffff;
+  --ring: color-mix(in srgb, var(--brand) 45%, transparent);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-ring: color-mix(in srgb, var(--brand) 45%, transparent);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

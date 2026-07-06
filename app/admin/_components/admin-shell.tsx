@@ -84,8 +84,8 @@ function AdminNav({
         const itemClass = cn(
           "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
           active
-            ? "bg-linear-to-r from-[#f97316] to-[#ea580c] text-white shadow-[0_6px_16px_-4px_rgba(249,115,22,0.45)]"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            ? "bg-linear-to-r from-brand to-brand-strong text-white shadow-[0_6px_16px_-4px_color-mix(in_srgb,var(--brand)_45%,transparent)]"
+            : "text-muted-foreground hover:bg-brand/10 hover:text-foreground"
         );
 
         if (mobile) {
@@ -131,17 +131,17 @@ export function AdminShell({
   );
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div data-admin-theme className="relative min-h-screen bg-background text-foreground">
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-x-0 top-0 h-72 bg-linear-to-b from-[#f97316]/[0.05] via-[#f97316]/[0.015] to-transparent"
+        className="pointer-events-none fixed inset-x-0 top-0 h-72 bg-linear-to-b from-brand/8 via-brand/3 to-transparent"
       />
       <div className="relative flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-[290px] shrink-0 border-r border-border/70 bg-card/80 px-4 py-5 backdrop-blur-xl lg:flex lg:flex-col">
           <div className="flex-1 min-h-0 space-y-4 overflow-y-auto">
             <div className="flex items-center justify-between gap-3 rounded-3xl border border-border/70 bg-background/80 px-4 py-4 shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-2xl bg-linear-to-br from-[#f97316] to-[#ea580c] text-white shadow-[0_0_18px_rgba(249,115,22,0.18)]">
+                <div className="flex size-10 items-center justify-center rounded-2xl bg-linear-to-br from-brand to-brand-strong text-white shadow-[0_0_18px_color-mix(in_srgb,var(--brand)_28%,transparent)]">
                   <LayoutGrid className="size-5" />
                 </div>
                 <div>
@@ -187,7 +187,7 @@ export function AdminShell({
           >
             <div className="space-y-4 p-4 pt-8">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-2xl bg-linear-to-br from-[#f97316] to-[#ea580c] text-white">
+                <div className="flex size-10 items-center justify-center rounded-2xl bg-linear-to-br from-brand to-brand-strong text-white">
                   <LayoutGrid className="size-5" />
                 </div>
                 <div>
@@ -261,7 +261,7 @@ export function AdminShell({
           <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
             <div className="mb-6 space-y-2.5">
               <div className="flex items-center gap-2">
-                <span className="h-4 w-1 rounded-full bg-linear-to-b from-[#f97316] to-[#ea580c]" />
+                <span className="h-4 w-1 rounded-full bg-linear-to-b from-brand to-brand-strong" />
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Admin Dashboard
                 </p>

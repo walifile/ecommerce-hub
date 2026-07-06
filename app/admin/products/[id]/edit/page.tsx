@@ -1,21 +1,40 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/database.types";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { ProductForm } from "@/app/admin/products/_components/product-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getCatalogData } from "@/lib/ecommerce-data";
 
 export default async function EditProductPage(
   props: { params: Promise<{ id: string }> }
 ) {
   const { id } = await props.params;
-  const catalog = await getCatalogData();
-  const product = catalog.products.find((p) => p.id === id);
+  const supabase = getSupabaseServerClient();
+  if (!supabase) notFound();
 
-  if (!product) notFound();
+  const [productResult, imagesResult, categoriesResult] = await Promise.all([
+    supabase.from("products").select("*").eq("id", id).maybeSingle(),
+    supabase.from("product_images").select("image_url").eq("product_id", id).order("sort_order"),
+    supabase.from("categories").select("id, name").order("name"),
+  ]);
 
-  const categoryNames = catalog.categories.map((c) => c.name);
+  type ProductRow = Database["public"]["Tables"]["products"]["Row"];
+  const row = productResult.data as ProductRow | null;
+  if (!row) notFound();
+
+  type ImageRow = Database["public"]["Tables"]["product_images"]["Row"];
+  const gallery = ((imagesResult.data ?? []) as ImageRow[]).map((r) => r.image_url);
+  const categories = (categoriesResult.data ?? []) as { id: string; name: string }[];
+
+  // Resolve category name from category_id
+  const categoryName =
+    categories.find((c) => c.id === row.category_id)?.name ?? "Uncategorized";
+
+  const specifications: string[] = Array.isArray(row.specifications)
+    ? (row.specifications as unknown[]).map(String)
+    : [];
 
   return (
     <AdminShell
@@ -32,28 +51,28 @@ export default async function EditProductPage(
 
       <Card className="rounded-xl border-border/70 py-0">
         <CardHeader>
-          <CardTitle>Edit “{product.name}”</CardTitle>
+          <CardTitle>Edit &ldquo;{row.name}&rdquo;</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <ProductForm
-            categories={categoryNames}
+            categories={categories.map((c) => c.name)}
             product={{
-              id: product.id,
-              name: product.name,
-              slug: product.slug,
-              sku: product.sku,
-              category: product.category,
-              costPrice: product.costPrice,
-              price: product.price,
-              comparePrice: product.comparePrice,
-              stockQuantity: product.stockQuantity,
-              lowStockLimit: product.lowStockLimit,
-              image: product.image,
-              gallery: product.gallery,
-              shortDescription: product.shortDescription,
-              description: product.description,
-              specifications: product.specifications,
-              status: product.status,
+              id: row.id,
+              name: row.name,
+              slug: row.slug,
+              sku: row.sku,
+              category: categoryName,
+              costPrice: Number(row.cost_price),
+              price: Number(row.selling_price),
+              comparePrice: row.compare_price ? Number(row.compare_price) : undefined,
+              stockQuantity: row.stock_quantity,
+              lowStockLimit: row.low_stock_limit,
+              image: row.image_url ?? "",
+              gallery,
+              shortDescription: row.short_description ?? "",
+              description: row.description ?? "",
+              specifications,
+              status: row.status === "published" ? "published" : "draft",
             }}
           />
         </CardContent>

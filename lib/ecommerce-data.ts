@@ -73,6 +73,7 @@ export type OrderEvent = {
 
 export type Order = {
   id: string;
+  customerId?: string;
   orderNumber: string;
   customerName: string;
   customerPhone: string;
@@ -499,6 +500,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
 
     return {
       id: order.id,
+      customerId: order.customer_id ?? undefined,
       orderNumber: order.order_number,
       customerName: customer?.name ?? "Guest customer",
       customerPhone: customer?.phone ?? "",
@@ -779,6 +781,32 @@ export async function getOrderById(id?: string) {
 
   const { orders } = await getCatalogData();
   return orders.find((order) => order.id === id) ?? null;
+}
+
+export async function getCustomerById(id?: string) {
+  if (!id) {
+    return null;
+  }
+
+  const { customers, orders } = await getCatalogData();
+  const customer = customers.find((item) => item.id === id);
+
+  if (!customer) {
+    return null;
+  }
+
+  const customerOrders = orders.filter(
+    (order) =>
+      order.customerId === customer.id ||
+      (!order.customerId &&
+        (order.customerPhone === customer.phone ||
+          order.customerEmail === customer.email))
+  );
+
+  return {
+    customer,
+    orders: customerOrders,
+  };
 }
 
 export async function getDashboardData() {

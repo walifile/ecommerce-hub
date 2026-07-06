@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { FormRow, FormSection } from "@/app/admin/_components/form-row";
 import { ImageInput } from "@/app/admin/_components/image-input";
-import { UploadButton } from "@/app/admin/_components/upload-button";
+import { GalleryInput } from "@/app/admin/_components/gallery-input";
 import { generateProductContentAction } from "@/app/admin/ai/actions";
 import {
   createProductAction,
@@ -223,25 +223,19 @@ export function ProductForm({
         <FormRow
           label="Gallery images"
           htmlFor="gallery"
-          hint="Extra photos (different angles), one URL per line — or upload to add."
+          hint="Upload multiple photos. Hover a thumbnail to remove or replace it."
         >
-          <div className="space-y-2">
-            <Textarea
-              id="gallery"
-              placeholder={"https://…/front.jpg\nhttps://…/side.jpg"}
-              className="min-h-20"
-              {...register("gallery")}
-            />
-            <UploadButton
-              label="Upload &amp; add image"
-              onUploaded={(url) => {
-                const current = getValues("gallery").trim();
-                setValue("gallery", current ? `${current}\n${url}` : url, {
-                  shouldDirty: true,
-                });
-              }}
-            />
-          </div>
+          <Controller
+            control={control}
+            name="gallery"
+            render={({ field }) => (
+              <GalleryInput
+                value={field.value}
+                onChange={field.onChange}
+                folder="products"
+              />
+            )}
+          />
         </FormRow>
         <FormRow label="Short description" htmlFor="shortDescription">
           <Input id="shortDescription" placeholder="One-line tagline" {...register("shortDescription")} />

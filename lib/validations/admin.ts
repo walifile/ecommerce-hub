@@ -98,3 +98,26 @@ export const themeSchema = z.object({
 });
 
 export type ThemeFormInput = z.infer<typeof themeSchema>;
+
+// Admin security
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Enter your current password"),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters")
+      .regex(/[A-Z]/, "Add at least one uppercase letter")
+      .regex(/[a-z]/, "Add at least one lowercase letter")
+      .regex(/[0-9]/, "Add at least one number"),
+    confirmPassword: z.string().min(1, "Confirm your new password"),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  })
+  .refine((d) => d.currentPassword !== d.newPassword, {
+    path: ["newPassword"],
+    message: "New password must be different from the current password",
+  });
+
+export type ChangePasswordFormInput = z.infer<typeof changePasswordSchema>;

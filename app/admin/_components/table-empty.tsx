@@ -12,7 +12,7 @@ export function TableEmpty({
     <TableRow className="hover:bg-transparent">
       <TableCell
         colSpan={colSpan}
-        className="py-14 text-center text-sm text-muted-foreground"
+        className="py-8 text-center text-sm text-muted-foreground"
       >
         {message}
       </TableCell>
