@@ -62,6 +62,17 @@ Open `http://localhost:3000`.
 
 Use the values in `.env.example` as the baseline. The app expects Supabase keys for live data and auth flows.
 
+For Stripe payments, set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and
+`STRIPE_CURRENCY`. Point the Stripe webhook endpoint to:
+
+```text
+/api/stripe/webhook
+```
+
+For WhatsApp order notifications, set `WHATSAPP_ACCESS_TOKEN`,
+`WHATSAPP_PHONE_NUMBER_ID`, and optionally `WHATSAPP_DEFAULT_COUNTRY_CODE` for
+local phone numbers.
+
 ## Phase 1 Notes
 
 The current codebase is structured to keep public storefront pages, admin surfaces, and shared ecommerce data in one app. The next Phase 1 work should continue inside the existing routes and shared components rather than introducing a second shell.

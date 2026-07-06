@@ -34,7 +34,11 @@ const supportItems = [
 export default async function TrackOrderPage(props: PageProps<"/track-order">) {
   const search = await props.searchParams;
   const orderNumber =
-    typeof search.orderNumber === "string" ? search.orderNumber : "";
+    typeof search.orderNumber === "string"
+      ? search.orderNumber
+      : typeof search.order === "string"
+        ? search.order
+        : "";
   const order = await getOrderByNumber(orderNumber);
 
   return (

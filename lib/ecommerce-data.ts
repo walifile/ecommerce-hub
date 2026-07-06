@@ -89,6 +89,10 @@ export type Order = {
     | "cancelled"
     | "returned";
   paymentMethod: "cod" | "stripe";
+  paymentStatus?: string;
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
+  paidAt?: string;
   shippingCost: number;
   adCost: number;
   discount: number;
@@ -174,6 +178,11 @@ export type StoreBanner = Pick<
   | "announcementMessage"
   | "announcementLinkText"
   | "announcementLinkHref"
+>;
+
+export type StoreDetails = Pick<
+  StoreSettings,
+  "storeName" | "supportEmail" | "supportPhone" | "heroTitle" | "heroSubtitle"
 >;
 
 export type CatalogData = {
@@ -353,6 +362,46 @@ export async function updateStoreBanner(input: StoreBanner): Promise<{
   return { ok: true };
 }
 
+export async function updateStoreDetails(input: StoreDetails): Promise<{
+  ok: boolean;
+  error?: string;
+}> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) {
+    return { ok: false, error: "Supabase is not configured." };
+  }
+
+  const payload = {
+    store_name: input.storeName,
+    support_email: input.supportEmail || null,
+    support_phone: input.supportPhone || null,
+    hero_title: input.heroTitle,
+    hero_subtitle: input.heroSubtitle,
+  };
+
+  const { data: existing } = await supabase
+    .from("settings")
+    .select("id")
+    .limit(1)
+    .maybeSingle();
+
+  const existingId = (existing as { id?: string } | null)?.id;
+
+  const { error } = existingId
+    ? await supabase
+        .from("settings")
+        .update(payload as never)
+        .eq("id", existingId)
+    : await supabase.from("settings").insert(payload as never);
+
+  if (error) {
+    console.error("[settings] store details update failed:", error.message);
+    return { ok: false, error: error.message };
+  }
+
+  return { ok: true };
+}
+
 function calculateOrderProfit(order: Order) {
   const productCost = order.items.reduce(
     (sum, item) => sum + item.productCost * item.quantity,
@@ -497,6 +546,12 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
   const orders = ordersRows.map((order) => {
     const customer = customers.find((item) => item.id === order.customer_id);
     const orderItems = order.order_items ?? [];
+    const stripeFields = order as typeof order & {
+      payment_status?: string | null;
+      stripe_session_id?: string | null;
+      stripe_payment_intent_id?: string | null;
+      paid_at?: string | null;
+    };
 
     return {
       id: order.id,
@@ -509,6 +564,10 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       customerCity: customer?.city ?? "",
       status: (order.status as Order["status"]) ?? "pending",
       paymentMethod: order.payment_method === "stripe" ? "stripe" : "cod",
+      paymentStatus: stripeFields.payment_status ?? undefined,
+      stripeSessionId: stripeFields.stripe_session_id ?? undefined,
+      stripePaymentIntentId: stripeFields.stripe_payment_intent_id ?? undefined,
+      paidAt: stripeFields.paid_at ?? undefined,
       shippingCost: Number(order.shipping_cost),
       adCost: Number(order.ad_cost),
       discount: Number(order.discount_amount),

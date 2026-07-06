@@ -110,6 +110,9 @@ const structuredData = {
 export default async function HomePage() {
   const catalog = await getCatalogData();
   const categories = catalog.categories;
+  const heroWords = catalog.settings.heroTitle.trim().split(/\s+/);
+  const heroPrefix = heroWords.slice(0, -2).join(" ") || catalog.settings.storeName;
+  const heroHighlight = heroWords.slice(-2).join(" ") || "Spark Joy.";
 
   return (
     <StoreShell cartCount={2}>
@@ -155,16 +158,14 @@ export default async function HomePage() {
 
               <div className="space-y-3">
                 <h1 className="text-5xl font-black leading-[1.05] tracking-tight text-white sm:text-6xl lg:text-7xl">
-                  Toys That
+                  {heroPrefix}
                   <br />
                   <span className="bg-linear-to-r from-brand via-brand-light to-brand-2 bg-clip-text text-transparent">
-                    Spark Joy.
+                    {heroHighlight}
                   </span>
                 </h1>
                 <p className="max-w-lg text-base leading-8 text-white/45 sm:text-lg">
-                  Premium toys for curious kids — picked for learning, movement,
-                  and joyful everyday play. Fast shipping, clean checkout, and
-                  parent-friendly quality.
+                  {catalog.settings.heroSubtitle}
                 </p>
               </div>
 

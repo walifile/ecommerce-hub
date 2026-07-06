@@ -18,6 +18,22 @@ export type OrderNotifyInput = {
   templateKey: OrderTemplateKey;
 };
 
+function normalizePhone(value: string | null) {
+  const raw = (value ?? "").trim();
+  if (!raw) return "";
+  const digits = raw.replace(/[^\d]/g, "");
+  if (raw.startsWith("+")) return digits;
+  if (digits.startsWith("00")) return digits.slice(2);
+
+  const defaultCountryCode = (process.env.WHATSAPP_DEFAULT_COUNTRY_CODE ?? "")
+    .replace(/[^\d]/g, "");
+  if (defaultCountryCode && !digits.startsWith(defaultCountryCode)) {
+    return `${defaultCountryCode}${digits.replace(/^0+/, "")}`;
+  }
+
+  return digits;
+}
+
 function money(value: number) {
   return `$${Number(value).toFixed(0)}`;
 }
@@ -72,14 +88,15 @@ export async function notifyOrder(input: OrderNotifyInput): Promise<void> {
   const message = TEMPLATES[input.templateKey](input);
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  const digits = (input.phone ?? "").replace(/[^\d]/g, "");
+  const apiVersion = process.env.WHATSAPP_API_VERSION || "v21.0";
+  const digits = normalizePhone(input.phone);
 
   let status: "sent" | "failed" | "simulated" = "simulated";
 
   if (token && phoneNumberId && digits) {
     try {
       const res = await fetch(
-        `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`,
+        `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`,
         {
           method: "POST",
           headers: {

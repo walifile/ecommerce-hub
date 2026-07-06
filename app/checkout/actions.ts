@@ -2,12 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getAppUrl, getStripe } from "@/lib/stripe";
 import { notifyOrder } from "@/lib/whatsapp";
 
 export type CheckoutState = {
   status: "idle" | "success" | "error";
   message: string;
   orderNumber?: string;
+  checkoutUrl?: string;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -240,6 +242,7 @@ export async function createOrderAction(
       ad_cost: 0,
       discount_amount: discount,
       coupon_code: appliedCouponCode,
+      payment_status: payment === "stripe" ? "unpaid" : "cod",
       revenue: Math.max(0, subtotal - discount),
       total,
       notes,
@@ -265,28 +268,110 @@ export async function createOrderAction(
     console.error("[checkout] order_items insert failed:", itemsError.message);
   }
 
-  for (const item of orderItems) {
-    const nextStock = Math.max(0, item.stock_quantity - item.quantity);
-    const { error: stockError } = await supabase
-      .from("products")
-      .update({ stock_quantity: nextStock } as never)
-      .eq("id", item.product_id)
-      .eq("stock_quantity", item.stock_quantity);
+  if (payment === "cod") {
+    for (const item of orderItems) {
+      const nextStock = Math.max(0, item.stock_quantity - item.quantity);
+      const { error: stockError } = await supabase
+        .from("products")
+        .update({ stock_quantity: nextStock } as never)
+        .eq("id", item.product_id)
+        .eq("stock_quantity", item.stock_quantity);
 
-    if (stockError) {
-      console.error("[checkout] stock update failed:", stockError.message, item.product_id);
+      if (stockError) {
+        console.error("[checkout] stock update failed:", stockError.message, item.product_id);
+      }
+    }
+
+    if (appliedCouponId) {
+      const { error: couponUpdateError } = await supabase
+        .from("coupons")
+        .update({ used_count: appliedCouponNextUsedCount ?? 1 } as never)
+        .eq("id", appliedCouponId);
+
+      if (couponUpdateError) {
+        console.error("[checkout] coupon usage update failed:", couponUpdateError.message);
+      }
     }
   }
 
-  if (appliedCouponId) {
-    const { error: couponUpdateError } = await supabase
-      .from("coupons")
-      .update({ used_count: appliedCouponNextUsedCount ?? 1 } as never)
-      .eq("id", appliedCouponId);
-
-    if (couponUpdateError) {
-      console.error("[checkout] coupon usage update failed:", couponUpdateError.message);
+  if (payment === "stripe") {
+    const stripe = getStripe();
+    if (!stripe) {
+      return {
+        status: "error",
+        message: "Stripe is not configured. Add STRIPE_SECRET_KEY to the server environment.",
+      };
     }
+
+    const appUrl = getAppUrl();
+    const currency = process.env.STRIPE_CURRENCY || "usd";
+    const stripeDiscount =
+      discount > 0
+        ? await stripe.coupons.create({
+            amount_off: Math.round(discount * 100),
+            currency,
+            duration: "once",
+            name: appliedCouponCode ? `ToyVerse ${appliedCouponCode}` : "ToyVerse discount",
+          })
+        : null;
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: email || undefined,
+      client_reference_id: order.id,
+      metadata: {
+        orderId: order.id,
+        orderNumber,
+      },
+      line_items: [
+        ...orderItems.map((item) => ({
+          quantity: item.quantity,
+          price_data: {
+            currency: process.env.STRIPE_CURRENCY || "usd",
+            product_data: {
+              name: item.product_name,
+            },
+            unit_amount: Math.round(item.unit_price * 100),
+          },
+        })),
+        ...(shipping > 0
+          ? [
+              {
+                quantity: 1,
+                price_data: {
+                  currency,
+                  product_data: { name: "Shipping" },
+                  unit_amount: Math.round(shipping * 100),
+                },
+              },
+            ]
+          : []),
+      ],
+      discounts: stripeDiscount ? [{ coupon: stripeDiscount.id }] : undefined,
+      success_url: `${appUrl}/track-order?orderNumber=${encodeURIComponent(orderNumber)}&payment=success`,
+      cancel_url: `${appUrl}/checkout?payment=cancelled`,
+    });
+
+    await supabase
+      .from("orders")
+      .update({ stripe_session_id: session.id } as never)
+      .eq("id", order.id);
+
+    revalidatePath("/admin/orders");
+    revalidatePath("/admin");
+
+    if (!session.url) {
+      return {
+        status: "error",
+        message: "Stripe did not return a checkout URL. Please try again.",
+      };
+    }
+
+    return {
+      status: "success",
+      message: "Redirecting to Stripe checkout...",
+      orderNumber,
+      checkoutUrl: session.url,
+    };
   }
 
   revalidatePath("/admin/orders");

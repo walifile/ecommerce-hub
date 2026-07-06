@@ -27,11 +27,16 @@ export function CheckoutClient() {
   const router = useRouter();
 
   useEffect(() => {
-    if (state.status === "success" && state.orderNumber) {
+    if (state.status === "success" && state.checkoutUrl) {
       toast.success(state.message);
       clear();
       clearCoupon();
-      router.push(`/track-order?order=${state.orderNumber}`);
+      window.location.assign(state.checkoutUrl);
+    } else if (state.status === "success" && state.orderNumber) {
+      toast.success(state.message);
+      clear();
+      clearCoupon();
+      router.push(`/track-order?orderNumber=${state.orderNumber}`);
     } else if (state.status === "error") {
       toast.error(state.message);
     }
@@ -112,7 +117,7 @@ export function CheckoutClient() {
             <Label htmlFor="payment" className="text-white/70">Payment method</Label>
             <NativeSelect id="payment" name="payment" className="w-full border-white/10 bg-black/30 text-white">
               <NativeSelectOption value="cod">Cash on Delivery</NativeSelectOption>
-              <NativeSelectOption value="stripe">Stripe (Optional)</NativeSelectOption>
+              <NativeSelectOption value="stripe">Stripe card payment</NativeSelectOption>
             </NativeSelect>
           </div>
           <div className="space-y-2 sm:col-span-2">

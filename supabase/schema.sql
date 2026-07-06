@@ -80,6 +80,10 @@ alter table public.orders add column if not exists reversal_reason text;
 alter table public.orders add column if not exists refund_amount numeric(12, 2);
 alter table public.orders add column if not exists reversal_note text;
 alter table public.orders add column if not exists reversed_at timestamptz;
+alter table public.orders add column if not exists payment_status text not null default 'unpaid';
+alter table public.orders add column if not exists stripe_session_id text;
+alter table public.orders add column if not exists stripe_payment_intent_id text;
+alter table public.orders add column if not exists paid_at timestamptz;
 
 create table if not exists public.order_items (
   id uuid primary key default gen_random_uuid(),

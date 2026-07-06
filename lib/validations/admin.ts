@@ -99,6 +99,21 @@ export const themeSchema = z.object({
 
 export type ThemeFormInput = z.infer<typeof themeSchema>;
 
+// Store settings
+export const storeDetailsSchema = z.object({
+  storeName: z.string().trim().min(1, "Store name is required"),
+  supportEmail: z
+    .string()
+    .trim()
+    .email("Enter a valid support email")
+    .or(z.literal("")),
+  supportPhone: z.string().trim(),
+  heroTitle: z.string().trim().min(1, "Hero title is required"),
+  heroSubtitle: z.string().trim().min(1, "Hero subtitle is required"),
+});
+
+export type StoreDetailsFormInput = z.infer<typeof storeDetailsSchema>;
+
 // Admin security
 export const changePasswordSchema = z
   .object({
