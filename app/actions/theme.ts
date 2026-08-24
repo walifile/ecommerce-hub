@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { updateStoreTheme } from "@/lib/ecommerce-data";
 import { resolveTheme } from "@/lib/themes";
+import { requireAdmin } from "@/lib/auth";
 
 export type ThemeActionState = {
   status: "idle" | "success" | "error";
@@ -13,6 +14,7 @@ export async function saveThemeAction(
   _prevState: ThemeActionState,
   formData: FormData
 ): Promise<ThemeActionState> {
+  await requireAdmin();
   const theme = resolveTheme(formData.get("theme"));
   const result = await updateStoreTheme(theme);
 

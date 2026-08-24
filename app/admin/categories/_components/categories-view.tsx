@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   FolderTree,
@@ -188,13 +188,13 @@ export function CategoriesView({
   const filterProducts = searchParams.get("filterProducts") ?? "all";
   const view = (searchParams.get("view") ?? "table") as "grid" | "table";
 
-  const DEFAULTS: Record<string, string> = {
+  const DEFAULTS = useMemo<Record<string, string>>(() => ({
     sort: "name-asc",
     filterImage: "all",
     filterProducts: "all",
     pageSize: "16",
     view: "table",
-  };
+  }), []);
 
   const update = useCallback(
     (updates: Record<string, string>, resetPage = true) => {
@@ -210,7 +210,7 @@ export function CategoriesView({
       const qs = params.toString();
       router.replace(qs ? `?${qs}` : "?");
     },
-    [searchParams, router]
+    [searchParams, router, DEFAULTS]
   );
 
   const hasActiveFilters =

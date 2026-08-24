@@ -108,6 +108,10 @@ export type Database = {
           refund_amount: number | null;
           order_number: string;
           payment_method: string;
+          payment_status: string;
+          stripe_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          paid_at: string | null;
           revenue: number;
           reversal_note: string | null;
           reversal_reason: string | null;
@@ -115,6 +119,7 @@ export type Database = {
           shipping_cost: number;
           status: string;
           total: number;
+          tracking_token: string;
         };
       };
       product_images: {
@@ -123,6 +128,19 @@ export type Database = {
           image_url: string;
           product_id: string;
           sort_order: number;
+        };
+      };
+      product_reviews: {
+        Row: {
+          id: string;
+          product_id: string;
+          reviewer_name: string;
+          reviewer_email: string | null;
+          rating: number;
+          title: string | null;
+          body: string;
+          status: "pending" | "approved" | "rejected";
+          created_at: string;
         };
       };
       products: {
@@ -170,6 +188,8 @@ export type Database = {
           whatsapp_template_order_created: string | null;
           whatsapp_template_order_delivered: string | null;
           whatsapp_template_order_shipped: string | null;
+          shipping_flat_rate: number;
+          free_shipping_threshold: number;
         };
       };
       whatsapp_logs: {

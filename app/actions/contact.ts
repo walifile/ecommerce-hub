@@ -1,6 +1,7 @@
 "use server";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { readCompatJson, writeCompatJson } from "@/lib/compat-storage";
 
 export type ContactState = {
   status: "idle" | "success" | "error";
@@ -55,6 +56,29 @@ export async function sendContactMessage(
     );
 
   if (error) {
+    if (error.code === "PGRST205" || /contact_messages.*schema cache/i.test(error.message)) {
+      const path = "support/contact-messages.json";
+      const messages = await readCompatJson<Array<Record<string, unknown>>>(path, []);
+      const saved = await writeCompatJson(path, [
+        ...messages,
+        {
+          id: crypto.randomUUID(),
+          name,
+          email,
+          subject,
+          message,
+          orderNumber: orderNumber || null,
+          status: "new",
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      if (saved.ok) {
+        return {
+          status: "success",
+          message: "Message sent. We’ll get back to you as soon as possible.",
+        };
+      }
+    }
     console.error("[contact] insert failed:", {
       code: error.code,
       message: error.message,

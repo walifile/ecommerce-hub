@@ -12,10 +12,11 @@ export type AuthState = {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Only allow internal redirect targets. */
-function safeRedirect(value: FormDataEntryValue | null): string {
-  const path = String(value ?? "");
-  return path.startsWith("/") && !path.startsWith("//") ? path : "/account";
+/** Only allow internal redirect targets; null when none was explicitly requested. */
+function safeRedirect(value: FormDataEntryValue | null): string | null {
+  const path = String(value ?? "").trim();
+  if (!path) return null;
+  return path.startsWith("/") && !path.startsWith("//") ? path : null;
 }
 
 export async function signInAction(
@@ -34,13 +35,33 @@ export async function signInAction(
     return { status: "error", message: "Authentication is not configured." };
   }
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (error) {
     return { status: "error", message: error.message };
   }
 
   revalidatePath("/", "layout");
-  redirect(safeRedirect(formData.get("redirect")));
+
+  // Honor an explicit redirect (e.g. bounced here from /admin). Otherwise
+  // route by role: admins land on the dashboard, everyone else on /account.
+  const explicitRedirect = safeRedirect(formData.get("redirect"));
+  if (explicitRedirect) {
+    redirect(explicitRedirect);
+  }
+
+  let destination = "/account";
+  if (signInData.user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", signInData.user.id)
+      .maybeSingle<{ role: string }>();
+    if (profile?.role === "admin") destination = "/admin";
+  }
+  redirect(destination);
 }
 
 export async function signUpAction(

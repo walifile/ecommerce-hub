@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { updateStoreBanner } from "@/lib/ecommerce-data";
+import { requireAdmin } from "@/lib/auth";
 
 export type BannerActionState = {
   status: "idle" | "success" | "error";
@@ -16,6 +17,7 @@ export async function saveBannerAction(
   _prevState: BannerActionState,
   formData: FormData
 ): Promise<BannerActionState> {
+  await requireAdmin();
   const announcementEnabled = formData.get("announcementEnabled") === "on";
   const announcementMessage = cleanText(formData.get("announcementMessage"));
   const announcementLinkText = cleanText(formData.get("announcementLinkText"));

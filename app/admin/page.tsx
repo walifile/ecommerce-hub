@@ -30,8 +30,9 @@ import {
 import { formatCurrency, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-type Range = "7d" | "30d" | "90d" | "all";
+type Range = "1d" | "7d" | "30d" | "90d" | "all";
 const RANGES: { key: Range; label: string }[] = [
+  { key: "1d",  label: "Today"    },
   { key: "7d",  label: "7 days"   },
   { key: "30d", label: "30 days"  },
   { key: "90d", label: "90 days"  },
@@ -40,7 +41,7 @@ const RANGES: { key: Range; label: string }[] = [
 
 function getCutoff(range: Range): Date | null {
   if (range === "all") return null;
-  const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
+  const days = range === "1d" ? 1 : range === "7d" ? 7 : range === "30d" ? 30 : 90;
   const d = new Date();
   d.setDate(d.getDate() - days);
   d.setHours(0, 0, 0, 0);
@@ -56,8 +57,8 @@ function filterOrders(orders: Order[], range: Range): Order[] {
 function computeTrend(orders: Order[], range: Range): DashboardSeriesPoint[] {
   const now = new Date();
 
-  if (range === "7d" || range === "30d") {
-    const days = range === "7d" ? 7 : 30;
+  if (range === "1d" || range === "7d" || range === "30d") {
+    const days = range === "1d" ? 1 : range === "7d" ? 7 : 30;
     return Array.from({ length: days }, (_, i) => {
       const d = new Date(now);
       d.setDate(d.getDate() - (days - 1 - i));
@@ -65,7 +66,9 @@ function computeTrend(orders: Order[], range: Range): DashboardSeriesPoint[] {
       const dayOrders = orders.filter((o) => o.createdAt.slice(0, 10) === key);
       return {
         label:
-          range === "7d"
+          range === "1d"
+            ? "Today"
+            : range === "7d"
             ? d.toLocaleDateString("en-US", { weekday: "short" })
             : d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
         revenue: dayOrders.reduce((s, o) => s + o.revenue, 0),
@@ -99,7 +102,6 @@ function computeTrend(orders: Order[], range: Range): DashboardSeriesPoint[] {
   orders.forEach((o) => {
     const d = new Date(o.createdAt);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
     const entry = monthMap.get(key) ?? { revenue: 0, profit: 0, orders: 0, ts: d.getTime() };
     entry.revenue += o.revenue;
     entry.profit  += getOrderProfit(o);
@@ -130,18 +132,36 @@ function topProductsByRevenue(orders: Order[], limit = 5) {
     .map(([name, revenue]) => ({ name, revenue }));
 }
 
+function topProductsByUnits(orders: Order[], limit = 5) {
+  const map = new Map<string, number>();
+  orders.forEach((order) => order.items.forEach((item) =>
+    map.set(item.productName, (map.get(item.productName) ?? 0) + item.quantity)));
+  return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit)
+    .map(([name, value]) => ({ name, value }));
+}
+
+function topProductsByProfit(orders: Order[], limit = 5) {
+  const map = new Map<string, number>();
+  orders.forEach((order) => order.items.forEach((item) =>
+    map.set(item.productName, (map.get(item.productName) ?? 0) + (item.unitPrice - item.productCost) * item.quantity)));
+  return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit)
+    .map(([name, value]) => ({ name, value }));
+}
+
 export default async function AdminOverviewPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string>>;
 }) {
   const params  = await searchParams;
-  const range   = (["7d", "30d", "90d", "all"].includes(params.range) ? params.range : "30d") as Range;
+  const range   = (["1d", "7d", "30d", "90d", "all"].includes(params.range) ? params.range : "30d") as Range;
 
   const data           = await getCatalogData();
   const filtered       = filterOrders(data.orders, range);
   const trend          = computeTrend(filtered, range);
   const topProducts    = topProductsByRevenue(filtered);
+  const mostSold       = topProductsByUnits(filtered);
+  const highestProfit  = topProductsByProfit(filtered);
   const lowStock       = data.products.filter((p) => p.stockQuantity <= p.lowStockLimit);
 
   const totalRevenue   = filtered.reduce((s, o) => s + o.revenue, 0);
@@ -304,6 +324,25 @@ export default async function AdminOverviewPage({
         </div>
 
         {/* ── Low stock + Recent orders ── */}
+        <div className="grid gap-6 sm:grid-cols-2">
+          {[
+            { title: "Most sold products", rows: mostSold, format: (value: number) => `${value} units` },
+            { title: "Highest-profit products", rows: highestProfit, format: (value: number) => formatCurrency(value) },
+          ].map((group) => (
+            <Card key={group.title} className="rounded-xl border-border/70 py-0">
+              <CardHeader><CardTitle>{group.title}</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                {group.rows.length ? group.rows.map((row, index) => (
+                  <div key={row.name} className="flex items-center justify-between rounded-lg border border-border/70 px-4 py-3 text-sm">
+                    <span className="truncate font-medium">{index + 1}. {row.name}</span>
+                    <span className="font-semibold">{group.format(row.value)}</span>
+                  </div>
+                )) : <p className="text-sm text-muted-foreground">No sales in this period.</p>}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-2">
           <Card className="rounded-xl border-border/70 py-0">
             <CardHeader className="flex flex-row items-center justify-between">

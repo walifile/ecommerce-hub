@@ -27,6 +27,9 @@ export const productSchema = z.object({
   metaTitle: z.string().trim(),
   metaDescription: z.string().trim(),
   status: z.enum(["draft", "published"]),
+  featured: z.boolean(),
+  isNew: z.boolean(),
+  bestSeller: z.boolean(),
 });
 
 export type ProductFormInput = z.infer<typeof productSchema>;

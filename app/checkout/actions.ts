@@ -4,17 +4,38 @@ import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getAppUrl, getStripe } from "@/lib/stripe";
 import { notifyOrder } from "@/lib/whatsapp";
+import { createCompatibleOrder, updateCompatibleOrderStatus } from "@/lib/order-operations";
 
 export type CheckoutState = {
   status: "idle" | "success" | "error";
   message: string;
   orderNumber?: string;
+  trackingToken?: string;
+  trackingPhone?: string;
   checkoutUrl?: string;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 type SubmittedItem = { id: string; quantity: number };
+
+function parseItems(value: FormDataEntryValue | null): SubmittedItem[] {
+  try {
+    const raw = JSON.parse(String(value ?? "[]")) as unknown;
+    if (!Array.isArray(raw)) return [];
+    const quantities = new Map<string, number>();
+    for (const entry of raw) {
+      if (!entry || typeof entry !== "object") continue;
+      const id = String((entry as { id?: unknown }).id ?? "").trim();
+      const quantity = Math.floor(Number((entry as { quantity?: unknown }).quantity));
+      if (!UUID_RE.test(id) || !Number.isFinite(quantity) || quantity < 1) continue;
+      quantities.set(id, Math.min(100, (quantities.get(id) ?? 0) + quantity));
+    }
+    return [...quantities].map(([id, quantity]) => ({ id, quantity }));
+  } catch {
+    return [];
+  }
+}
 
 export async function createOrderAction(
   _prev: CheckoutState,
@@ -25,376 +46,123 @@ export async function createOrderAction(
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const address = String(formData.get("address") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
-  const paymentRaw = String(formData.get("payment") ?? "cod").toLowerCase();
-  const payment = paymentRaw.includes("stripe") ? "stripe" : "cod";
+  const payment = String(formData.get("payment") ?? "cod").toLowerCase() === "stripe" ? "stripe" : "cod";
   const notes = String(formData.get("notes") ?? "").trim() || null;
-  const couponCode = String(formData.get("couponCode") ?? "")
-    .trim()
-    .toUpperCase();
-
-  let items: SubmittedItem[] = [];
-  try {
-    items = JSON.parse(String(formData.get("items") ?? "[]")) as SubmittedItem[];
-  } catch {
-    items = [];
-  }
+  const couponCode = String(formData.get("couponCode") ?? "").trim().toUpperCase();
+  const items = parseItems(formData.get("items"));
 
   if (!name) return { status: "error", message: "Please enter your name." };
   if (!phone) return { status: "error", message: "Please enter a phone number." };
-  if (email && !EMAIL_RE.test(email))
-    return { status: "error", message: "Enter a valid email address." };
-  if (!items.length)
-    return { status: "error", message: "Your cart is empty." };
+  if (email && !EMAIL_RE.test(email)) return { status: "error", message: "Enter a valid email address." };
+  if (!address || !city) return { status: "error", message: "Enter your delivery address and city." };
+  if (!items.length) return { status: "error", message: "Your cart is empty." };
 
   const supabase = getSupabaseServerClient();
-  if (!supabase) {
-    return {
-      status: "error",
-      message:
-        "Checkout is not configured. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.",
-    };
+  if (!supabase) return { status: "error", message: "Checkout is not configured." };
+  if (payment === "stripe" && !getStripe()) {
+    return { status: "error", message: "Stripe is not configured. Choose cash on delivery." };
   }
 
-  // Verify prices server-side from the DB (never trust client prices).
-  const ids = items.map((i) => i.id);
-  const { data: productsRaw } = await supabase
-    .from("products")
-    .select("id, name, slug, selling_price, cost_price, stock_quantity")
-    .in("id", ids);
-
-  const products = (productsRaw ?? []) as {
-    id: string;
-    name: string;
-    slug: string;
-    selling_price: number;
-    cost_price: number;
-    stock_quantity: number;
-  }[];
-
-  const priceMap = new Map(
-    products.map((p) => [
-      p.id,
-      {
-        name: p.name,
-        slug: p.slug,
-        price: Number(p.selling_price),
-        cost: Number(p.cost_price),
-        stock: Number(p.stock_quantity),
-      },
-    ])
-  );
-
-  const orderItems = items
-    .map((item) => {
-      const match = priceMap.get(item.id);
-      if (!match) return null;
-      const quantity = Math.max(1, Math.floor(item.quantity));
-      return {
-        product_id: item.id,
-        product_name: match.name,
-        quantity,
-        unit_price: match.price,
-        product_cost: match.cost,
-        stock_quantity: match.stock,
-        slug: match.slug,
-      };
-    })
-    .filter(Boolean) as {
-    product_id: string;
-    product_name: string;
-    quantity: number;
-    unit_price: number;
-    product_cost: number;
-    stock_quantity: number;
-    slug: string;
-  }[];
-
-  if (!orderItems.length)
-    return { status: "error", message: "None of the cart items are available." };
-
-  const stockIssue = orderItems.find((item) => item.quantity > item.stock_quantity);
-  if (stockIssue) {
-    if (stockIssue.stock_quantity <= 0) {
-      return {
-        status: "error",
-        message: `${stockIssue.product_name} is out of stock.`,
-      };
-    }
-    return {
-      status: "error",
-      message: `Only ${stockIssue.stock_quantity} units of ${stockIssue.product_name} are available.`,
-    };
+  const created = await createCompatibleOrder({
+    name,
+    phone,
+    email,
+    address,
+    city,
+    paymentMethod: payment,
+    notes,
+    couponCode,
+    items,
+    adCost: 0,
+    requirePublishedProducts: true,
+  });
+  if (!created.ok) {
+    console.error("[checkout] order creation failed:", created.error);
+    return { status: "error", message: created.error };
   }
-
-  const subtotal = orderItems.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
-  const shipping = subtotal >= 50 ? 0 : 10;
-  let discount = 0;
-  let appliedCouponId: string | null = null;
-  let appliedCouponCode: string | null = null;
-  let appliedCouponNextUsedCount: number | null = null;
-
-  if (couponCode) {
-    const { data: couponRaw, error: couponError } = await supabase
-      .from("coupons")
-      .select("*")
-      .eq("code", couponCode)
-      .maybeSingle();
-
-    if (couponError) {
-      console.error("[checkout] coupon lookup failed:", couponError.message);
-      return { status: "error", message: "Could not validate the coupon." };
-    }
-
-    if (!couponRaw) {
-      return { status: "error", message: "Coupon code was not found." };
-    }
-
-    const coupon = couponRaw as {
-      id: string;
-      code: string;
-      discount_type: string;
-      discount_value: number;
-      min_order_amount: number | null;
-      max_discount_amount: number | null;
-      active: boolean;
-      starts_at: string | null;
-      expires_at: string | null;
-      usage_limit: number | null;
-      used_count: number | null;
-    };
-    const now = Date.now();
-
-    if (!coupon.active) {
-      return { status: "error", message: "This coupon is not active." };
-    }
-    if (coupon.starts_at && new Date(coupon.starts_at).getTime() > now) {
-      return { status: "error", message: "This coupon is not live yet." };
-    }
-    if (coupon.expires_at && new Date(coupon.expires_at).getTime() < now) {
-      return { status: "error", message: "This coupon has expired." };
-    }
-    if (
-      coupon.usage_limit !== null &&
-      coupon.usage_limit !== undefined &&
-      (coupon.used_count ?? 0) >= coupon.usage_limit
-    ) {
-      return { status: "error", message: "This coupon has reached its usage limit." };
-    }
-
-    const minOrderAmount = Number(coupon.min_order_amount ?? 0);
-    if (subtotal < minOrderAmount) {
-      return {
-        status: "error",
-        message: "Cart total is below the coupon minimum order amount.",
-      };
-    }
-
-    const rawDiscount =
-      coupon.discount_type === "percentage"
-        ? subtotal * (Number(coupon.discount_value) / 100)
-        : Number(coupon.discount_value);
-    const cappedDiscount =
-      coupon.max_discount_amount && Number(coupon.max_discount_amount) > 0
-        ? Math.min(rawDiscount, Number(coupon.max_discount_amount))
-        : rawDiscount;
-
-    discount = Math.max(0, Math.min(subtotal, Number(cappedDiscount.toFixed(2))));
-    appliedCouponId = coupon.id;
-    appliedCouponCode = coupon.code;
-    appliedCouponNextUsedCount = (coupon.used_count ?? 0) + 1;
-  }
-
-  const total = Math.max(0, subtotal + shipping - discount);
-
-  // Find or create the customer (matched by phone).
-  let customerId: string | null = null;
-  const { data: existing } = await supabase
-    .from("customers")
-    .select("id")
-    .eq("phone", phone)
-    .limit(1)
-    .maybeSingle<{ id: string }>();
-
-  if (existing?.id) {
-    customerId = existing.id;
-  } else {
-    const { data: created } = await supabase
-      .from("customers")
-      .insert({ name, phone, email: email || null, address, city } as never)
-      .select("id")
-      .maybeSingle<{ id: string }>();
-    customerId = created?.id ?? null;
-  }
-
-  const orderNumber = `TV-${Date.now().toString(36).toUpperCase()}`;
-
-  const { data: order, error: orderError } = await supabase
-    .from("orders")
-    .insert({
-      customer_id: customerId,
-      order_number: orderNumber,
-      status: "pending",
-      payment_method: payment,
-      shipping_cost: shipping,
-      ad_cost: 0,
-      discount_amount: discount,
-      coupon_code: appliedCouponCode,
-      payment_status: payment === "stripe" ? "unpaid" : "cod",
-      revenue: Math.max(0, subtotal - discount),
-      total,
-      notes,
-    } as never)
-    .select("id")
-    .maybeSingle<{ id: string }>();
-
-  if (orderError || !order) {
-    console.error("[checkout] order insert failed:", orderError?.message);
-    return { status: "error", message: "Could not place the order. Please try again." };
-  }
-
-  const { error: itemsError } = await supabase
-    .from("order_items")
-    .insert(
-      orderItems.map(({ stock_quantity: _stock, slug: _slug, ...item }) => ({
-        ...item,
-        order_id: order.id,
-      })) as never
-    );
-
-  if (itemsError) {
-    console.error("[checkout] order_items insert failed:", itemsError.message);
-  }
-
-  if (payment === "cod") {
-    for (const item of orderItems) {
-      const nextStock = Math.max(0, item.stock_quantity - item.quantity);
-      const { error: stockError } = await supabase
-        .from("products")
-        .update({ stock_quantity: nextStock } as never)
-        .eq("id", item.product_id)
-        .eq("stock_quantity", item.stock_quantity);
-
-      if (stockError) {
-        console.error("[checkout] stock update failed:", stockError.message, item.product_id);
-      }
-    }
-
-    if (appliedCouponId) {
-      const { error: couponUpdateError } = await supabase
-        .from("coupons")
-        .update({ used_count: appliedCouponNextUsedCount ?? 1 } as never)
-        .eq("id", appliedCouponId);
-
-      if (couponUpdateError) {
-        console.error("[checkout] coupon usage update failed:", couponUpdateError.message);
-      }
-    }
-  }
+  const result = created.data;
 
   if (payment === "stripe") {
-    const stripe = getStripe();
-    if (!stripe) {
-      return {
-        status: "error",
-        message: "Stripe is not configured. Add STRIPE_SECRET_KEY to the server environment.",
-      };
-    }
-
-    const appUrl = getAppUrl();
-    const currency = process.env.STRIPE_CURRENCY || "usd";
-    const stripeDiscount =
-      discount > 0
+    const stripe = getStripe()!;
+    try {
+      const { data: products } = await supabase.from("products")
+        .select("id, name, selling_price").in("id", items.map((item) => item.id));
+      const productRows = (products ?? []) as unknown as Array<{ id: string; name: string; selling_price: number }>;
+      const productMap = new Map(productRows.map((product) => [product.id, product]));
+      const currency = process.env.STRIPE_CURRENCY || "usd";
+      const stripeDiscount = Number(result.discount) > 0
         ? await stripe.coupons.create({
-            amount_off: Math.round(discount * 100),
-            currency,
-            duration: "once",
-            name: appliedCouponCode ? `ToyVerse ${appliedCouponCode}` : "ToyVerse discount",
+            amount_off: Math.round(result.discount * 100), currency,
+            duration: "once", name: couponCode ? `ToyVerse ${couponCode}` : "ToyVerse discount",
           })
         : null;
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      customer_email: email || undefined,
-      client_reference_id: order.id,
-      metadata: {
-        orderId: order.id,
-        orderNumber,
-      },
-      line_items: [
-        ...orderItems.map((item) => ({
-          quantity: item.quantity,
-          price_data: {
-            currency: process.env.STRIPE_CURRENCY || "usd",
-            product_data: {
-              name: item.product_name,
-            },
-            unit_amount: Math.round(item.unit_price * 100),
-          },
-        })),
-        ...(shipping > 0
-          ? [
-              {
-                quantity: 1,
-                price_data: {
-                  currency,
-                  product_data: { name: "Shipping" },
-                  unit_amount: Math.round(shipping * 100),
-                },
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        customer_email: email || undefined,
+        client_reference_id: result.orderId,
+        metadata: { orderId: result.orderId, orderNumber: result.orderNumber },
+        line_items: [
+          ...items.map((item) => {
+            const product = productMap.get(item.id);
+            if (!product) throw new Error("A checkout product is no longer available.");
+            return {
+              quantity: item.quantity,
+              price_data: {
+                currency, product_data: { name: product.name },
+                unit_amount: Math.round(Number(product.selling_price) * 100),
               },
-            ]
-          : []),
-      ],
-      discounts: stripeDiscount ? [{ coupon: stripeDiscount.id }] : undefined,
-      success_url: `${appUrl}/track-order?orderNumber=${encodeURIComponent(orderNumber)}&payment=success`,
-      cancel_url: `${appUrl}/checkout?payment=cancelled`,
-    });
-
-    await supabase
-      .from("orders")
-      .update({ stripe_session_id: session.id } as never)
-      .eq("id", order.id);
-
-    revalidatePath("/admin/orders");
-    revalidatePath("/admin");
-
-    if (!session.url) {
+            };
+          }),
+          ...(result.shipping > 0 ? [{
+            quantity: 1,
+            price_data: {
+              currency, product_data: { name: "Shipping" },
+              unit_amount: Math.round(result.shipping * 100),
+            },
+          }] : []),
+        ],
+        discounts: stripeDiscount ? [{ coupon: stripeDiscount.id }] : undefined,
+        success_url: result.trackingToken
+          ? `${getAppUrl()}/track-order?trackingToken=${result.trackingToken}&payment=success`
+          : `${getAppUrl()}/track-order?orderNumber=${encodeURIComponent(result.orderNumber)}&phone=${encodeURIComponent(phone)}&payment=success`,
+        cancel_url: `${getAppUrl()}/checkout?payment=cancelled`,
+      });
+      if (!session.url) throw new Error("Stripe did not return a checkout URL.");
+      const { error: sessionError } = await supabase.from("orders")
+        .update({ stripe_session_id: session.id } as never).eq("id", result.orderId);
+      if (sessionError) throw sessionError;
+      revalidatePath("/admin/orders");
       return {
-        status: "error",
-        message: "Stripe did not return a checkout URL. Please try again.",
+        status: "success", message: "Redirecting to Stripe checkout...",
+        orderNumber: result.orderNumber, trackingToken: result.trackingToken,
+        trackingPhone: phone,
+        checkoutUrl: session.url,
       };
+    } catch (stripeError) {
+      console.error("[checkout] Stripe session creation failed:", stripeError);
+      if (result.trackingToken) {
+        await supabase.rpc("discard_unpaid_store_order" as never, { p_order_id: result.orderId } as never);
+      } else {
+        await updateCompatibleOrderStatus({
+          orderId: result.orderId,
+          status: "cancelled",
+          reason: "payment_setup_failed",
+          note: "Card checkout could not be started",
+        });
+      }
+      return { status: "error", message: "Could not start card payment. Your order was not charged or placed." };
     }
-
-    return {
-      status: "success",
-      message: "Redirecting to Stripe checkout...",
-      orderNumber,
-      checkoutUrl: session.url,
-    };
   }
 
-  revalidatePath("/admin/orders");
-  revalidatePath("/admin");
-  revalidatePath("/admin/products");
+  revalidatePath("/admin", "layout");
   revalidatePath("/shop");
-  for (const item of orderItems) {
-    revalidatePath(`/products/${item.slug}`);
-  }
-
-  // Best-effort order confirmation notification (WhatsApp Cloud API or simulated).
   await notifyOrder({
-    orderId: order.id,
-    orderNumber,
-    customerName: name,
-    phone,
-    total,
-    templateKey: "order_created",
+    orderId: result.orderId, orderNumber: result.orderNumber, customerName: name,
+    phone, total: result.total, templateKey: "order_created",
   });
-
   return {
-    status: "success",
-    message: `Order ${orderNumber} placed!`,
-    orderNumber,
+    status: "success", message: `Order ${result.orderNumber} placed!`,
+    orderNumber: result.orderNumber, trackingToken: result.trackingToken,
+    trackingPhone: phone,
   };
 }

@@ -12,7 +12,7 @@ type Review = {
   accent: string;
 };
 
-const reviews: Review[] = [
+const fallbackReviews: Review[] = [
   {
     quote:
       "The quality feels premium the second the box arrives. My son opened one set and forgot screen time existed for the whole weekend.",
@@ -65,11 +65,20 @@ const reviews: Review[] = [
 
 const AUTOPLAY_MS = 6000;
 
-export function ReviewsCarousel() {
+export function ReviewsCarousel({ customerReviews = [] }: { customerReviews?: Array<{ reviewerName: string; productName: string; body: string; rating: number }> }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);
   const [paused, setPaused] = useState(false);
+  const reviews: Review[] = customerReviews.length
+    ? customerReviews.map((review, index) => ({
+        quote: review.body,
+        name: review.reviewerName,
+        role: review.productName,
+        rating: review.rating,
+        accent: ["var(--brand)", "var(--brand-2)", "var(--brand-3)"][index % 3],
+      }))
+    : fallbackReviews;
 
   // Recalculate page count on resize (per-view changes with breakpoints)
   useEffect(() => {
@@ -172,7 +181,7 @@ export function ReviewsCarousel() {
                   </div>
 
                   <p className="relative mt-5 flex-1 text-sm leading-7 text-white/75">
-                    "{review.quote}"
+                    &ldquo;{review.quote}&rdquo;
                   </p>
 
                   <div className="mt-6 flex items-center gap-3">

@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { Search, ShieldCheck, Truck, Undo2 } from "lucide-react";
-import { SectionHeading } from "@/components/ecommerce/section-heading";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +8,7 @@ import { Input } from "@/components/ui/input";
 import {
   formatCurrency,
   formatDate,
-  getOrderByNumber,
-  getOrderProfit,
+  getTrackedOrder,
 } from "@/lib/ecommerce-data";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +36,10 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
       : typeof search.order === "string"
         ? search.order
         : "";
-  const order = await getOrderByNumber(orderNumber);
+  const phone = typeof search.phone === "string" ? search.phone : "";
+  const trackingToken = typeof search.trackingToken === "string" ? search.trackingToken : "";
+  const attempted = Boolean(trackingToken || orderNumber || phone);
+  const order = await getTrackedOrder({ trackingToken, orderNumber, phone });
 
   return (
     <StoreShell cartCount={3}>
@@ -88,7 +88,7 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                     Search order
                   </p>
                   <h2 className="mt-1 text-xl font-semibold text-white">
-                    Enter the order number
+                    Enter the order number and phone
                   </h2>
                 </div>
 
@@ -107,23 +107,22 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                           className="h-12 rounded-full border-white/10 bg-black/30 pl-11 text-white placeholder:text-white/25 focus-visible:ring-brand/40"
                         />
                       </div>
+                      <Input
+                        name="phone"
+                        defaultValue={phone}
+                        placeholder="Phone used at checkout"
+                        required
+                        className="h-12 flex-1 rounded-full border-white/10 bg-black/30 px-5 text-white placeholder:text-white/25 focus-visible:ring-brand/40"
+                      />
                       <Button className="h-12 rounded-full bg-linear-to-r from-brand to-brand-strong px-6 text-white shadow-[0_0_22px_color-mix(in_srgb,var(--brand)_24%,transparent)]">
                         Track order
                       </Button>
                     </div>
                   </div>
 
-                  <div className="rounded-[22px] border border-white/[0.08] bg-black/20 p-4">
-                    <p className="text-sm leading-7 text-white/55">
-                      Example order:{" "}
-                      <Link
-                        href="/track-order?orderNumber=ECO-1001"
-                        className="font-semibold text-white hover:text-brand"
-                      >
-                        ECO-1001
-                      </Link>
-                    </p>
-                  </div>
+                  <p className="text-sm leading-7 text-white/55">
+                    For privacy, both values must match the checkout details.
+                  </p>
                 </form>
               </CardContent>
             </Card>
@@ -144,9 +143,7 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                           <h2 className="text-2xl font-black tracking-tight text-white">
                             {order.customerName}
                           </h2>
-                          <p className="mt-1 text-sm text-white/45">
-                            {order.customerEmail}
-                          </p>
+                          <p className="mt-1 text-sm text-white/45">Verified order</p>
                         </div>
                       </div>
                       <div className="rounded-2xl border border-white/[0.08] bg-black/20 px-4 py-3 text-left sm:text-right">
@@ -159,21 +156,13 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                       </div>
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
                       <div className="rounded-[22px] border border-white/[0.08] bg-black/20 p-4">
                         <p className="text-xs uppercase tracking-[0.18em] text-white/35">
                           Created
                         </p>
                         <p className="mt-2 text-sm font-semibold text-white">
                           {formatDate(order.createdAt)}
-                        </p>
-                      </div>
-                      <div className="rounded-[22px] border border-white/[0.08] bg-black/20 p-4">
-                        <p className="text-xs uppercase tracking-[0.18em] text-white/35">
-                          Profit
-                        </p>
-                        <p className="mt-2 text-sm font-semibold text-white">
-                          {formatCurrency(getOrderProfit(order))}
                         </p>
                       </div>
                       <div className="rounded-[22px] border border-white/[0.08] bg-black/20 p-4">
@@ -203,25 +192,6 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                           <p className="mt-1 text-sm leading-6 text-white/55">
                             Status updates are kept in sync with stock so the support team sees the right availability.
                           </p>
-                          {(order.reversalReason || order.refundAmount || order.reversalNote) && (
-                            <div className="mt-3 space-y-1 border-t border-white/[0.08] pt-3 text-sm text-white/60">
-                              {order.reversalReason ? (
-                                <p>
-                                  <span className="font-semibold text-white">Reason:</span>{" "}
-                                  {order.reversalReason}
-                                </p>
-                              ) : null}
-                              {typeof order.refundAmount === "number" ? (
-                                <p>
-                                  <span className="font-semibold text-white">Refund:</span>{" "}
-                                  {formatCurrency(order.refundAmount)}
-                                </p>
-                              ) : null}
-                              {order.reversalNote ? (
-                                <p>{order.reversalNote}</p>
-                              ) : null}
-                            </div>
-                          )}
                         </div>
                       )}
                       <div className="grid gap-3">
@@ -272,12 +242,12 @@ export default async function TrackOrderPage(props: PageProps<"/track-order">) {
                     </div>
                     <div className="space-y-2">
                       <h2 className="text-2xl font-black tracking-tight text-white">
-                        No order loaded yet
+                        {attempted ? "Order details did not match" : "No order loaded yet"}
                       </h2>
                       <p className="max-w-xl text-sm leading-7 text-white/50">
-                        Enter an order number like{" "}
-                        <span className="font-semibold text-white">ECO-1001</span>{" "}
-                        to see the live status flow and order details.
+                        {attempted
+                          ? "Check the order number and the phone used at checkout, then try again."
+                          : "Enter your order number and checkout phone to see the live status flow."}
                       </p>
                     </div>
                   </div>

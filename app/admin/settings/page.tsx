@@ -3,6 +3,7 @@ import { BannerForm } from "@/app/admin/_components/banner-form";
 import { ChangePasswordForm } from "@/app/admin/_components/change-password-form";
 import { StoreDetailsForm } from "@/app/admin/_components/store-details-form";
 import { ThemePicker } from "@/app/admin/_components/theme-picker";
+import { OperationsSettingsForm } from "@/app/admin/_components/operations-settings-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCatalogData } from "@/lib/ecommerce-data";
 
@@ -15,6 +16,11 @@ export default async function AdminSettingsPage() {
       description="Control the storefront appearance and global website announcements from one place."
     >
       <div className="grid gap-6">
+        <Card className="rounded-xl border-border/70 py-0">
+          <CardHeader><CardTitle>Shipping &amp; WhatsApp templates</CardTitle></CardHeader>
+          <CardContent className="p-6"><OperationsSettingsForm settings={catalog.settings} /></CardContent>
+        </Card>
+
         <Card className="rounded-xl border-border/70 py-0">
           <CardHeader>
             <CardTitle>Store details</CardTitle>

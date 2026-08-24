@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Package2, Search, X } from "lucide-react";
 import {
@@ -164,13 +164,13 @@ export function ProductsView({
   const stock    = searchParams.get("stock") ?? "all";
   const sort     = searchParams.get("sort") ?? "newest";
 
-  const DEFAULTS: Record<string, string> = {
+  const DEFAULTS = useMemo<Record<string, string>>(() => ({
     status:   "all",
     stock:    "all",
     sort:     "newest",
     category: "",
     pageSize: "20",
-  };
+  }), []);
 
   const update = useCallback(
     (updates: Record<string, string>, resetPage = true) => {
@@ -186,7 +186,7 @@ export function ProductsView({
       const qs = params.toString();
       router.replace(qs ? `?${qs}` : "?");
     },
-    [searchParams, router]
+    [searchParams, router, DEFAULTS]
   );
 
   const hasActiveFilters =

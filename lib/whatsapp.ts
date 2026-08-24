@@ -55,6 +55,20 @@ const TEMPLATES: Record<OrderTemplateKey, (o: OrderNotifyInput) => string> = {
     `Your ToyVerse order ${o.orderNumber} was returned. Inventory has been updated and support can help with the next step.`,
 };
 
+const CUSTOM_TEMPLATE_COLUMNS: Partial<Record<OrderTemplateKey, string>> = {
+  order_created: "whatsapp_template_order_created",
+  order_confirmed: "whatsapp_template_order_confirmed",
+  order_shipped: "whatsapp_template_order_shipped",
+  order_delivered: "whatsapp_template_order_delivered",
+};
+
+function fillTemplate(template: string, input: OrderNotifyInput) {
+  return template
+    .replaceAll("{customerName}", input.customerName)
+    .replaceAll("{orderNumber}", input.orderNumber)
+    .replaceAll("{total}", money(input.total));
+}
+
 /** Map an order status to its notification template (null = no message). */
 export function templateForStatus(status: string): OrderTemplateKey | null {
   switch (status) {
@@ -85,7 +99,13 @@ export async function notifyOrder(input: OrderNotifyInput): Promise<void> {
   const supabase = getSupabaseServerClient();
   if (!supabase) return;
 
-  const message = TEMPLATES[input.templateKey](input);
+  let message = TEMPLATES[input.templateKey](input);
+  const customColumn = CUSTOM_TEMPLATE_COLUMNS[input.templateKey];
+  if (customColumn) {
+    const { data } = await supabase.from("settings").select("*").limit(1).maybeSingle();
+    const custom = data ? (data as unknown as Record<string, unknown>)[customColumn] : null;
+    if (typeof custom === "string" && custom.trim()) message = fillTemplate(custom, input);
+  }
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const apiVersion = process.env.WHATSAPP_API_VERSION || "v21.0";

@@ -3,6 +3,7 @@ import { ArrowRight, ShieldCheck, Truck, Undo2 } from "lucide-react";
 import { CartClient } from "@/app/cart/_components/cart-client";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
+import { getCatalogData } from "@/lib/ecommerce-data";
 
 const trustItems = [
   { label: "Secure checkout", icon: ShieldCheck },
@@ -10,7 +11,8 @@ const trustItems = [
   { label: "Easy returns", icon: Undo2 },
 ];
 
-export default function CartPage() {
+export default async function CartPage() {
+  const { settings } = await getCatalogData();
   return (
     <StoreShell>
       <main className="bg-surface">
@@ -59,7 +61,7 @@ export default function CartPage() {
         </section>
 
         <section className="section-shell py-8 sm:py-10">
-          <CartClient />
+          <CartClient shippingFlatRate={settings.shippingFlatRate} freeShippingThreshold={settings.freeShippingThreshold} />
         </section>
       </main>
     </StoreShell>

@@ -29,7 +29,7 @@ const initialCouponState: CouponValidationState = {
   message: "",
 };
 
-export function CartClient() {
+export function CartClient({ shippingFlatRate, freeShippingThreshold }: { shippingFlatRate: number; freeShippingThreshold: number }) {
   const cart = useCart();
   const {
     items,
@@ -47,7 +47,7 @@ export function CartClient() {
     initialCouponState
   );
 
-  const shipping = subtotal >= 50 || subtotal === 0 ? 0 : 10;
+  const shipping = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : shippingFlatRate;
   const discount = useMemo(() => {
     if (!coupon || subtotal < coupon.minOrderAmount) return 0;
     const raw =
@@ -281,16 +281,16 @@ export function CartClient() {
             </div>
           </div>
 
-          {subtotal < 50 && (
+          {subtotal < freeShippingThreshold && (
             <div className="grid gap-2 rounded-[22px] border border-white/8 bg-black/20 p-4">
               <div className="flex items-center justify-between text-sm text-white/60">
-                <span>Free shipping at $50</span>
-                <span>{formatCurrency(50 - subtotal)} to go</span>
+                <span>Estimated shipping · free at {formatCurrency(freeShippingThreshold)}</span>
+                <span>{formatCurrency(freeShippingThreshold - subtotal)} to go</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-white/8">
                 <div
                   className="h-full rounded-full bg-linear-to-r from-brand to-brand-strong"
-                  style={{ width: `${Math.min(100, (subtotal / 50) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (subtotal / freeShippingThreshold) * 100)}%` }}
                 />
               </div>
             </div>

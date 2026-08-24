@@ -13,13 +13,12 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { FloatingToys } from "@/app/_components/floating-toys";
 import { MotionFade } from "@/app/_components/motion-fade";
-import { NewNotable } from "@/app/_components/new-notable";
+import { HomeProductSection } from "@/app/_components/home-product-section";
 import { BrowseCategory } from "@/app/_components/browse-category";
 import { ReviewsCarousel } from "@/app/_components/reviews-carousel";
 import { StoreShell } from "@/components/ecommerce/store-shell";
-import { getCatalogData } from "@/lib/ecommerce-data";
+import { getCatalogData, getHomepageReviews } from "@/lib/ecommerce-data";
 
 export const metadata: Metadata = {
   // Absolute title so the homepage doesn't get the "| ToyVerse" template suffix.
@@ -109,10 +108,15 @@ const structuredData = {
 
 export default async function HomePage() {
   const catalog = await getCatalogData();
+  const customerReviews = await getHomepageReviews();
   const categories = catalog.categories;
   const heroWords = catalog.settings.heroTitle.trim().split(/\s+/);
   const heroPrefix = heroWords.slice(0, -2).join(" ") || catalog.settings.storeName;
   const heroHighlight = heroWords.slice(-2).join(" ") || "Spark Joy.";
+  const published = catalog.products.filter((product) => product.status === "published");
+  const featuredProducts = published.filter((product) => product.featured);
+  const newProducts = published.filter((product) => product.isNew);
+  const bestSellingProducts = published.filter((product) => product.bestSeller);
 
   return (
     <StoreShell cartCount={2}>
@@ -219,7 +223,25 @@ export default async function HomePage() {
         {/* ══════════════════════════════════════
             NEW & NOTABLE
         ══════════════════════════════════════ */}
-        <NewNotable products={catalog.products} />
+        <HomeProductSection
+          eyebrow="Hand-picked"
+          title="Featured products"
+          products={featuredProducts.length ? featuredProducts : published.slice(0, 4)}
+        />
+        <HomeProductSection
+          eyebrow="Just landed"
+          title="New arrivals"
+          products={newProducts.length ? newProducts : published.slice(0, 4)}
+        />
+        <div id="best-sellers">
+          <HomeProductSection
+            eyebrow="Customer favorites"
+            title="Best sellers"
+            products={bestSellingProducts.length
+              ? bestSellingProducts
+              : [...published].sort((a, b) => b.reviewsCount - a.reviewsCount).slice(0, 4)}
+          />
+        </div>
 
         {/* ══════════════════════════════════════
             CATEGORIES
@@ -294,7 +316,7 @@ export default async function HomePage() {
         {/* ══════════════════════════════════════
             REVIEWS
         ══════════════════════════════════════ */}
-        <ReviewsCarousel />
+        <ReviewsCarousel customerReviews={customerReviews} />
 
         {/* ══════════════════════════════════════
             CTA

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { AdminActionState } from "@/app/admin/actions";
+import { requireAdmin } from "@/lib/auth";
 
 const NOT_CONFIGURED =
   "Database write is not configured. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.";
@@ -11,6 +12,7 @@ export async function createExpenseAction(
   _prev: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
+  await requireAdmin();
   const title = String(formData.get("title") ?? "").trim();
   const expenseType = String(formData.get("expenseType") ?? "miscellaneous")
     .trim()
@@ -42,4 +44,20 @@ export async function createExpenseAction(
   revalidatePath("/admin/expenses");
   revalidatePath("/admin/profit");
   return { status: "success", message: "Expense added." };
+}
+
+export async function deleteExpenseAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("expenseId") ?? "").trim();
+  if (!id) return;
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return;
+  const { error } = await supabase.from("expenses").delete().eq("id", id);
+  if (error) {
+    console.error("[admin] deleteExpense failed:", error.message);
+    return;
+  }
+  revalidatePath("/admin/expenses");
+  revalidatePath("/admin/profit");
+  revalidatePath("/admin");
 }

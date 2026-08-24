@@ -56,3 +56,12 @@ export async function isAdmin(): Promise<boolean> {
   const profile = await getCurrentProfile();
   return profile?.role === "admin";
 }
+
+/** Re-authorize privileged mutations at their actual server entry point. */
+export async function requireAdmin(): Promise<Profile> {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== "admin") {
+    throw new Error("Unauthorized: administrator access is required.");
+  }
+  return profile;
+}

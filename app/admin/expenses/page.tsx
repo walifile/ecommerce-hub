@@ -11,6 +11,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, getCatalogData } from "@/lib/ecommerce-data";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { deleteExpenseAction } from "@/app/admin/expenses/actions";
 
 export default async function AdminExpensesPage() {
   const catalog = await getCatalogData();
@@ -42,11 +45,12 @@ export default async function AdminExpensesPage() {
                   <TableHead>Type</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Amount</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {catalog.expenses.length === 0 ? (
-                  <TableEmpty colSpan={4} message="No expenses logged yet." />
+                  <TableEmpty colSpan={5} message="No expenses logged yet." />
                 ) : null}
                 {catalog.expenses.map((expense) => (
                   <TableRow key={expense.id}>
@@ -54,6 +58,14 @@ export default async function AdminExpensesPage() {
                     <TableCell className="capitalize">{expense.expenseType}</TableCell>
                     <TableCell>{expense.date}</TableCell>
                     <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                    <TableCell className="text-right">
+                      <form action={deleteExpenseAction}>
+                        <input type="hidden" name="expenseId" value={expense.id} />
+                        <Button type="submit" variant="ghost" size="icon-sm" aria-label={`Delete ${expense.title}`}>
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </form>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -3,9 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { AdminActionState } from "@/app/admin/actions";
+import { requireAdmin } from "@/lib/auth";
+import { readCompatJson, writeCompatJson } from "@/lib/compat-storage";
 
 const NOT_CONFIGURED =
   "Database write is not configured. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.";
+const COUPON_RULES_PATH = "coupons/rules.json";
 
 function normalizeCouponCode(value: FormDataEntryValue | null) {
   return String(value ?? "")
@@ -30,6 +33,7 @@ export async function createCouponAction(
   _prev: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
+  await requireAdmin();
   const code = normalizeCouponCode(formData.get("code"));
   const discountType =
     String(formData.get("discountType") ?? "fixed") === "percentage"
@@ -51,7 +55,7 @@ export async function createCouponAction(
   const supabase = getSupabaseServerClient();
   if (!supabase) return { status: "error", message: NOT_CONFIGURED };
 
-  const { error } = await supabase.from("coupons").insert({
+  const payload = {
     code,
     discount_type: discountType,
     discount_value: discountValue,
@@ -61,7 +65,19 @@ export async function createCouponAction(
     starts_at: nullableDate(formData.get("startsAt")),
     expires_at: nullableDate(formData.get("expiresAt")),
     usage_limit: usageLimit,
-  } as never);
+  };
+  let { error } = await supabase.from("coupons").insert(payload as never);
+
+  if (error && /column|schema cache/i.test(error.message)) {
+    const legacyResult = await supabase.from("coupons").insert({
+      code,
+      discount_type: discountType,
+      discount_value: discountValue,
+      active: formData.get("active") === "on",
+      expires_at: nullableDate(formData.get("expiresAt")),
+    } as never);
+    error = legacyResult.error;
+  }
 
   if (error) {
     console.error("[admin] createCoupon failed:", error.message);
@@ -70,11 +86,24 @@ export async function createCouponAction(
     return { status: "error", message: error.message };
   }
 
+  const rules = await readCompatJson<Record<string, Record<string, unknown>>>(COUPON_RULES_PATH, {});
+  await writeCompatJson(COUPON_RULES_PATH, {
+    ...rules,
+    [code]: {
+      minOrderAmount,
+      maxDiscountAmount,
+      startsAt: nullableDate(formData.get("startsAt")),
+      usageLimit,
+      usedCount: 0,
+    },
+  });
+
   revalidatePath("/admin/coupons");
   return { status: "success", message: `${code} coupon created.` };
 }
 
 export async function toggleCouponAction(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("couponId") ?? "");
   const active = formData.get("active") === "true";
   if (!id) return;
@@ -92,13 +121,21 @@ export async function toggleCouponAction(formData: FormData) {
 }
 
 export async function deleteCouponAction(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("couponId") ?? "");
   if (!id) return;
 
   const supabase = getSupabaseServerClient();
   if (!supabase) return;
 
+  const { data: existing } = await supabase.from("coupons").select("code").eq("id", id).maybeSingle();
   const { error } = await supabase.from("coupons").delete().eq("id", id);
   if (error) console.error("[admin] deleteCoupon failed:", error.message);
+  if (!error && existing) {
+    const code = (existing as { code: string }).code;
+    const rules = await readCompatJson<Record<string, Record<string, unknown>>>(COUPON_RULES_PATH, {});
+    delete rules[code];
+    await writeCompatJson(COUPON_RULES_PATH, rules);
+  }
   revalidatePath("/admin/coupons");
 }

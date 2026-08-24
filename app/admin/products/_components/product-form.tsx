@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -40,8 +41,13 @@ export type ProductFormValues = {
   gallery: string[];
   shortDescription: string;
   description: string;
+  metaTitle: string;
+  metaDescription: string;
   specifications: string[];
   status: "draft" | "published";
+  featured: boolean;
+  isNew: boolean;
+  bestSeller: boolean;
 };
 
 const numOrEmpty = (value: number | null | undefined) =>
@@ -87,9 +93,12 @@ export function ProductForm({
       shortDescription: product?.shortDescription ?? "",
       description: product?.description ?? "",
       specifications: product?.specifications.join("\n") ?? "",
-      metaTitle: "",
-      metaDescription: "",
+      metaTitle: product?.metaTitle ?? "",
+      metaDescription: product?.metaDescription ?? "",
       status: product?.status ?? "published",
+      featured: product?.featured ?? false,
+      isNew: product?.isNew ?? false,
+      bestSeller: product?.bestSeller ?? false,
     },
   });
 
@@ -114,6 +123,9 @@ export function ProductForm({
       fd.set("metaTitle", values.metaTitle);
       fd.set("metaDescription", values.metaDescription);
       fd.set("status", values.status);
+      fd.set("featured", String(values.featured));
+      fd.set("isNew", String(values.isNew));
+      fd.set("bestSeller", String(values.bestSeller));
 
       const action = isEdit ? updateProductAction : createProductAction;
       const result = await action({ status: "idle", message: "" }, fd);
@@ -274,6 +286,25 @@ export function ProductForm({
         <FormRow label="Meta description" htmlFor="metaDescription">
           <Textarea id="metaDescription" placeholder="SEO description" className="min-h-20" {...register("metaDescription")} />
         </FormRow>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {([
+            ["featured", "Featured product"],
+            ["isNew", "New arrival"],
+            ["bestSeller", "Best seller"],
+          ] as const).map(([name, label]) => (
+            <Controller
+              key={name}
+              control={control}
+              name={name}
+              render={({ field }) => (
+                <label className="flex items-center gap-3 rounded-lg border border-border/70 p-3 text-sm font-medium">
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  {label}
+                </label>
+              )}
+            />
+          ))}
+        </div>
       </FormSection>
 
       <div className="grid gap-3 sm:grid-cols-2">

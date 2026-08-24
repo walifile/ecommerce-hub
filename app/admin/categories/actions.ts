@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { AdminActionState } from "@/app/admin/actions";
+import { requireAdmin } from "@/lib/auth";
 
 const NOT_CONFIGURED =
   "Database write is not configured. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.";
@@ -38,6 +39,7 @@ export async function createCategoryAction(
   _prev: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
+  await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { status: "error", message: "Category name is required." };
 
@@ -70,6 +72,7 @@ export async function updateCategoryAction(
   _prev: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
+  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   if (!id) return { status: "error", message: "Missing category id." };
@@ -116,6 +119,7 @@ export async function updateCategoryAction(
 }
 
 export async function deleteCategoryAction(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("categoryId") ?? "");
   if (!id) return;
 

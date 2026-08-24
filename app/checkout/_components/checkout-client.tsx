@@ -18,7 +18,11 @@ const initialState: CheckoutState = { status: "idle", message: "" };
 const inputClass =
   "h-11 border-white/10 bg-black/30 text-white placeholder:text-white/30 focus-visible:border-brand/50 focus-visible:ring-brand/30";
 
-export function CheckoutClient() {
+export function CheckoutClient({ shippingFlatRate, freeShippingThreshold, stripeAvailable }: {
+  shippingFlatRate: number;
+  freeShippingThreshold: number;
+  stripeAvailable: boolean;
+}) {
   const { items, subtotal, ready, clear, coupon, clearCoupon } = useCart();
   const [state, formAction, pending] = useActionState(
     createOrderAction,
@@ -36,13 +40,16 @@ export function CheckoutClient() {
       toast.success(state.message);
       clear();
       clearCoupon();
-      router.push(`/track-order?orderNumber=${state.orderNumber}`);
+      const query = state.trackingToken
+        ? `trackingToken=${encodeURIComponent(state.trackingToken)}`
+        : `orderNumber=${encodeURIComponent(state.orderNumber)}&phone=${encodeURIComponent(state.trackingPhone ?? "")}`;
+      router.push(`/track-order?${query}`);
     } else if (state.status === "error") {
       toast.error(state.message);
     }
   }, [state, clear, clearCoupon, router]);
 
-  const shipping = subtotal >= 50 || subtotal === 0 ? 0 : 10;
+  const shipping = subtotal >= freeShippingThreshold || subtotal === 0 ? 0 : shippingFlatRate;
   const discount = useMemo(() => {
     if (!coupon || subtotal < coupon.minOrderAmount) return 0;
     const raw =
@@ -117,7 +124,9 @@ export function CheckoutClient() {
             <Label htmlFor="payment" className="text-white/70">Payment method</Label>
             <NativeSelect id="payment" name="payment" className="w-full border-white/10 bg-black/30 text-white">
               <NativeSelectOption value="cod">Cash on Delivery</NativeSelectOption>
-              <NativeSelectOption value="stripe">Stripe card payment</NativeSelectOption>
+              {stripeAvailable ? (
+                <NativeSelectOption value="stripe">Stripe card payment</NativeSelectOption>
+              ) : null}
             </NativeSelect>
           </div>
           <div className="space-y-2 sm:col-span-2">

@@ -71,8 +71,13 @@ export default async function EditProductPage(
               gallery,
               shortDescription: row.short_description ?? "",
               description: row.description ?? "",
+              metaTitle: row.meta_title ?? "",
+              metaDescription: row.meta_description ?? "",
               specifications,
               status: row.status === "published" ? "published" : "draft",
+              featured: row.featured,
+              isNew: row.is_new,
+              bestSeller: row.best_seller,
             }}
           />
         </CardContent>

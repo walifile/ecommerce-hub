@@ -91,6 +91,7 @@ export function ManualOrderDialog({ products }: { products: ProductOption[] }) {
           </div>
 
           <Input name="address" placeholder="Shipping address" className="rounded-xl" />
+          <Input name="adCost" type="number" min="0" step="0.01" defaultValue="0" placeholder="Advertising cost" className="rounded-xl" />
 
           <div className="grid gap-3 sm:grid-cols-2">
             <NativeSelect name="payment" defaultValue="cod" className="w-full">

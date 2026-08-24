@@ -1,6 +1,8 @@
 import type { Database } from "@/lib/supabase/database.types";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { DEFAULT_THEME, resolveTheme, type ThemeId } from "@/lib/themes";
+import { readCompatJson, writeCompatJson } from "@/lib/compat-storage";
+import { listAllProductReviews } from "@/lib/review-store";
 
 export type Category = {
   id: string;
@@ -26,6 +28,8 @@ export type Product = {
   reviewsCount: number;
   description: string;
   shortDescription: string;
+  metaTitle: string;
+  metaDescription: string;
   specifications: string[];
   image: string;
   gallery: string[];
@@ -39,6 +43,15 @@ export type Testimonial = {
   name: string;
   company: string;
   quote: string;
+};
+
+export type ProductReview = {
+  id: string;
+  reviewerName: string;
+  rating: number;
+  title: string;
+  body: string;
+  createdAt: string;
 };
 
 export type Customer = {
@@ -170,6 +183,12 @@ export type StoreSettings = {
   announcementMessage: string;
   announcementLinkText: string;
   announcementLinkHref: string;
+  whatsappTemplateOrderCreated: string;
+  whatsappTemplateOrderConfirmed: string;
+  whatsappTemplateOrderShipped: string;
+  whatsappTemplateOrderDelivered: string;
+  shippingFlatRate: number;
+  freeShippingThreshold: number;
 };
 
 export type StoreBanner = Pick<
@@ -239,7 +258,24 @@ const mockSettings: StoreSettings = {
   announcementMessage: "Limited drops are live. Free delivery on orders over Rs. 5,000.",
   announcementLinkText: "Shop now",
   announcementLinkHref: "/shop",
+  whatsappTemplateOrderCreated: "Hi {customerName}! We received order {orderNumber} ({total}). We'll confirm it shortly.",
+  whatsappTemplateOrderConfirmed: "Good news {customerName}! Order {orderNumber} is confirmed and being prepared.",
+  whatsappTemplateOrderShipped: "Order {orderNumber} has shipped and is on its way.",
+  whatsappTemplateOrderDelivered: "Order {orderNumber} has been delivered. Thank you for shopping with us!",
+  shippingFlatRate: 10,
+  freeShippingThreshold: 50,
 };
+
+const SETTINGS_OVERRIDE_PATH = "settings/phase1.json";
+
+async function readSettingsOverrides() {
+  return readCompatJson<Partial<StoreSettings>>(SETTINGS_OVERRIDE_PATH, {});
+}
+
+async function writeSettingsOverrides(input: Partial<StoreSettings>) {
+  const current = await readSettingsOverrides();
+  return writeCompatJson(SETTINGS_OVERRIDE_PATH, { ...current, ...input });
+}
 
 /** Lightweight read of just the active storefront theme (used by the layout). */
 export async function getActiveTheme(): Promise<ThemeId> {
@@ -289,7 +325,8 @@ export async function updateStoreTheme(
 
 export async function getStoreBanner(): Promise<StoreBanner> {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return mockSettings;
+  const overrides = await readSettingsOverrides();
+  if (!supabase) return { ...mockSettings, ...overrides };
 
   const { data, error } = await supabase
     .from("settings")
@@ -299,7 +336,7 @@ export async function getStoreBanner(): Promise<StoreBanner> {
     .limit(1)
     .maybeSingle();
 
-  if (error || !data) return mockSettings;
+  if (error || !data) return { ...mockSettings, ...overrides };
 
   const row = data as Partial<
     Pick<
@@ -312,13 +349,13 @@ export async function getStoreBanner(): Promise<StoreBanner> {
   >;
 
   return {
-    announcementEnabled:
+    announcementEnabled: overrides.announcementEnabled ??
       row.announcement_enabled ?? mockSettings.announcementEnabled,
-    announcementMessage:
+    announcementMessage: overrides.announcementMessage ??
       row.announcement_message ?? mockSettings.announcementMessage,
-    announcementLinkText:
+    announcementLinkText: overrides.announcementLinkText ??
       row.announcement_link_text ?? mockSettings.announcementLinkText,
-    announcementLinkHref:
+    announcementLinkHref: overrides.announcementLinkHref ??
       row.announcement_link_href ?? mockSettings.announcementLinkHref,
   };
 }
@@ -356,9 +393,9 @@ export async function updateStoreBanner(input: StoreBanner): Promise<{
 
   if (error) {
     console.error("[settings] banner update failed:", error.message);
-    return { ok: false, error: error.message };
+    return writeSettingsOverrides(input);
   }
-
+  await writeSettingsOverrides(input);
   return { ok: true };
 }
 
@@ -402,6 +439,71 @@ export async function updateStoreDetails(input: StoreDetails): Promise<{
   return { ok: true };
 }
 
+export async function getStorefrontDetails(): Promise<StoreDetails> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return mockSettings;
+  const { data, error } = await supabase
+    .from("settings")
+    .select("store_name, support_email, support_phone, hero_title, hero_subtitle")
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return mockSettings;
+  const row = data as {
+    store_name?: string | null;
+    support_email?: string | null;
+    support_phone?: string | null;
+    hero_title?: string | null;
+    hero_subtitle?: string | null;
+  };
+  return {
+    storeName: row.store_name || mockSettings.storeName,
+    supportEmail: row.support_email || mockSettings.supportEmail,
+    supportPhone: row.support_phone || mockSettings.supportPhone,
+    heroTitle: row.hero_title || mockSettings.heroTitle,
+    heroSubtitle: row.hero_subtitle || mockSettings.heroSubtitle,
+  };
+}
+
+export type OperationsSettings = Pick<StoreSettings,
+  | "whatsappTemplateOrderCreated" | "whatsappTemplateOrderConfirmed"
+  | "whatsappTemplateOrderShipped" | "whatsappTemplateOrderDelivered"
+  | "shippingFlatRate" | "freeShippingThreshold"
+>;
+
+export async function updateOperationsSettings(input: OperationsSettings): Promise<{ ok: boolean; error?: string }> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return { ok: false, error: "Supabase is not configured." };
+  const payload = {
+    whatsapp_template_order_created: input.whatsappTemplateOrderCreated,
+    whatsapp_template_order_confirmed: input.whatsappTemplateOrderConfirmed,
+    whatsapp_template_order_shipped: input.whatsappTemplateOrderShipped,
+    whatsapp_template_order_delivered: input.whatsappTemplateOrderDelivered,
+    shipping_flat_rate: input.shippingFlatRate,
+    free_shipping_threshold: input.freeShippingThreshold,
+  };
+  const { data: existing } = await supabase.from("settings").select("id").limit(1).maybeSingle();
+  const id = (existing as { id?: string } | null)?.id;
+  const { error } = id
+    ? await supabase.from("settings").update(payload as never).eq("id", id)
+    : await supabase.from("settings").insert(payload as never);
+  if (error) {
+    // Legacy settings tables already contain the WhatsApp columns but not the
+    // shipping fields. Persist the supported portion there and keep the full
+    // configuration in private compatibility storage.
+    const legacyPayload = {
+      whatsapp_template_order_created: input.whatsappTemplateOrderCreated,
+      whatsapp_template_order_confirmed: input.whatsappTemplateOrderConfirmed,
+      whatsapp_template_order_shipped: input.whatsappTemplateOrderShipped,
+      whatsapp_template_order_delivered: input.whatsappTemplateOrderDelivered,
+    };
+    const legacyResult = id
+      ? await supabase.from("settings").update(legacyPayload as never).eq("id", id)
+      : await supabase.from("settings").insert(legacyPayload as never);
+    if (legacyResult.error) return { ok: false, error: legacyResult.error.message };
+  }
+  return writeSettingsOverrides(input);
+}
+
 function calculateOrderProfit(order: Order) {
   const productCost = order.items.reduce(
     (sum, item) => sum + item.productCost * item.quantity,
@@ -426,18 +528,30 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     return null;
   }
 
-  const [categoriesResult, productsResult, productImagesResult, customersResult, ordersResult, expensesResult, couponsResult, aiResult, whatsappResult, settingsResult] =
+  const [categoriesResult, productsResult, productImagesResult, customersResult, ordersResult, orderEventsResult, expensesResult, couponsResult, aiResult, whatsappResult, settingsResult, settingsOverrides, couponRules, compatOrderEvents] =
     await Promise.all([
       supabase.from("categories").select("*").order("name"),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("product_images").select("*").order("sort_order"),
       supabase.from("customers").select("*").order("created_at", { ascending: false }),
-      supabase.from("orders").select("*, order_items(*), order_events(*)").order("created_at", { ascending: false }),
+      supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false }),
+      supabase.from("order_events" as never).select("*").order("created_at", { ascending: true }),
       supabase.from("expenses").select("*").order("expense_date", { ascending: false }),
-      supabase.from("coupons").select("*").order("created_at", { ascending: false }),
+      // Some existing Phase 1 databases predate coupons.created_at. Sorting in
+      // memory keeps those installations usable until migrations are applied.
+      supabase.from("coupons").select("*"),
       supabase.from("ai_generations").select("*").order("created_at", { ascending: false }),
       supabase.from("whatsapp_logs").select("*").order("created_at", { ascending: false }),
       supabase.from("settings").select("*").limit(1).maybeSingle(),
+      readSettingsOverrides(),
+      readCompatJson<Record<string, {
+        minOrderAmount?: number;
+        maxDiscountAmount?: number | null;
+        startsAt?: string | null;
+        usageLimit?: number | null;
+        usedCount?: number;
+      }>>("coupons/rules.json", {}),
+      readCompatJson<Database["public"]["Tables"]["order_events"]["Row"][]>("orders/events.json", []),
     ]);
 
   // Log any per-table errors but keep whatever loaded — a single failing table
@@ -452,6 +566,8 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     console.error("[catalog] customers read failed:", customersResult.error.message);
   if (ordersResult.error)
     console.error("[catalog] orders read failed:", ordersResult.error.message);
+  if (orderEventsResult.error && orderEventsResult.error.code !== "PGRST205")
+    console.error("[catalog] order_events read failed:", orderEventsResult.error.message);
   if (expensesResult.error)
     console.error("[catalog] expenses read failed:", expensesResult.error.message);
   if (couponsResult.error)
@@ -473,8 +589,11 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     (customersResult.data ?? []) as Database["public"]["Tables"]["customers"]["Row"][];
   const ordersRows = (ordersResult.data ?? []) as (Database["public"]["Tables"]["orders"]["Row"] & {
     order_items?: Database["public"]["Tables"]["order_items"]["Row"][];
-    order_events?: Database["public"]["Tables"]["order_events"]["Row"][];
   })[];
+  const orderEventRows = [
+    ...((orderEventsResult.data ?? []) as unknown as Database["public"]["Tables"]["order_events"]["Row"][]),
+    ...compatOrderEvents,
+  ];
   const expensesRows =
     (expensesResult.data ?? []) as Database["public"]["Tables"]["expenses"]["Row"][];
   const couponRows =
@@ -517,6 +636,8 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       reviewsCount: product.reviews_count,
       shortDescription: product.short_description ?? "",
       description: product.description ?? "",
+      metaTitle: product.meta_title ?? "",
+      metaDescription: product.meta_description ?? "",
       specifications: mapSpecifications(product.specifications),
       image: product.image_url ?? "",
       gallery: gallery.length
@@ -579,7 +700,8 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
           : Number(order.refund_amount),
       reversalNote: order.reversal_note ?? undefined,
       reversedAt: order.reversed_at ?? undefined,
-      events: (order.order_events ?? [])
+      events: orderEventRows
+        .filter((event) => event.order_id === order.id)
         .slice()
         .sort((a, b) => a.created_at.localeCompare(b.created_at))
         .map((event) => ({
@@ -615,27 +737,30 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     date: expense.expense_date,
   }));
 
-  const coupons = couponRows.map((coupon) => ({
+  const coupons = couponRows.map((coupon) => {
+    const rule = couponRules[coupon.code];
+    return ({
     id: coupon.id,
     code: coupon.code,
     discountType:
       coupon.discount_type === "percentage" ? "percentage" : "fixed",
     discountValue: Number(coupon.discount_value),
-    minOrderAmount: Number(coupon.min_order_amount ?? 0),
+    minOrderAmount: Number(rule?.minOrderAmount ?? coupon.min_order_amount ?? 0),
     maxDiscountAmount:
-      coupon.max_discount_amount === null ||
-      coupon.max_discount_amount === undefined
+      (rule?.maxDiscountAmount ?? coupon.max_discount_amount) === null ||
+      (rule?.maxDiscountAmount ?? coupon.max_discount_amount) === undefined
         ? undefined
-        : Number(coupon.max_discount_amount),
+        : Number(rule?.maxDiscountAmount ?? coupon.max_discount_amount),
     active: coupon.active,
-    startsAt: coupon.starts_at ?? undefined,
+    startsAt: rule?.startsAt ?? coupon.starts_at ?? undefined,
     expiresAt: coupon.expires_at ?? undefined,
     usageLimit:
-      coupon.usage_limit === null || coupon.usage_limit === undefined
+      (rule?.usageLimit ?? coupon.usage_limit) === null || (rule?.usageLimit ?? coupon.usage_limit) === undefined
         ? undefined
-        : coupon.usage_limit,
-    usedCount: coupon.used_count ?? 0,
-  } satisfies Coupon));
+        : Number(rule?.usageLimit ?? coupon.usage_limit),
+    usedCount: Number(rule?.usedCount ?? coupon.used_count ?? 0),
+  } satisfies Coupon);
+  });
 
   const aiGenerations = aiRows.map((row) => ({
     id: row.id,
@@ -686,14 +811,24 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       heroTitle: settingsRow?.hero_title ?? mockSettings.heroTitle,
       heroSubtitle: settingsRow?.hero_subtitle ?? mockSettings.heroSubtitle,
       theme: resolveTheme(settingsRow?.theme),
-      announcementEnabled:
+      announcementEnabled: settingsOverrides.announcementEnabled ??
         settingsRow?.announcement_enabled ?? mockSettings.announcementEnabled,
-      announcementMessage:
+      announcementMessage: settingsOverrides.announcementMessage ??
         settingsRow?.announcement_message ?? mockSettings.announcementMessage,
-      announcementLinkText:
+      announcementLinkText: settingsOverrides.announcementLinkText ??
         settingsRow?.announcement_link_text ?? mockSettings.announcementLinkText,
-      announcementLinkHref:
+      announcementLinkHref: settingsOverrides.announcementLinkHref ??
         settingsRow?.announcement_link_href ?? mockSettings.announcementLinkHref,
+      whatsappTemplateOrderCreated: settingsOverrides.whatsappTemplateOrderCreated ??
+        settingsRow?.whatsapp_template_order_created ?? mockSettings.whatsappTemplateOrderCreated,
+      whatsappTemplateOrderConfirmed: settingsOverrides.whatsappTemplateOrderConfirmed ??
+        settingsRow?.whatsapp_template_order_confirmed ?? mockSettings.whatsappTemplateOrderConfirmed,
+      whatsappTemplateOrderShipped: settingsOverrides.whatsappTemplateOrderShipped ??
+        settingsRow?.whatsapp_template_order_shipped ?? mockSettings.whatsappTemplateOrderShipped,
+      whatsappTemplateOrderDelivered: settingsOverrides.whatsappTemplateOrderDelivered ??
+        settingsRow?.whatsapp_template_order_delivered ?? mockSettings.whatsappTemplateOrderDelivered,
+      shippingFlatRate: Number(settingsOverrides.shippingFlatRate ?? settingsRow?.shipping_flat_rate ?? mockSettings.shippingFlatRate),
+      freeShippingThreshold: Number(settingsOverrides.freeShippingThreshold ?? settingsRow?.free_shipping_threshold ?? mockSettings.freeShippingThreshold),
     },
   };
 }
@@ -808,6 +943,27 @@ export async function getProductBySlug(slug: string) {
   return products.find((product) => product.slug === slug);
 }
 
+export async function getProductReviews(productId: string): Promise<ProductReview[]> {
+  const rows = await listAllProductReviews();
+  return rows.filter((row) => row.productId === productId && row.status === "approved").map((row) => ({
+    id: row.id,
+    reviewerName: row.reviewerName,
+    rating: row.rating,
+    title: row.title,
+    body: row.body,
+    createdAt: row.createdAt,
+  }));
+}
+
+export async function getHomepageReviews(): Promise<Array<ProductReview & { productName: string }>> {
+  const rows = await listAllProductReviews();
+  return rows.filter((row) => row.status === "approved").slice(0, 6).map((row) => ({
+    id: row.id, reviewerName: row.reviewerName, rating: row.rating,
+    title: row.title, body: row.body, createdAt: row.createdAt,
+    productName: row.productName || "Verified purchase",
+  }));
+}
+
 export async function getRelatedProducts(slug: string) {
   const product = await getProductBySlug(slug);
 
@@ -831,6 +987,36 @@ export async function getOrderByNumber(orderNumber?: string) {
   return orders.find(
     (order) => order.orderNumber.toLowerCase() === orderNumber.toLowerCase()
   );
+}
+
+/** Public tracking lookup. A high-entropy token, or order number plus phone,
+ * is required before any order details are returned. */
+export async function getTrackedOrder(input: {
+  trackingToken?: string;
+  orderNumber?: string;
+  phone?: string;
+}) {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return null;
+
+  let id: string | null = null;
+  if (input.trackingToken) {
+    const { data } = await supabase.from("orders").select("id")
+      .eq("tracking_token" as never, input.trackingToken).maybeSingle<{ id: string }>();
+    id = data?.id ?? null;
+  } else if (input.orderNumber && input.phone) {
+    const { data } = await supabase.from("orders")
+      .select("id, customers(phone)")
+      .eq("order_number", input.orderNumber.trim().toUpperCase())
+      .maybeSingle();
+    const row = data as { id?: string; customers?: { phone?: string | null } | null } | null;
+    const normalize = (value: string) => value.replace(/\D/g, "");
+    if (row?.id && normalize(row.customers?.phone ?? "") === normalize(input.phone)) {
+      id = row.id;
+    }
+  }
+  if (!id) return null;
+  return getOrderById(id);
 }
 
 export async function getOrderById(id?: string) {
@@ -870,8 +1056,17 @@ export async function getCustomerById(id?: string) {
 
 export async function getDashboardData() {
   const data = await getCatalogData();
-  const totalRevenue = data.orders.reduce((sum, order) => sum + order.revenue, 0);
-  const totalProfit = data.orders.reduce((sum, order) => sum + calculateOrderProfit(order), 0);
+  const activeOrders = data.orders.filter((order) => !["cancelled", "returned"].includes(order.status));
+  const totalRevenue = activeOrders.reduce((sum, order) => sum + order.revenue, 0);
+  const totalProfit = activeOrders.reduce((sum, order) => sum + calculateOrderProfit(order), 0);
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfDay);
+  startOfWeek.setDate(startOfWeek.getDate() - ((startOfWeek.getDay() + 6) % 7));
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const profitSince = (start: Date) => activeOrders
+    .filter((order) => new Date(order.createdAt) >= start)
+    .reduce((sum, order) => sum + calculateOrderProfit(order), 0);
   const lowStockProducts = data.products.filter(
     (product) => product.stockQuantity <= product.lowStockLimit
   );
@@ -883,12 +1078,12 @@ export async function getDashboardData() {
     ...data,
     metrics: {
       totalRevenue,
-      totalOrders: data.orders.length,
+      totalOrders: activeOrders.length,
       totalCustomers: data.customers.length,
       totalProfit,
-      dailyProfit: Math.round(totalProfit * 0.14),
-      weeklyProfit: Math.round(totalProfit * 0.52),
-      monthlyProfit: totalProfit,
+      dailyProfit: profitSince(startOfDay),
+      weeklyProfit: profitSince(startOfWeek),
+      monthlyProfit: profitSince(startOfMonth),
     },
     lowStockProducts,
     mostSoldProducts,

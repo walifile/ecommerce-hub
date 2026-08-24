@@ -53,6 +53,7 @@ If this project helps you, support it here:
 
 ```bash
 npm install
+npx supabase db push
 npm run dev
 ```
 
@@ -61,6 +62,10 @@ Open `http://localhost:3000`.
 ## Environment
 
 Use the values in `.env.example` as the baseline. The app expects Supabase keys for live data and auth flows.
+
+Database migrations are required before deploying a new build. The Phase 1
+completion migration adds atomic checkout, secure tracking tokens, review
+moderation, customer aggregates, and operations settings.
 
 For Stripe payments, set `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and
 `STRIPE_CURRENCY`. Point the Stripe webhook endpoint to:

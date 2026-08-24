@@ -1,6 +1,7 @@
 "use server";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 
 export type AdminActionState = {
   status: "idle" | "success" | "error";
@@ -18,6 +19,7 @@ const IMAGE_BUCKET = "product-images";
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 export async function uploadImageAction(formData: FormData): Promise<UploadState> {
+  await requireAdmin();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0)
     return { status: "error", message: "No file selected." };

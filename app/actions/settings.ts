@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { updateStoreDetails } from "@/lib/ecommerce-data";
 import { storeDetailsSchema } from "@/lib/validations/admin";
+import { requireAdmin } from "@/lib/auth";
 
 export type SettingsActionState = {
   status: "idle" | "success" | "error";
@@ -13,6 +14,7 @@ export async function saveStoreDetailsAction(
   _prevState: SettingsActionState,
   formData: FormData
 ): Promise<SettingsActionState> {
+  await requireAdmin();
   const parsed = storeDetailsSchema.safeParse({
     storeName: String(formData.get("storeName") ?? ""),
     supportEmail: String(formData.get("supportEmail") ?? ""),

@@ -2,40 +2,7 @@ import type { SVGProps } from "react";
 import Link from "next/link";
 import { Mail, Phone, ShieldCheck, Store } from "lucide-react";
 import { NewsletterForm } from "@/components/ecommerce/newsletter-form";
-
-function InstagramIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <rect x="2" y="2" width="20" height="20" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function FacebookIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5h1.65V3.6c-.8-.1-1.6-.15-2.4-.15-2.4 0-4.05 1.45-4.05 4.15v2.3H7.5V13h2.75v8h3.25z" />
-    </svg>
-  );
-}
-
-function YoutubeIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-      <path d="M22.5 7.2a2.7 2.7 0 0 0-1.9-1.9C18.9 4.8 12 4.8 12 4.8s-6.9 0-8.6.5A2.7 2.7 0 0 0 1.5 7.2 28 28 0 0 0 1.1 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9c1.7.5 8.6.5 8.6.5s6.9 0 8.6-.5a2.7 2.7 0 0 0 1.9-1.9 28 28 0 0 0 .4-4.8 28 28 0 0 0-.4-4.8zM9.9 15.3V8.7l5.7 3.3z" />
-    </svg>
-  );
-}
+import { getStorefrontDetails } from "@/lib/ecommerce-data";
 
 function WhatsappIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -75,16 +42,13 @@ const footerColumns = [
   },
 ];
 
-const socials = [
-  { label: "Instagram", href: "#", icon: InstagramIcon },
-  { label: "Facebook", href: "#", icon: FacebookIcon },
-  { label: "YouTube", href: "#", icon: YoutubeIcon },
-  { label: "WhatsApp", href: "#", icon: WhatsappIcon },
-];
-
-const paymentMethods = ["COD", "Easypaisa", "JazzCash", "Visa", "Mastercard"];
-
-export function SiteFooter() {
+export async function SiteFooter() {
+  const details = await getStorefrontDetails();
+  const phoneDigits = details.supportPhone.replace(/\D/g, "");
+  const paymentMethods = [
+    "Cash on Delivery",
+    ...(process.env.STRIPE_SECRET_KEY ? ["Visa", "Mastercard"] : []),
+  ];
   return (
     <footer id="footer" className="relative border-t border-white/8 bg-surface-deep">
       <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-brand/80 to-transparent" />
@@ -118,7 +82,7 @@ export function SiteFooter() {
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand/70">
                   Play · Learn · Repeat
                 </p>
-                <p className="text-base font-black leading-tight text-white">ToyVerse</p>
+                <p className="text-base font-black leading-tight text-white">{details.storeName}</p>
               </div>
             </Link>
 
@@ -127,33 +91,34 @@ export function SiteFooter() {
               checkout, and a calmer shopping experience for modern parents.
             </p>
 
-            <div className="flex flex-wrap gap-2.5">
-              {socials.map(({ label, href, icon: Icon }) => (
+            {phoneDigits ? (
+              <div className="flex flex-wrap gap-2.5">
                 <Link
-                  key={label}
-                  href={href}
-                  aria-label={label}
+                  href={`https://wa.me/${phoneDigits}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="Contact us on WhatsApp"
                   className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/4 text-white/55 transition-all hover:border-brand/40 hover:bg-brand/10 hover:text-brand"
                 >
-                  <Icon className="size-4" />
+                  <WhatsappIcon className="size-4" />
                 </Link>
-              ))}
-            </div>
+              </div>
+            ) : null}
 
             <div className="flex flex-col gap-2 text-sm text-white/55">
               <Link
-                href="mailto:hello@toyverse.shop"
+                href={`mailto:${details.supportEmail}`}
                 className="flex items-center gap-2 transition-colors hover:text-white"
               >
                 <Mail className="size-4 text-brand" />
-                hello@toyverse.shop
+                {details.supportEmail}
               </Link>
               <Link
-                href="tel:+15551234567"
+                href={`tel:${details.supportPhone}`}
                 className="flex items-center gap-2 transition-colors hover:text-white"
               >
                 <Phone className="size-4 text-brand" />
-                +1 (555) 123-4567
+                {details.supportPhone}
               </Link>
             </div>
           </div>
@@ -211,9 +176,6 @@ export function SiteFooter() {
               className="transition-colors hover:text-white"
             >
               Terms of Service
-            </Link>
-            <Link href="/privacy-policy" className="transition-colors hover:text-white">
-              Cookie Policy
             </Link>
           </div>
         </div>

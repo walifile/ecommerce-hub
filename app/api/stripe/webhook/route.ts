@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  if (event.type !== "checkout.session.completed") {
+  if (!["checkout.session.completed", "checkout.session.expired"].includes(event.type)) {
     return NextResponse.json({ received: true });
   }
 
@@ -44,6 +44,24 @@ export async function POST(request: Request) {
   const supabase = getSupabaseServerClient();
   if (!supabase) {
     return NextResponse.json({ error: "Supabase is not configured." }, { status: 500 });
+  }
+
+  if (event.type === "checkout.session.expired") {
+    const { error: discardError } = await supabase.rpc(
+      "discard_unpaid_store_order" as never,
+      { p_order_id: orderId } as never
+    );
+    if (discardError) {
+      console.error("[stripe] expired checkout cleanup failed:", discardError.message);
+      return NextResponse.json({ error: "Could not release checkout reservation." }, { status: 500 });
+    }
+    revalidatePath("/admin/orders");
+    revalidatePath("/shop");
+    return NextResponse.json({ received: true, released: true });
+  }
+
+  if (session.payment_status !== "paid") {
+    return NextResponse.json({ received: true, skipped: "payment not settled" });
   }
 
   const paymentIntent =
@@ -86,7 +104,7 @@ export async function POST(request: Request) {
     .from("orders")
     .update({
       status: "confirmed",
-      payment_status: session.payment_status ?? "paid",
+      payment_status: "paid",
       stripe_session_id: session.id,
       stripe_payment_intent_id: paymentIntent ?? null,
       paid_at: new Date().toISOString(),
@@ -98,38 +116,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Could not update order." }, { status: 500 });
   }
 
-  for (const item of row.order_items ?? []) {
-    if (!item.product_id) continue;
-    const { data: product } = await supabase
-      .from("products")
-      .select("stock_quantity")
-      .eq("id", item.product_id)
-      .maybeSingle<{ stock_quantity: number }>();
-
-    if (!product) continue;
-
-    await supabase
-      .from("products")
-      .update({
-        stock_quantity: Math.max(0, Number(product.stock_quantity) - item.quantity),
-      } as never)
-      .eq("id", item.product_id);
-  }
-
-  if (row.coupon_code) {
-    const { data: coupon } = await supabase
-      .from("coupons")
-      .select("id, used_count")
-      .eq("code", row.coupon_code)
-      .maybeSingle<{ id: string; used_count: number | null }>();
-
-    if (coupon) {
-      await supabase
-        .from("coupons")
-        .update({ used_count: (coupon.used_count ?? 0) + 1 } as never)
-        .eq("id", coupon.id);
-    }
-  }
+  // Inventory and coupon usage were reserved atomically when the checkout
+  // session was created. The webhook only settles payment and order status.
 
   if (row) {
     await notifyOrder({

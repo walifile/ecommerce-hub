@@ -33,7 +33,7 @@ export function AuthForm({
   return (
     <form action={formAction} className="space-y-4">
       {mode === "login" && (
-        <input type="hidden" name="redirect" value={redirectTo ?? "/account"} />
+        <input type="hidden" name="redirect" value={redirectTo ?? ""} />
       )}
 
       {mode === "signup" && (

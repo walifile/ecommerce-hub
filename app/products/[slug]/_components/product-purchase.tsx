@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowRight, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/add-to-cart";
+import { BuyNowButton } from "@/components/cart/buy-now-button";
 import { buttonVariants } from "@/components/ui/button";
 import type { CartInput } from "@/components/cart/cart-provider";
 import { formatCurrency } from "@/lib/format";
@@ -94,16 +94,15 @@ export function ProductPurchase({
         >
           {isOutOfStock ? "Out of stock" : "Add to cart"}
         </AddToCartButton>
-        <Link
-          href="/cart"
+        <BuyNowButton
+          item={item}
+          quantity={qty}
+          disabled={isOutOfStock}
           className={cn(
             buttonVariants({ variant: "outline" }),
             "h-12 rounded-full border-white/10 bg-white/[0.04] text-white hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
           )}
-        >
-          View cart
-          <ArrowRight className="size-4" />
-        </Link>
+        />
       </div>
     </div>
   );

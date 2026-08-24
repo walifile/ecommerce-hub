@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   Check,
@@ -10,17 +11,35 @@ import {
 } from "lucide-react";
 import { ProductGallery } from "@/app/products/[slug]/_components/product-gallery";
 import { ProductPurchase } from "@/app/products/[slug]/_components/product-purchase";
+import { ProductReviews } from "@/app/products/[slug]/_components/product-reviews";
 import { ProductCard } from "@/components/ecommerce/product-card";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getProductBySlug, getRelatedProducts } from "@/lib/ecommerce-data";
+import { getProductBySlug, getProductReviews, getRelatedProducts } from "@/lib/ecommerce-data";
 
 const TRUST = [
   { icon: Truck, title: "Fast delivery", text: "Ships in 24–48 hours" },
   { icon: ShieldCheck, title: "Secure checkout", text: "Encrypted payments" },
   { icon: RefreshCw, title: "Easy returns", text: "7-day return window" },
 ];
+
+export async function generateMetadata(
+  props: PageProps<"/products/[slug]">
+): Promise<Metadata> {
+  const { slug } = await props.params;
+  const product = await getProductBySlug(slug);
+  if (!product) return { title: "Product not found" };
+  return {
+    title: product.metaTitle || product.name,
+    description: product.metaDescription || product.shortDescription || product.description,
+    openGraph: {
+      title: product.metaTitle || product.name,
+      description: product.metaDescription || product.shortDescription || product.description,
+      images: product.image ? [product.image] : undefined,
+    },
+  };
+}
 
 export default async function ProductPage(props: PageProps<"/products/[slug]">) {
   const { slug } = await props.params;
@@ -32,6 +51,7 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
   if (!product) {
     notFound();
   }
+  const reviews = await getProductReviews(product.id);
 
   const gallery = product.gallery.length ? product.gallery : [product.image];
   const isOutOfStock = product.stockQuantity <= 0;
@@ -229,6 +249,8 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
             </TabsContent>
           </Tabs>
         </section>
+
+        <ProductReviews productId={product.id} productSlug={product.slug} reviews={reviews} />
 
         {relatedProducts.length ? (
           <section className="section-shell pb-14 pt-8">

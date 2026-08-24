@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { AdminActionState } from "@/app/admin/actions";
+import { requireAdmin } from "@/lib/auth";
 
 const NOT_CONFIGURED =
   "Database write is not configured. Set SUPABASE_SERVICE_ROLE_KEY in the server environment.";
@@ -69,6 +70,7 @@ export async function createProductAction(
   _prev: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
+  await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
   const sellingPrice = Number(formData.get("sellingPrice"));
 
@@ -118,6 +120,9 @@ export async function createProductAction(
       meta_description: String(formData.get("metaDescription") ?? "").trim() || null,
       image_url: imageUrl || null,
       status,
+      featured: formData.get("featured") === "true",
+      is_new: formData.get("isNew") === "true",
+      best_seller: formData.get("bestSeller") === "true",
     } as never)
     .select("id")
     .maybeSingle<{ id: string }>();
@@ -142,6 +147,7 @@ export async function updateProductAction(
   _prev: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
+  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const sellingPrice = Number(formData.get("sellingPrice"));
@@ -185,6 +191,9 @@ export async function updateProductAction(
     meta_description: String(formData.get("metaDescription") ?? "").trim() || null,
     image_url: String(formData.get("imageUrl") ?? "").trim() || null,
     status,
+    featured: formData.get("featured") === "true",
+    is_new: formData.get("isNew") === "true",
+    best_seller: formData.get("bestSeller") === "true",
   };
   const sku = String(formData.get("sku") ?? "").trim();
   if (sku) updates.sku = sku;
@@ -212,6 +221,7 @@ export async function updateProductAction(
 }
 
 export async function deleteProductAction(formData: FormData) {
+  await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
 
