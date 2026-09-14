@@ -20,6 +20,24 @@ const optionalNonNegativeInteger = (msg: string) =>
     msg
   );
 
+const optionalPositiveAmount = (msg: string) =>
+  z.string().trim().refine(
+    (value) => value === "" || (Number.isFinite(Number(value)) && Number(value) > 0),
+    msg
+  );
+
+const optionalPositiveInteger = (msg: string) =>
+  z.string().trim().refine(
+    (value) => value === "" || (Number.isInteger(Number(value)) && Number(value) > 0),
+    msg
+  );
+
+const optionalDateTime = (msg: string) =>
+  z.string().trim().refine(
+    (value) => value === "" || Number.isFinite(new Date(value).getTime()),
+    msg
+  );
+
 const optionalHttpUrl = z.string().trim().refine(
   (value) => value === "" || /^https?:\/\/[^\s]+$/i.test(value),
   "Enter a valid http(s) image URL"
@@ -100,19 +118,27 @@ export const couponSchema = z
       .string()
       .trim()
       .min(1, "Enter a coupon code")
+      .max(40, "Coupon code must be 40 characters or fewer")
       .regex(/^[A-Za-z0-9_-]+$/, "Use letters, numbers, - and _ only"),
     discountType: z.enum(["fixed", "percentage"]),
     discountValue: positiveAmount("Enter a valid discount value"),
-    minOrderAmount: z.string().trim(),
-    maxDiscountAmount: z.string().trim(),
-    usageLimit: z.string().trim(),
-    startsAt: z.string().trim(),
-    expiresAt: z.string().trim(),
+    minOrderAmount: optionalNonNegativeAmount("Minimum order cannot be negative"),
+    maxDiscountAmount: optionalPositiveAmount("Maximum discount must be greater than zero"),
+    usageLimit: optionalPositiveInteger("Usage limit must be a whole number greater than zero"),
+    startsAt: optionalDateTime("Enter a valid start date"),
+    expiresAt: optionalDateTime("Enter a valid expiry date"),
     active: z.boolean(),
   })
   .refine(
     (d) => !(d.discountType === "percentage" && Number(d.discountValue) > 100),
     { path: ["discountValue"], message: "Percentage cannot exceed 100%" }
+  )
+  .refine(
+    (d) =>
+      !d.startsAt ||
+      !d.expiresAt ||
+      new Date(d.expiresAt).getTime() > new Date(d.startsAt).getTime(),
+    { path: ["expiresAt"], message: "Expiry must be after the start date" }
   );
 
 export type CouponFormInput = z.infer<typeof couponSchema>;

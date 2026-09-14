@@ -18,10 +18,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormRow } from "@/app/admin/_components/form-row";
-import { createCouponAction } from "@/app/admin/coupons/actions";
+import { createCouponAction, updateCouponAction } from "@/app/admin/coupons/actions";
 import { couponSchema, type CouponFormInput } from "@/lib/validations/admin";
 
-export function CouponForm() {
+export type CouponFormValues = {
+  id: string;
+  code: string;
+  discountType: "fixed" | "percentage";
+  discountValue: number;
+  minOrderAmount: number;
+  maxDiscountAmount?: number;
+  usageLimit?: number;
+  startsAt?: string;
+  expiresAt?: string;
+  active: boolean;
+};
+
+function toLocalDateTime(value?: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+export function CouponForm({
+  coupon,
+  onSuccess,
+}: {
+  coupon?: CouponFormValues;
+  onSuccess?: () => void;
+} = {}) {
+  const isEdit = Boolean(coupon);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const {
@@ -33,21 +60,22 @@ export function CouponForm() {
   } = useForm<CouponFormInput>({
     resolver: zodResolver(couponSchema),
     defaultValues: {
-      code: "",
-      discountType: "fixed",
-      discountValue: "",
-      minOrderAmount: "",
-      maxDiscountAmount: "",
-      usageLimit: "",
-      startsAt: "",
-      expiresAt: "",
-      active: true,
+      code: coupon?.code ?? "",
+      discountType: coupon?.discountType ?? "fixed",
+      discountValue: coupon ? String(coupon.discountValue) : "",
+      minOrderAmount: coupon ? String(coupon.minOrderAmount) : "",
+      maxDiscountAmount: coupon?.maxDiscountAmount === undefined ? "" : String(coupon.maxDiscountAmount),
+      usageLimit: coupon?.usageLimit === undefined ? "" : String(coupon.usageLimit),
+      startsAt: toLocalDateTime(coupon?.startsAt),
+      expiresAt: toLocalDateTime(coupon?.expiresAt),
+      active: coupon?.active ?? true,
     },
   });
 
   function onSubmit(values: CouponFormInput) {
     startTransition(async () => {
       const fd = new FormData();
+      if (coupon) fd.set("couponId", coupon.id);
       fd.set("code", values.code);
       fd.set("discountType", values.discountType);
       fd.set("discountValue", values.discountValue);
@@ -56,13 +84,15 @@ export function CouponForm() {
       fd.set("usageLimit", values.usageLimit);
       fd.set("startsAt", values.startsAt);
       fd.set("expiresAt", values.expiresAt);
-      if (values.active) fd.set("active", "on");
+      fd.set("active", String(values.active));
 
-      const result = await createCouponAction({ status: "idle", message: "" }, fd);
+      const action = isEdit ? updateCouponAction : createCouponAction;
+      const result = await action({ status: "idle", message: "" }, fd);
       if (result.status === "success") {
         toast.success(result.message);
-        reset();
+        if (!isEdit) reset();
         router.refresh();
+        onSuccess?.();
       } else if (result.status === "error") {
         toast.error(result.message);
       }
@@ -76,16 +106,26 @@ export function CouponForm() {
           <TicketPercent className="size-5" />
         </div>
         <div>
-          <h2 className="text-base font-semibold text-foreground">Create coupon</h2>
+          <h2 className="text-base font-semibold text-foreground">
+            {isEdit ? "Edit coupon" : "Create coupon"}
+          </h2>
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Build fixed or percentage discounts with campaign limits.
+            {isEdit
+              ? "Update campaign rules without changing its audit code."
+              : "Build fixed or percentage discounts with campaign limits."}
           </p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <FormRow label="Code" htmlFor="code" error={errors.code?.message}>
-          <Input id="code" placeholder="TOY10" className="uppercase" {...register("code")} />
+          <Input
+            id="code"
+            placeholder="TOY10"
+            className="uppercase read-only:cursor-not-allowed read-only:opacity-70"
+            readOnly={isEdit}
+            {...register("code")}
+          />
         </FormRow>
         <FormRow label="Discount type" htmlFor="discountType">
           <Controller
@@ -121,7 +161,7 @@ export function CouponForm() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <FormRow label="Minimum order" htmlFor="minOrderAmount">
+        <FormRow label="Minimum order" htmlFor="minOrderAmount" error={errors.minOrderAmount?.message}>
           <Input
             id="minOrderAmount"
             type="number"
@@ -131,7 +171,7 @@ export function CouponForm() {
             {...register("minOrderAmount")}
           />
         </FormRow>
-        <FormRow label="Max discount" htmlFor="maxDiscountAmount">
+        <FormRow label="Max discount" htmlFor="maxDiscountAmount" error={errors.maxDiscountAmount?.message}>
           <Input
             id="maxDiscountAmount"
             type="number"
@@ -141,7 +181,7 @@ export function CouponForm() {
             {...register("maxDiscountAmount")}
           />
         </FormRow>
-        <FormRow label="Usage limit" htmlFor="usageLimit">
+        <FormRow label="Usage limit" htmlFor="usageLimit" error={errors.usageLimit?.message}>
           <Input
             id="usageLimit"
             type="number"
@@ -154,10 +194,10 @@ export function CouponForm() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <FormRow label="Starts at" htmlFor="startsAt">
+        <FormRow label="Starts at" htmlFor="startsAt" error={errors.startsAt?.message}>
           <Input id="startsAt" type="datetime-local" {...register("startsAt")} />
         </FormRow>
-        <FormRow label="Expires at" htmlFor="expiresAt">
+        <FormRow label="Expires at" htmlFor="expiresAt" error={errors.expiresAt?.message}>
           <Input id="expiresAt" type="datetime-local" {...register("expiresAt")} />
         </FormRow>
       </div>
@@ -186,7 +226,7 @@ export function CouponForm() {
             Creating…
           </>
         ) : (
-          "Create coupon"
+          isEdit ? "Update coupon" : "Create coupon"
         )}
       </Button>
     </form>

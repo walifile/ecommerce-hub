@@ -528,7 +528,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     return null;
   }
 
-  const [categoriesResult, productsResult, productImagesResult, customersResult, ordersResult, orderEventsResult, expensesResult, couponsResult, aiResult, whatsappResult, settingsResult, settingsOverrides, couponRules, compatOrderEvents] =
+  const [categoriesResult, productsResult, productImagesResult, customersResult, ordersResult, orderEventsResult, expensesResult, couponsResult, aiResult, whatsappResult, settingsResult, settingsOverrides, compatOrderEvents] =
     await Promise.all([
       supabase.from("categories").select("*").order("name"),
       supabase.from("products").select("*").order("created_at", { ascending: false }),
@@ -544,13 +544,6 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       supabase.from("whatsapp_logs").select("*").order("created_at", { ascending: false }),
       supabase.from("settings").select("*").limit(1).maybeSingle(),
       readSettingsOverrides(),
-      readCompatJson<Record<string, {
-        minOrderAmount?: number;
-        maxDiscountAmount?: number | null;
-        startsAt?: string | null;
-        usageLimit?: number | null;
-        usedCount?: number;
-      }>>("coupons/rules.json", {}),
       readCompatJson<Database["public"]["Tables"]["order_events"]["Row"][]>("orders/events.json", []),
     ]);
 
@@ -739,30 +732,26 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     date: expense.expense_date,
   }));
 
-  const coupons = couponRows.map((coupon) => {
-    const rule = couponRules[coupon.code];
-    return ({
+  const coupons = couponRows.map((coupon) => ({
     id: coupon.id,
     code: coupon.code,
     discountType:
       coupon.discount_type === "percentage" ? "percentage" : "fixed",
     discountValue: Number(coupon.discount_value),
-    minOrderAmount: Number(rule?.minOrderAmount ?? coupon.min_order_amount ?? 0),
+    minOrderAmount: Number(coupon.min_order_amount ?? 0),
     maxDiscountAmount:
-      (rule?.maxDiscountAmount ?? coupon.max_discount_amount) === null ||
-      (rule?.maxDiscountAmount ?? coupon.max_discount_amount) === undefined
+      coupon.max_discount_amount === null || coupon.max_discount_amount === undefined
         ? undefined
-        : Number(rule?.maxDiscountAmount ?? coupon.max_discount_amount),
+        : Number(coupon.max_discount_amount),
     active: coupon.active,
-    startsAt: rule?.startsAt ?? coupon.starts_at ?? undefined,
+    startsAt: coupon.starts_at ?? undefined,
     expiresAt: coupon.expires_at ?? undefined,
     usageLimit:
-      (rule?.usageLimit ?? coupon.usage_limit) === null || (rule?.usageLimit ?? coupon.usage_limit) === undefined
+      coupon.usage_limit === null || coupon.usage_limit === undefined
         ? undefined
-        : Number(rule?.usageLimit ?? coupon.usage_limit),
-    usedCount: Number(rule?.usedCount ?? coupon.used_count ?? 0),
-  } satisfies Coupon);
-  });
+        : Number(coupon.usage_limit),
+    usedCount: Number(coupon.used_count ?? 0),
+  } satisfies Coupon));
 
   const aiGenerations = aiRows.map((row) => ({
     id: row.id,

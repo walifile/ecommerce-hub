@@ -156,6 +156,15 @@ export async function createCompatibleOrder(
     return { ok: false, error: rpcError.message || "Could not create the order." };
   }
 
+  // Coupon consumption must remain transactional. Never fall back to the
+  // legacy multi-query path because it cannot prevent concurrent reuse.
+  if (input.couponCode) {
+    return {
+      ok: false,
+      error: "Secure coupon checkout is unavailable. Apply the latest database migrations.",
+    };
+  }
+
   const ids = input.items.map((item) => item.id);
   const { data: productsData, error: productsError } = await supabase
     .from("products")

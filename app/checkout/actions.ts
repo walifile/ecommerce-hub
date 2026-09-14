@@ -52,10 +52,16 @@ export async function createOrderAction(
   const items = parseItems(formData.get("items"));
 
   if (!name) return { status: "error", message: "Please enter your name." };
-  if (!phone) return { status: "error", message: "Please enter a phone number." };
+  const phoneDigits = phone.replace(/\D/g, "");
+  if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+    return { status: "error", message: "Enter a valid phone number with 7 to 15 digits." };
+  }
   if (email && !EMAIL_RE.test(email)) return { status: "error", message: "Enter a valid email address." };
   if (!address || !city) return { status: "error", message: "Enter your delivery address and city." };
   if (!items.length) return { status: "error", message: "Your cart is empty." };
+  if (couponCode && !/^[A-Z0-9_-]{1,40}$/.test(couponCode)) {
+    return { status: "error", message: "The coupon code format is invalid." };
+  }
 
   const supabase = getSupabaseServerClient();
   if (!supabase) return { status: "error", message: "Checkout is not configured." };

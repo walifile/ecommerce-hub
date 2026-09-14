@@ -1,7 +1,6 @@
 "use server";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { readCompatJson } from "@/lib/compat-storage";
 
 export type ValidatedCoupon = {
   id: string;
@@ -20,7 +19,7 @@ export type CouponValidationState = {
 };
 
 function normalizeCode(value: FormDataEntryValue | null) {
-  return String(value ?? "").trim().toUpperCase();
+  return String(value ?? "").trim().toUpperCase().slice(0, 40);
 }
 
 function calculateDiscount(input: {
@@ -51,6 +50,9 @@ export async function validateCouponAction(
   if (!code) {
     return { status: "error", message: "Enter a coupon code." };
   }
+  if (!/^[A-Z0-9_-]+$/.test(code)) {
+    return { status: "error", message: "Coupon code is invalid or unavailable." };
+  }
   if (!Number.isFinite(subtotal) || subtotal <= 0) {
     return { status: "error", message: "Add products before applying a coupon." };
   }
@@ -66,7 +68,7 @@ export async function validateCouponAction(
   const { data, error } = await supabase
     .from("coupons")
     .select("*")
-    .eq("code", code)
+    .ilike("code", code)
     .maybeSingle();
 
   if (error) {
@@ -91,22 +93,6 @@ export async function validateCouponAction(
     usage_limit: number | null;
     used_count: number | null;
   };
-  const savedRules = await readCompatJson<Record<string, {
-    minOrderAmount?: number;
-    maxDiscountAmount?: number | null;
-    startsAt?: string | null;
-    usageLimit?: number | null;
-    usedCount?: number;
-  }>>("coupons/rules.json", {});
-  const rule = savedRules[coupon.code];
-  if (rule) {
-    coupon.min_order_amount = rule.minOrderAmount ?? coupon.min_order_amount;
-    coupon.max_discount_amount = rule.maxDiscountAmount ?? coupon.max_discount_amount;
-    coupon.starts_at = rule.startsAt ?? coupon.starts_at;
-    coupon.usage_limit = rule.usageLimit ?? coupon.usage_limit;
-    coupon.used_count = rule.usedCount ?? coupon.used_count;
-  }
-
   if (!coupon.active) {
     return { status: "error", message: "This coupon is not active." };
   }
