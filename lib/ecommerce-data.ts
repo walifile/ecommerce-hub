@@ -612,7 +612,9 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     slug: category.slug,
     description: category.description ?? "",
     image: category.image_url ?? "",
-    productCount: productsRows.filter((product) => product.category_id === category.id).length,
+    productCount: productsRows.filter(
+      (product) => product.category_id === category.id && product.status === "published"
+    ).length,
   }));
 
   const products = productsRows.map((product) => {
@@ -940,7 +942,9 @@ export async function listProducts(filters?: {
 
 export async function getProductBySlug(slug: string) {
   const { products } = await getCatalogData();
-  return products.find((product) => product.slug === slug);
+  return products.find(
+    (product) => product.slug === slug && product.status === "published"
+  );
 }
 
 export async function getProductReviews(productId: string): Promise<ProductReview[]> {
@@ -974,7 +978,12 @@ export async function getRelatedProducts(slug: string) {
   const { products } = await getCatalogData();
 
   return products
-    .filter((item) => item.slug !== slug && item.category === product.category)
+    .filter(
+      (item) =>
+        item.status === "published" &&
+        item.slug !== slug &&
+        item.category === product.category
+    )
     .slice(0, 3);
 }
 

@@ -155,6 +155,7 @@ export function ProductForm({
         return;
       }
       const c = result.content;
+      setValue("name", c.productTitle, { shouldDirty: true });
       setValue("shortDescription", c.shortDescription, { shouldDirty: true });
       setValue("description", c.longDescription, { shouldDirty: true });
       setValue("specifications", c.specifications.join("\n"), { shouldDirty: true });
@@ -171,14 +172,14 @@ export function ProductForm({
           <Input id="name" placeholder="Wooden Building Blocks Set" {...register("name")} />
         </FormRow>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormRow label="Slug" htmlFor="slug" hint="Auto-generated if left blank.">
+          <FormRow label="Slug" htmlFor="slug" hint="Auto-generated if left blank." error={errors.slug?.message}>
             <Input id="slug" placeholder="wooden-building-blocks" {...register("slug")} />
           </FormRow>
-          <FormRow label="SKU" htmlFor="sku" hint="Auto-generated if left blank.">
+          <FormRow label="SKU" htmlFor="sku" hint="Auto-generated if left blank." error={errors.sku?.message}>
             <Input id="sku" placeholder="SKU-XXXX" {...register("sku")} />
           </FormRow>
         </div>
-        <FormRow label="Category" htmlFor="category">
+        <FormRow label="Category" htmlFor="category" error={errors.category?.message}>
           <Controller
             control={control}
             name="category"
@@ -202,28 +203,28 @@ export function ProductForm({
 
       <FormSection title="Pricing" description="All amounts in store currency.">
         <div className="grid gap-4 sm:grid-cols-3">
-          <FormRow label="Cost price" htmlFor="costPrice">
+          <FormRow label="Cost price" htmlFor="costPrice" error={errors.costPrice?.message}>
             <Input id="costPrice" type="number" step="0.01" min="0" placeholder="0.00" {...register("costPrice")} />
           </FormRow>
           <FormRow label="Selling price" htmlFor="sellingPrice" error={errors.sellingPrice?.message}>
             <Input id="sellingPrice" type="number" step="0.01" min="0" placeholder="0.00" {...register("sellingPrice")} />
           </FormRow>
-          <FormRow label="Compare price" htmlFor="comparePrice" hint="Shown struck-through.">
+          <FormRow label="Compare price" htmlFor="comparePrice" hint="Must be higher than selling price." error={errors.comparePrice?.message}>
             <Input id="comparePrice" type="number" step="0.01" min="0" placeholder="0.00" {...register("comparePrice")} />
           </FormRow>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormRow label="Stock quantity" htmlFor="stockQuantity">
+          <FormRow label="Stock quantity" htmlFor="stockQuantity" error={errors.stockQuantity?.message}>
             <Input id="stockQuantity" type="number" min="0" placeholder="0" {...register("stockQuantity")} />
           </FormRow>
-          <FormRow label="Low stock limit" htmlFor="lowStockLimit" hint="Alerts when stock drops below this.">
+          <FormRow label="Low stock limit" htmlFor="lowStockLimit" hint="Alerts when stock drops below this." error={errors.lowStockLimit?.message}>
             <Input id="lowStockLimit" type="number" min="0" placeholder="5" {...register("lowStockLimit")} />
           </FormRow>
         </div>
       </FormSection>
 
       <FormSection title="Content & media" description="What shoppers see on the product page.">
-        <FormRow label="Main image" htmlFor="imageUrl" hint="Used as the thumbnail. Upload a file or paste a URL.">
+        <FormRow label="Main image" htmlFor="imageUrl" hint="Required when publishing. Upload a file or paste a URL." error={errors.imageUrl?.message}>
           <Controller
             control={control}
             name="imageUrl"
@@ -236,6 +237,7 @@ export function ProductForm({
           label="Gallery images"
           htmlFor="gallery"
           hint="Upload multiple photos. Hover a thumbnail to remove or replace it."
+          error={errors.gallery?.message}
         >
           <Controller
             control={control}
@@ -249,20 +251,20 @@ export function ProductForm({
             )}
           />
         </FormRow>
-        <FormRow label="Short description" htmlFor="shortDescription">
+        <FormRow label="Short description" htmlFor="shortDescription" error={errors.shortDescription?.message}>
           <Input id="shortDescription" placeholder="One-line tagline" {...register("shortDescription")} />
         </FormRow>
-        <FormRow label="Description" htmlFor="description">
+        <FormRow label="Description" htmlFor="description" error={errors.description?.message}>
           <Textarea id="description" placeholder="Full product description" className="min-h-28" {...register("description")} />
         </FormRow>
-        <FormRow label="Specifications" htmlFor="specifications" hint="One per line.">
+        <FormRow label="Specifications" htmlFor="specifications" hint="One per line." error={errors.specifications?.message}>
           <Textarea id="specifications" placeholder={"Material: Beechwood\nAge: 3+"} className="min-h-24" {...register("specifications")} />
         </FormRow>
       </FormSection>
 
       <FormSection title="SEO & visibility" description="Search metadata and publish state.">
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormRow label="Meta title" htmlFor="metaTitle">
+          <FormRow label="Meta title" htmlFor="metaTitle" hint="Maximum 60 characters." error={errors.metaTitle?.message}>
             <Input id="metaTitle" placeholder="SEO title" {...register("metaTitle")} />
           </FormRow>
           <FormRow label="Status" htmlFor="status">
@@ -283,7 +285,7 @@ export function ProductForm({
             />
           </FormRow>
         </div>
-        <FormRow label="Meta description" htmlFor="metaDescription">
+        <FormRow label="Meta description" htmlFor="metaDescription" hint="Maximum 160 characters." error={errors.metaDescription?.message}>
           <Textarea id="metaDescription" placeholder="SEO description" className="min-h-20" {...register("metaDescription")} />
         </FormRow>
         <div className="grid gap-3 sm:grid-cols-3">

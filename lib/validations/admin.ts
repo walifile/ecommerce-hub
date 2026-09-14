@@ -8,29 +8,65 @@ const positiveAmount = (msg: string) =>
     .min(1, msg)
     .refine((v) => Number.isFinite(Number(v)) && Number(v) > 0, msg);
 
+const optionalNonNegativeAmount = (msg: string) =>
+  z.string().trim().refine(
+    (value) => value === "" || (Number.isFinite(Number(value)) && Number(value) >= 0),
+    msg
+  );
+
+const optionalNonNegativeInteger = (msg: string) =>
+  z.string().trim().refine(
+    (value) => value === "" || (Number.isInteger(Number(value)) && Number(value) >= 0),
+    msg
+  );
+
+const optionalHttpUrl = z.string().trim().refine(
+  (value) => value === "" || /^https?:\/\/[^\s]+$/i.test(value),
+  "Enter a valid http(s) image URL"
+);
+
 // ── Product ───────────────────────────────────────────────────────────
-export const productSchema = z.object({
-  name: z.string().trim().min(1, "Product name is required"),
-  slug: z.string().trim(),
-  sku: z.string().trim(),
-  category: z.string().trim(),
-  costPrice: z.string().trim(),
-  sellingPrice: positiveAmount("Enter a valid selling price"),
-  comparePrice: z.string().trim(),
-  stockQuantity: z.string().trim(),
-  lowStockLimit: z.string().trim(),
-  imageUrl: z.string().trim(),
-  gallery: z.string(),
-  shortDescription: z.string().trim(),
-  description: z.string(),
-  specifications: z.string(),
-  metaTitle: z.string().trim(),
-  metaDescription: z.string().trim(),
-  status: z.enum(["draft", "published"]),
-  featured: z.boolean(),
-  isNew: z.boolean(),
-  bestSeller: z.boolean(),
-});
+export const productSchema = z
+  .object({
+    name: z.string().trim().min(1, "Product name is required").max(160, "Product name is too long"),
+    slug: z.string().trim().max(180, "Slug is too long").refine(
+      (value) => value === "" || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value),
+      "Slug can only contain lowercase letters, numbers, and single hyphens"
+    ),
+    sku: z.string().trim().max(80, "SKU is too long"),
+    category: z.string().trim().max(100, "Category name is too long"),
+    costPrice: optionalNonNegativeAmount("Cost price cannot be negative"),
+    sellingPrice: positiveAmount("Enter a valid selling price"),
+    comparePrice: optionalNonNegativeAmount("Compare price cannot be negative"),
+    stockQuantity: optionalNonNegativeInteger("Stock must be a whole number of zero or more"),
+    lowStockLimit: optionalNonNegativeInteger("Low-stock limit must be a whole number of zero or more"),
+    imageUrl: optionalHttpUrl,
+    gallery: z.string().refine((value) => {
+      const urls = value.split("\n").map((line) => line.trim()).filter(Boolean);
+      return urls.length <= 12 && urls.every((url) => /^https?:\/\/[^\s]+$/i.test(url));
+    }, "Gallery supports up to 12 valid http(s) image URLs"),
+    shortDescription: z.string().trim().max(300, "Short description is too long"),
+    description: z.string().max(10000, "Description is too long"),
+    specifications: z.string().max(5000, "Specifications are too long"),
+    metaTitle: z.string().trim().max(60, "Meta title should be 60 characters or fewer"),
+    metaDescription: z.string().trim().max(160, "Meta description should be 160 characters or fewer"),
+    status: z.enum(["draft", "published"]),
+    featured: z.boolean(),
+    isNew: z.boolean(),
+    bestSeller: z.boolean(),
+  })
+  .refine(
+    (data) => !data.comparePrice || Number(data.comparePrice) > Number(data.sellingPrice),
+    { path: ["comparePrice"], message: "Compare price must be higher than selling price" }
+  )
+  .refine(
+    (data) => data.status !== "published" || Boolean(data.imageUrl),
+    { path: ["imageUrl"], message: "Published products require a main image" }
+  )
+  .refine(
+    (data) => data.status !== "published" || Boolean(data.description.trim()),
+    { path: ["description"], message: "Published products require a description" }
+  );
 
 export type ProductFormInput = z.infer<typeof productSchema>;
 

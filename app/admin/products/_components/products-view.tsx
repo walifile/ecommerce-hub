@@ -377,11 +377,31 @@ export function ProductsView({
                           <div className="min-w-0">
                             <p className="truncate font-medium text-foreground">{product.name}</p>
                             <p className="truncate text-sm text-muted-foreground">{product.category}</p>
+                            {(product.featured || product.isNew || product.bestSeller) && (
+                              <div className="mt-1 flex flex-wrap gap-1">
+                                {product.featured ? <Badge variant="secondary">Featured</Badge> : null}
+                                {product.isNew ? <Badge variant="secondary">New</Badge> : null}
+                                {product.bestSeller ? <Badge variant="secondary">Best seller</Badge> : null}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{product.sku}</TableCell>
-                      <TableCell className="font-medium">{formatCurrency(product.price)}</TableCell>
+                      <TableCell>
+                        <p className="font-medium">{formatCurrency(product.price)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Cost {formatCurrency(product.costPrice)}
+                          {product.price > 0
+                            ? ` · ${Math.round(((product.price - product.costPrice) / product.price) * 100)}% margin`
+                            : ""}
+                        </p>
+                        {product.comparePrice ? (
+                          <p className="text-xs text-muted-foreground line-through">
+                            {formatCurrency(product.comparePrice)}
+                          </p>
+                        ) : null}
+                      </TableCell>
                       <TableCell className="text-muted-foreground">
                         {product.stockQuantity} / limit {product.lowStockLimit}
                       </TableCell>
@@ -405,6 +425,8 @@ export function ProductsView({
                             id={product.id}
                             name={product.name}
                             slug={product.slug}
+                            status={product.status}
+                            stockQuantity={product.stockQuantity}
                           />
                         </div>
                       </TableCell>

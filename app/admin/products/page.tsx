@@ -26,11 +26,16 @@ export type ProductRow = {
   slug: string;
   sku: string;
   category: string;
+  costPrice: number;
   price: number;
+  comparePrice: number | null;
   stockQuantity: number;
   lowStockLimit: number;
   status: "published" | "draft";
   image: string;
+  featured: boolean;
+  isNew: boolean;
+  bestSeller: boolean;
 };
 
 async function fetchProducts({
@@ -51,7 +56,7 @@ async function fetchProducts({
   pageSize: number;
 }) {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return { products: [], total: 0, categories: [] };
+  if (!supabase) return { products: [], total: 0, categories: [], page: 1 };
 
   const { data: categoriesData } = await supabase
     .from("categories")
@@ -60,11 +65,16 @@ async function fetchProducts({
   const categories = (categoriesData ?? []) as { id: string; name: string }[];
 
   let query = supabase.from("products").select(
-    "id, name, slug, sku, category_id, selling_price, stock_quantity, low_stock_limit, status, image_url, created_at"
+    "id, name, slug, sku, category_id, cost_price, selling_price, compare_price, stock_quantity, low_stock_limit, status, image_url, featured, is_new, best_seller, created_at"
   );
 
-  if (search.trim()) {
-    const q = search.trim();
+  const safeSearch = search
+    .trim()
+    .replace(/[,%().]/g, " ")
+    .replace(/\s+/g, " ")
+    .slice(0, 100);
+  if (safeSearch) {
+    const q = safeSearch;
     query = query.or(`name.ilike.%${q}%,sku.ilike.%${q}%`);
   }
 
@@ -91,7 +101,7 @@ async function fetchProducts({
   const { data, error } = await query;
   if (error || !data) {
     console.error("[admin] fetchProducts failed:", error?.message);
-    return { products: [], total: 0, categories };
+    return { products: [], total: 0, categories, page: 1 };
   }
 
   type RawRow = {
@@ -100,11 +110,16 @@ async function fetchProducts({
     slug: string;
     sku: string;
     category_id: string | null;
+    cost_price: number;
     selling_price: number;
+    compare_price: number | null;
     stock_quantity: number;
     low_stock_limit: number;
     status: string;
     image_url: string | null;
+    featured: boolean;
+    is_new: boolean;
+    best_seller: boolean;
     created_at: string;
   };
 
@@ -114,11 +129,16 @@ async function fetchProducts({
     slug: row.slug,
     sku: row.sku,
     category: categories.find((c) => c.id === row.category_id)?.name ?? "Uncategorized",
+    costPrice: Number(row.cost_price),
     price: Number(row.selling_price),
+    comparePrice: row.compare_price === null ? null : Number(row.compare_price),
     stockQuantity: row.stock_quantity,
     lowStockLimit: row.low_stock_limit,
     status: (row.status === "published" ? "published" : "draft") as "published" | "draft",
     image: row.image_url ?? "",
+    featured: row.featured,
+    isNew: row.is_new,
+    bestSeller: row.best_seller,
   }));
 
   // Stock filter is JS-side (requires comparing two columns)
@@ -127,10 +147,12 @@ async function fetchProducts({
   else if (stock === "in-stock") list = list.filter((p) => p.stockQuantity > p.lowStockLimit);
 
   const total = list.length;
-  const from = (page - 1) * pageSize;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const resolvedPage = Math.min(page, totalPages);
+  const from = (resolvedPage - 1) * pageSize;
   const paginated = list.slice(from, from + pageSize);
 
-  return { products: paginated, total, categories };
+  return { products: paginated, total, categories, page: resolvedPage };
 }
 
 export default async function AdminProductsPage({
@@ -146,10 +168,11 @@ export default async function AdminProductsPage({
   const stock    = (["all", "in-stock", "low-stock", "out-of-stock"].includes(params.stock) ? params.stock : "all") as StockFilter;
   const sort     = (VALID_SORTS.includes(params.sort as SortKey) ? params.sort : "newest") as SortKey;
   const pageSize = VALID_PAGE_SIZES.includes(Number(params.pageSize)) ? Number(params.pageSize) : 20;
-  const page     = Math.max(1, Number(params.page ?? "1"));
+  const parsedPage = Number(params.page ?? "1");
+  const requestedPage = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
-  const { products, total, categories } = await fetchProducts({
-    search, category, status, stock, sort, page, pageSize,
+  const { products, total, categories, page } = await fetchProducts({
+    search, category, status, stock, sort, page: requestedPage, pageSize,
   });
 
   return (

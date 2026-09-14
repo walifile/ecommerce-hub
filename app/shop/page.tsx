@@ -66,7 +66,11 @@ export default async function ShopPage(props: PageProps<"/shop">) {
   };
 
   const pills = [
-    { id: "all", name: "All", count: catalog.products.length },
+    {
+      id: "all",
+      name: "All",
+      count: catalog.products.filter((product) => product.status === "published").length,
+    },
     ...catalog.categories.map((c) => ({
       id: c.id,
       name: c.name,
