@@ -72,10 +72,13 @@ export type ProductFormInput = z.infer<typeof productSchema>;
 
 // ── Category ──────────────────────────────────────────────────────────
 export const categorySchema = z.object({
-  name: z.string().trim().min(1, "Category name is required"),
-  slug: z.string().trim(),
-  description: z.string().trim(),
-  imageUrl: z.string().trim(),
+  name: z.string().trim().min(1, "Category name is required").max(100, "Category name is too long"),
+  slug: z.string().trim().max(120, "Slug is too long").refine(
+    (value) => value === "" || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value),
+    "Slug can only contain lowercase letters, numbers, and single hyphens"
+  ),
+  description: z.string().trim().max(500, "Description must be 500 characters or fewer"),
+  imageUrl: optionalHttpUrl,
 });
 
 export type CategoryFormInput = z.infer<typeof categorySchema>;

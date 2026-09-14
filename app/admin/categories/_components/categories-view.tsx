@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   FolderTree,
+  Eye,
   Image as ImageIcon,
   LayoutGrid,
   Package2,
@@ -387,6 +389,15 @@ export function CategoriesView({
                     {category.productCount}
                   </div>
                   <div className="absolute right-3 top-3 flex gap-1.5 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      aria-label={`View ${category.name} in shop`}
+                      className="rounded-full border-white/10 bg-black/40 text-white backdrop-blur hover:bg-black/60 hover:text-white"
+                      render={<Link href={`/shop?category=${encodeURIComponent(category.name)}`} target="_blank" />}
+                    >
+                      <Eye className="size-4" />
+                    </Button>
                     <CategoryEditButton
                       category={{ id: category.id, name: category.name, slug: category.slug, description: category.description, image: category.image }}
                       tone="overlay"
@@ -459,6 +470,15 @@ export function CategoriesView({
                       </TableCell>
                       <TableCell className="pr-6">
                         <div className="flex justify-end gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="icon-sm"
+                            aria-label={`View ${category.name} in shop`}
+                            className="rounded-md text-muted-foreground hover:text-foreground"
+                            render={<Link href={`/shop?category=${encodeURIComponent(category.name)}`} target="_blank" />}
+                          >
+                            <Eye className="size-4" />
+                          </Button>
                           <CategoryEditButton
                             category={{ id: category.id, name: category.name, slug: category.slug, description: category.description, image: category.image }}
                           />

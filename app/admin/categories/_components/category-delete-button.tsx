@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -33,6 +34,24 @@ export function CategoryDeleteButton({
   tone?: "default" | "overlay";
 }) {
   const [open, setOpen] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  function removeCategory() {
+    const formData = new FormData();
+    formData.set("categoryId", id);
+    startTransition(async () => {
+      const result = await deleteCategoryAction(
+        { status: "idle", message: "" },
+        formData
+      );
+      if (result.status === "success") {
+        toast.success(result.message);
+        setOpen(false);
+      } else {
+        toast.error(result.message);
+      }
+    });
+  }
 
   return (
     <>
@@ -80,16 +99,16 @@ export function CategoryDeleteButton({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <form
-              action={deleteCategoryAction}
-              onSubmit={() => setOpen(false)}
+            <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={pending}
+              onClick={removeCategory}
             >
-              <input type="hidden" name="categoryId" value={id} />
-              <Button type="submit" variant="destructive" className="w-full">
-                Delete
-              </Button>
-            </form>
+              {pending ? <Loader2 className="size-4 animate-spin" /> : null}
+              Delete
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

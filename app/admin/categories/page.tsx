@@ -24,13 +24,18 @@ async function fetchCategories({
   pageSize: number;
 }) {
   const supabase = getSupabaseServerClient();
-  if (!supabase) return { categories: [], total: 0, totalProducts: 0 };
+  if (!supabase) return { categories: [], total: 0, totalProducts: 0, page: 1 };
 
   // Build query — embed product count per category
   let query = supabase.from("categories").select("*, products:products(count)");
 
-  if (search.trim()) {
-    const q = search.trim();
+  const safeSearch = search
+    .trim()
+    .replace(/[,%().]/g, " ")
+    .replace(/\s+/g, " ")
+    .slice(0, 100);
+  if (safeSearch) {
+    const q = safeSearch;
     query = query.or(`name.ilike.%${q}%,slug.ilike.%${q}%`);
   }
   if (filterImage === "with") query = query.not("image_url", "is", null);
@@ -39,7 +44,7 @@ async function fetchCategories({
   const { data, error } = await query;
   if (error || !data) {
     console.error("[admin] fetchCategories failed:", error?.message);
-    return { categories: [], total: 0, totalProducts: 0 };
+    return { categories: [], total: 0, totalProducts: 0, page: 1 };
   }
 
   // Map rows — extract embedded product count
@@ -76,10 +81,12 @@ async function fetchCategories({
 
   const total = list.length;
   const totalProducts = list.reduce((s, c) => s + c.productCount, 0);
-  const from = (page - 1) * pageSize;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const resolvedPage = Math.min(page, totalPages);
+  const from = (resolvedPage - 1) * pageSize;
   const paginated = list.slice(from, from + pageSize);
 
-  return { categories: paginated, total, totalProducts };
+  return { categories: paginated, total, totalProducts, page: resolvedPage };
 }
 
 export default async function AdminCategoriesPage({
@@ -102,14 +109,15 @@ export default async function AdminCategoriesPage({
   const pageSize = VALID_PAGE_SIZES.includes(Number(params.pageSize))
     ? Number(params.pageSize)
     : 16;
-  const page = Math.max(1, Number(params.page ?? "1"));
+  const parsedPage = Number(params.page ?? "1");
+  const requestedPage = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
-  const { categories, total, totalProducts } = await fetchCategories({
+  const { categories, total, totalProducts, page } = await fetchCategories({
     search,
     sort,
     filterImage,
     filterProducts,
-    page,
+    page: requestedPage,
     pageSize,
   });
 

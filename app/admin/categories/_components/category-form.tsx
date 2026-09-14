@@ -57,6 +57,7 @@ export function CategoryForm({
   function onSubmit(values: CategoryFormInput) {
     startTransition(async () => {
       let imageUrl = values.imageUrl;
+      let uploadedImage = false;
 
       // Upload the pending local file first (if any)
       if (pendingFile) {
@@ -69,6 +70,7 @@ export function CategoryForm({
           return;
         }
         imageUrl = uploadResult.url;
+        uploadedImage = true;
         setPendingFile(null);
       }
 
@@ -78,6 +80,7 @@ export function CategoryForm({
       fd.set("slug", values.slug);
       fd.set("description", values.description);
       fd.set("imageUrl", imageUrl);
+      if (uploadedImage) fd.set("uploadedImage", "true");
 
       const action = isEdit ? updateCategoryAction : createCategoryAction;
       const result = await action({ status: "idle", message: "" }, fd);
@@ -101,12 +104,12 @@ export function CategoryForm({
         <FormRow label="Name" htmlFor="name" error={errors.name?.message}>
           <Input id="name" placeholder="Die-cast Cars" {...register("name")} />
         </FormRow>
-        <FormRow label="Slug" htmlFor="slug" hint="Auto-generated if left blank.">
+        <FormRow label="Slug" htmlFor="slug" hint="Auto-generated if left blank." error={errors.slug?.message}>
           <Input id="slug" placeholder="die-cast-cars" {...register("slug")} />
         </FormRow>
       </div>
 
-      <FormRow label="Cover image" htmlFor="imageUrl" hint="Optional. Upload a file or paste a URL.">
+      <FormRow label="Cover image" htmlFor="imageUrl" hint="Optional. Upload a file or paste a URL." error={errors.imageUrl?.message}>
         <Controller
           control={control}
           name="imageUrl"
@@ -120,7 +123,7 @@ export function CategoryForm({
         />
       </FormRow>
 
-      <FormRow label="Description" htmlFor="description">
+      <FormRow label="Description" htmlFor="description" hint="Maximum 500 characters." error={errors.description?.message}>
         <Textarea
           id="description"
           placeholder="Short description of this category"
