@@ -51,6 +51,7 @@ export type ProductReview = {
   rating: number;
   title: string;
   body: string;
+  verifiedPurchase: boolean;
   createdAt: string;
 };
 
@@ -946,6 +947,7 @@ export async function getProductReviews(productId: string): Promise<ProductRevie
     rating: row.rating,
     title: row.title,
     body: row.body,
+    verifiedPurchase: row.verifiedPurchase,
     createdAt: row.createdAt,
   }));
 }
@@ -954,7 +956,7 @@ export async function getHomepageReviews(): Promise<Array<ProductReview & { prod
   const rows = await listAllProductReviews();
   return rows.filter((row) => row.status === "approved").slice(0, 6).map((row) => ({
     id: row.id, reviewerName: row.reviewerName, rating: row.rating,
-    title: row.title, body: row.body, createdAt: row.createdAt,
+    title: row.title, body: row.body, verifiedPurchase: row.verifiedPurchase, createdAt: row.createdAt,
     productName: row.productName || "Verified purchase",
   }));
 }

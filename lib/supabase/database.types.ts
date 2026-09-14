@@ -132,7 +132,10 @@ export type Database = {
       };
       product_reviews: {
         Row: {
+          customer_id: string | null;
           id: string;
+          moderation_note: string | null;
+          order_id: string | null;
           product_id: string;
           reviewer_name: string;
           reviewer_email: string | null;
@@ -140,6 +143,7 @@ export type Database = {
           title: string | null;
           body: string;
           status: "pending" | "approved" | "rejected";
+          verified_purchase: boolean;
           created_at: string;
         };
       };

@@ -79,6 +79,9 @@ export function ReviewsCarousel({ customerReviews = [] }: { customerReviews?: Ar
         accent: ["var(--brand)", "var(--brand-2)", "var(--brand-3)"][index % 3],
       }))
     : fallbackReviews;
+  const averageRating = customerReviews.length
+    ? customerReviews.reduce((sum, review) => sum + review.rating, 0) / customerReviews.length
+    : null;
 
   // Recalculate page count on resize (per-view changes with breakpoints)
   useEffect(() => {
@@ -141,7 +144,9 @@ export function ReviewsCarousel({ customerReviews = [] }: { customerReviews?: Ar
               ))}
             </div>
             <span className="text-sm font-semibold text-white/55">
-              4.9 / 5 from 2,400+ verified reviews
+              {averageRating === null
+                ? "Stories shared by our customer community"
+                : `${averageRating.toFixed(1)} / 5 from ${customerReviews.length} approved ${customerReviews.length === 1 ? "review" : "reviews"}`}
             </span>
           </div>
         </motion.div>
