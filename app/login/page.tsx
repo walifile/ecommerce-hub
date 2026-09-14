@@ -26,18 +26,6 @@ export default async function LoginPage({
       }
     >
       <AuthForm mode="login" redirectTo={redirect} />
-      <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-sm text-white/60">
-        <p className="font-semibold text-white">Admin login</p>
-        <div className="mt-3 grid gap-2">
-          <p>
-            Email:{" "}
-            <span className="font-medium text-white">waliahmadfiles@gmail.com</span>
-          </p>
-          <p>
-            Password: <span className="font-medium text-white">Admin@123</span>
-          </p>
-        </div>
-      </div>
     </AuthShell>
   );
 }

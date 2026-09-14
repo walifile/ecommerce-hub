@@ -16,6 +16,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function safeRedirect(value: FormDataEntryValue | null): string | null {
   const path = String(value ?? "").trim();
   if (!path) return null;
+  if (path === "/account" || path.startsWith("/account/")) return null;
   return path.startsWith("/") && !path.startsWith("//") ? path : null;
 }
 
@@ -45,23 +46,26 @@ export async function signInAction(
 
   revalidatePath("/", "layout");
 
-  // Honor an explicit redirect (e.g. bounced here from /admin). Otherwise
-  // route by role: admins land on the dashboard, everyone else on /account.
+  // Resolve the role before honoring redirects so an admin can never be sent
+  // to the customer account page. Specific admin deep-links stay intact.
   const explicitRedirect = safeRedirect(formData.get("redirect"));
-  if (explicitRedirect) {
-    redirect(explicitRedirect);
-  }
-
-  let destination = "/account";
+  let admin = false;
   if (signInData.user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", signInData.user.id)
       .maybeSingle<{ role: string }>();
-    if (profile?.role === "admin") destination = "/admin";
+    admin = profile?.role === "admin";
   }
-  redirect(destination);
+  if (admin) {
+    const adminRedirect =
+      explicitRedirect === "/admin" || explicitRedirect?.startsWith("/admin/")
+        ? explicitRedirect
+        : "/admin";
+    redirect(adminRedirect);
+  }
+  redirect(explicitRedirect ?? "/");
 }
 
 export async function signUpAction(
@@ -106,7 +110,7 @@ export async function signUpAction(
   }
 
   revalidatePath("/", "layout");
-  redirect("/account");
+  redirect("/");
 }
 
 export async function signOutAction() {

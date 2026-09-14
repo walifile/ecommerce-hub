@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Keep private/transactional areas out of the index.
-      disallow: ["/admin", "/account", "/checkout", "/cart", "/login", "/signup"],
+      disallow: ["/admin", "/checkout", "/cart", "/login", "/signup"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

@@ -14,7 +14,7 @@ export default async function AdminLayout({
     redirect("/login?redirect=/admin");
   }
   if (profile.role !== "admin") {
-    redirect("/account");
+    redirect("/");
   }
 
   return children;

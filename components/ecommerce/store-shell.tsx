@@ -59,7 +59,6 @@ export async function StoreShell({
             <CartButton />
             <MobileNav
               signedIn={Boolean(profile)}
-              accountName={firstName}
               isAdmin={profile?.role === "admin"}
             />
           </div>

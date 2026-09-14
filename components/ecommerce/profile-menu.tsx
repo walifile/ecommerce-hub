@@ -57,13 +57,15 @@ export function ProfileMenu({
 
         <DropdownMenuSeparator className="bg-white/10" />
 
-        <DropdownMenuItem
-          className="text-white/70 focus:bg-white/10 focus:text-white"
-          render={<Link href="/account" />}
-        >
-          <User className="size-4" />
-          My Account
-        </DropdownMenuItem>
+        {isAdmin ? (
+          <DropdownMenuItem
+            className="font-semibold text-brand focus:bg-brand/10 focus:text-brand"
+            render={<Link href="/admin" />}
+          >
+            <LayoutDashboard className="size-4" />
+            Admin Panel
+          </DropdownMenuItem>
+        ) : null}
 
         <DropdownMenuItem
           className="text-white/70 focus:bg-white/10 focus:text-white"
@@ -72,16 +74,6 @@ export function ProfileMenu({
           <Package className="size-4" />
           Track Orders
         </DropdownMenuItem>
-
-        {isAdmin && (
-          <DropdownMenuItem
-            className="font-semibold text-brand focus:bg-brand/10 focus:text-brand"
-            render={<Link href="/admin" />}
-          >
-            <LayoutDashboard className="size-4" />
-            Admin Panel
-          </DropdownMenuItem>
-        )}
 
         <DropdownMenuSeparator className="bg-white/10" />
 

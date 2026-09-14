@@ -53,11 +53,9 @@ export function NavLinks() {
 
 export function MobileNav({
   signedIn = false,
-  accountName = "Account",
   isAdmin = false,
 }: {
   signedIn?: boolean;
-  accountName?: string;
   isAdmin?: boolean;
 }) {
   const pathname = usePathname();
@@ -123,18 +121,7 @@ export function MobileNav({
         <div className="border-t border-white/8 px-3 py-4">
           {signedIn ? (
             <div className="space-y-1">
-              <SheetClose
-                render={
-                  <Link
-                    href="/account"
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-white/55 transition-colors hover:bg-white/5 hover:text-white"
-                  />
-                }
-              >
-                <User className="size-4" />
-                {accountName}
-              </SheetClose>
-              {isAdmin && (
+              {isAdmin ? (
                 <SheetClose
                   render={
                     <Link
@@ -146,7 +133,7 @@ export function MobileNav({
                   <LayoutDashboard className="size-4" />
                   Admin Panel
                 </SheetClose>
-              )}
+              ) : null}
               <form action={signOutAction}>
                 <button
                   type="submit"

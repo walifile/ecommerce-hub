@@ -51,14 +51,17 @@ export async function updateSession(request: NextRequest) {
 
   // Logged-in users shouldn't see login/signup — send admins to the
   // dashboard, everyone else to their account.
-  if (user && (pathname === "/login" || pathname === "/signup")) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle<{ role: string }>();
+  const isAuthEntry = pathname === "/login" || pathname === "/signup";
+  if ((user && isAuthEntry) || pathname === "/account") {
+    const { data: profile } = user
+      ? await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle<{ role: string }>()
+      : { data: null };
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = profile?.role === "admin" ? "/admin" : "/account";
+    redirectUrl.pathname = profile?.role === "admin" ? "/admin" : "/";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
