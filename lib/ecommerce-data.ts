@@ -64,6 +64,7 @@ export type Customer = {
   totalOrders: number;
   totalRevenue: number;
   lifetimeValue: number;
+  createdAt: string;
 };
 
 export type OrderItem = {
@@ -657,6 +658,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     totalOrders: customer.total_orders,
     totalRevenue: Number(customer.total_revenue),
     lifetimeValue: Number(customer.lifetime_value),
+    createdAt: customer.created_at,
   }));
 
   const orders = ordersRows.map((order) => {
@@ -1042,8 +1044,8 @@ export async function getCustomerById(id?: string) {
     (order) =>
       order.customerId === customer.id ||
       (!order.customerId &&
-        (order.customerPhone === customer.phone ||
-          order.customerEmail === customer.email))
+        ((Boolean(customer.phone) && order.customerPhone === customer.phone) ||
+          (Boolean(customer.email) && order.customerEmail === customer.email)))
   );
 
   return {

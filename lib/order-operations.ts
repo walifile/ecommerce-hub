@@ -109,21 +109,36 @@ export async function createCompatibleOrder(
   const supabase = getSupabaseServerClient();
   if (!supabase) return { ok: false, error: "Database write is not configured." };
 
-  const { data: rpcData, error: rpcError } = await supabase.rpc(
+  const normalizedPhone = input.phone.replace(/\D/g, "");
+  if (normalizedPhone.length < 7 || normalizedPhone.length > 15) {
+    return { ok: false, error: "A valid customer phone number is required." };
+  }
+
+  const rpcArguments = {
+    p_name: input.name,
+    p_phone: normalizedPhone,
+    p_email: input.email,
+    p_address: input.address,
+    p_city: input.city,
+    p_payment_method: input.paymentMethod,
+    p_notes: input.notes,
+    p_coupon_code: input.couponCode,
+    p_items: input.items,
+    p_ad_cost: input.adCost ?? 0,
+  };
+
+  let { data: rpcData, error: rpcError } = await supabase.rpc(
     "create_store_order" as never,
-    {
-      p_name: input.name,
-      p_phone: input.phone,
-      p_email: input.email,
-      p_address: input.address,
-      p_city: input.city,
-      p_payment_method: input.paymentMethod,
-      p_notes: input.notes,
-      p_coupon_code: input.couponCode,
-      p_items: input.items,
-      p_ad_cost: input.adCost ?? 0,
-    } as never
+    rpcArguments as never
   );
+
+  // A simultaneous first checkout can race on the unique phone identity.
+  // Retrying once lets the second transaction reuse the customer just created.
+  if (rpcError?.code === "23505") {
+    const retry = await supabase.rpc("create_store_order" as never, rpcArguments as never);
+    rpcData = retry.data;
+    rpcError = retry.error;
+  }
 
   if (!rpcError) {
     const row = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as
@@ -237,7 +252,7 @@ export async function createCompatibleOrder(
   const { data: existingCustomer } = await supabase
     .from("customers")
     .select("id, total_orders, total_revenue, lifetime_value")
-    .eq("phone", input.phone)
+    .eq("phone", normalizedPhone)
     .limit(1)
     .maybeSingle();
 
@@ -258,7 +273,7 @@ export async function createCompatibleOrder(
       .from("customers")
       .insert({
         name: input.name,
-        phone: input.phone,
+        phone: normalizedPhone,
         email: input.email || null,
         address: input.address || null,
         city: input.city || null,

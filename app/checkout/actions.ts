@@ -5,6 +5,7 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getAppUrl, getStripe } from "@/lib/stripe";
 import { notifyOrder } from "@/lib/whatsapp";
 import { createCompatibleOrder, updateCompatibleOrderStatus } from "@/lib/order-operations";
+import { customerSchema } from "@/lib/validations/admin";
 
 export type CheckoutState = {
   status: "idle" | "success" | "error";
@@ -15,7 +16,6 @@ export type CheckoutState = {
   checkoutUrl?: string;
 };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 type SubmittedItem = { id: string; quantity: number };
 
@@ -42,7 +42,7 @@ export async function createOrderAction(
   formData: FormData
 ): Promise<CheckoutState> {
   const name = String(formData.get("name") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
+  const phoneInput = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const address = String(formData.get("address") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
@@ -51,12 +51,12 @@ export async function createOrderAction(
   const couponCode = String(formData.get("couponCode") ?? "").trim().toUpperCase();
   const items = parseItems(formData.get("items"));
 
-  if (!name) return { status: "error", message: "Please enter your name." };
-  const phoneDigits = phone.replace(/\D/g, "");
-  if (phoneDigits.length < 7 || phoneDigits.length > 15) {
-    return { status: "error", message: "Enter a valid phone number with 7 to 15 digits." };
+  const phoneDigits = phoneInput.replace(/\D/g, "");
+  const customer = customerSchema.safeParse({ name, phone: phoneDigits, email, address, city });
+  if (!customer.success) {
+    return { status: "error", message: customer.error.issues[0]?.message ?? "Check your details." };
   }
-  if (email && !EMAIL_RE.test(email)) return { status: "error", message: "Enter a valid email address." };
+  const phone = phoneDigits;
   if (!address || !city) return { status: "error", message: "Enter your delivery address and city." };
   if (!items.length) return { status: "error", message: "Your cart is empty." };
   if (couponCode && !/^[A-Z0-9_-]{1,40}$/.test(couponCode)) {

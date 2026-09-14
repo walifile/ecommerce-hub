@@ -7,6 +7,7 @@ import {
   createCompatibleOrder,
   updateCompatibleOrderStatus,
 } from "@/lib/order-operations";
+import { customerSchema } from "@/lib/validations/admin";
 
 export type OrderFormState = { status: "idle" | "success" | "error"; message: string };
 
@@ -67,7 +68,8 @@ export async function createManualOrderAction(
 ): Promise<OrderFormState> {
   await requireAdmin();
   const name = String(formData.get("name") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
+  const phoneInput = String(formData.get("phone") ?? "").trim();
+  const phone = phoneInput.replace(/\D/g, "");
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const address = String(formData.get("address") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
@@ -78,8 +80,12 @@ export async function createManualOrderAction(
   const notes = String(formData.get("notes") ?? "").trim() || null;
   const adCost = Math.max(0, Number(formData.get("adCost")) || 0);
   const items = parseManualOrderItems(formData.get("itemsJson"));
-  if (!name || !phone || !items.length) {
-    return { status: "error", message: "Customer name, phone, and at least one item are required." };
+  const customer = customerSchema.safeParse({ name, phone, email, address, city });
+  if (!customer.success) {
+    return { status: "error", message: customer.error.issues[0]?.message ?? "Check customer details." };
+  }
+  if (!items.length) {
+    return { status: "error", message: "Add at least one product to the order." };
   }
   const created = await createCompatibleOrder({
     name,

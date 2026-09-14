@@ -12,6 +12,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { CustomerActions } from "@/app/admin/customers/_components/customer-actions";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,13 +42,16 @@ export default async function AdminCustomerDetailPage(
   }
 
   const { customer, orders } = data;
-  const computedRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-  const computedProfit = orders.reduce((sum, order) => sum + getOrderProfit(order), 0);
-  const totalItems = orders.reduce(
+  const activeOrders = orders.filter(
+    (order) => !["cancelled", "returned"].includes(order.status)
+  );
+  const computedRevenue = activeOrders.reduce((sum, order) => sum + order.revenue, 0);
+  const computedProfit = activeOrders.reduce((sum, order) => sum + getOrderProfit(order), 0);
+  const totalItems = activeOrders.reduce(
     (sum, order) => sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
     0
   );
-  const purchasedItems = orders.flatMap((order) =>
+  const purchasedItems = activeOrders.flatMap((order) =>
     order.items.map((item) => ({
       ...item,
       orderId: order.id,
@@ -71,13 +75,26 @@ export default async function AdminCustomerDetailPage(
       description="Customer profile with saved contact details, addresses, orders, purchases, and operational activity."
     >
       <div className="space-y-6">
-        <Link
-          href="/admin/customers"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Back to customers
-        </Link>
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/admin/customers"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            Back to customers
+          </Link>
+          <CustomerActions
+            customer={{
+              id: customer.id,
+              name: customer.name,
+              phone: customer.phone,
+              email: customer.email,
+              address: customer.address,
+              city: customer.city,
+            }}
+            orderCount={orders.length}
+          />
+        </div>
 
         <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
           <div className="space-y-6">
@@ -110,16 +127,16 @@ export default async function AdminCustomerDetailPage(
 
                 <div className="grid gap-3">
                   <div className="rounded-2xl border border-border/70 bg-muted/30 p-4">
-                    <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <a href={`tel:${customer.phone}`} className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary">
                       <Phone className="size-4 text-muted-foreground" />
                       {customer.phone || "No phone saved"}
-                    </p>
+                    </a>
                   </div>
                   <div className="rounded-2xl border border-border/70 bg-muted/30 p-4">
-                    <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <a href={customer.email ? `mailto:${customer.email}` : undefined} className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary">
                       <Mail className="size-4 text-muted-foreground" />
                       {customer.email || "No email saved"}
-                    </p>
+                    </a>
                   </div>
                   <div className="rounded-2xl border border-border/70 bg-muted/30 p-4">
                     <p className="flex items-center gap-2 text-sm font-medium text-foreground">

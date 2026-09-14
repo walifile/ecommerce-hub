@@ -101,6 +101,23 @@ export const categorySchema = z.object({
 
 export type CategoryFormInput = z.infer<typeof categorySchema>;
 
+// ── Customer ──────────────────────────────────────────────────────────
+export const customerSchema = z.object({
+  name: z.string().trim().min(1, "Customer name is required").max(120, "Name is too long"),
+  phone: z.string().trim().refine((value) => {
+    const digits = value.replace(/\D/g, "");
+    return digits.length >= 7 && digits.length <= 15;
+  }, "Enter a valid phone number with 7 to 15 digits"),
+  email: z.string().trim().max(254, "Email is too long").refine(
+    (value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+    "Enter a valid email address"
+  ),
+  address: z.string().trim().max(500, "Address is too long"),
+  city: z.string().trim().max(100, "City is too long"),
+});
+
+export type CustomerFormInput = z.infer<typeof customerSchema>;
+
 // ── Expense ───────────────────────────────────────────────────────────
 export const expenseSchema = z.object({
   title: z.string().trim().min(1, "Enter an expense title"),
