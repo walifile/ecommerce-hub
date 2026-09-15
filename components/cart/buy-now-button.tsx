@@ -4,12 +4,13 @@ import { useRouter } from "next/navigation";
 import { useCart, type CartInput } from "@/components/cart/cart-provider";
 
 export function BuyNowButton({
-  item, quantity, disabled, className,
+  item, quantity, disabled, className, children,
 }: {
   item: CartInput;
   quantity: number;
   disabled?: boolean;
   className?: string;
+  children?: React.ReactNode;
 }) {
   const { addItem } = useCart();
   const router = useRouter();
@@ -23,7 +24,7 @@ export function BuyNowButton({
         router.push("/checkout");
       }}
     >
-      Buy now
+      {children ?? "Buy now"}
     </button>
   );
 }

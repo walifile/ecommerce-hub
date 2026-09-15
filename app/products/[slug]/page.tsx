@@ -2,10 +2,15 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
+  BadgeCheck,
+  Box,
   Check,
   ChevronRight,
+  CircleDot,
+  PackageCheck,
   RefreshCw,
   ShieldCheck,
+  Sparkles,
   Star,
   Truck,
 } from "lucide-react";
@@ -14,27 +19,16 @@ import { ProductPurchase } from "@/app/products/[slug]/_components/product-purch
 import { ProductReviews } from "@/app/products/[slug]/_components/product-reviews";
 import { ProductCard } from "@/components/ecommerce/product-card";
 import { StoreShell } from "@/components/ecommerce/store-shell";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getProductBySlug, getProductReviews, getRelatedProducts } from "@/lib/ecommerce-data";
-
-const TRUST = [
-  { icon: Truck, title: "Fast delivery", text: "Ships in 24–48 hours" },
-  { icon: ShieldCheck, title: "Secure checkout", text: "Encrypted payments" },
-  { icon: RefreshCw, title: "Easy returns", text: "7-day return window" },
-];
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-export async function generateMetadata(
-  props: PageProps<"/products/[slug]">
-): Promise<Metadata> {
+export async function generateMetadata(props: PageProps<"/products/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Product not found" };
   const title = product.metaTitle || product.name;
-  const description =
-    product.metaDescription || product.shortDescription || product.description;
+  const description = product.metaDescription || product.shortDescription || product.description;
   return {
     title,
     description,
@@ -55,18 +49,16 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
     getProductBySlug(slug),
     getRelatedProducts(slug),
   ]);
+  if (!product) notFound();
 
-  if (!product) {
-    notFound();
-  }
   const reviews = await getProductReviews(product.id);
-
-  const gallery = product.gallery.length ? product.gallery : [product.image];
+  const gallery = Array.from(new Set([product.image, ...product.gallery].filter(Boolean)));
   const isOutOfStock = product.stockQuantity <= 0;
   const isLowStock = !isOutOfStock && product.stockQuantity <= product.lowStockLimit;
-  const tagline = product.shortDescription || product.description;
+  const discount = product.comparePrice && product.comparePrice > product.price
+    ? Math.round((1 - product.price / product.comparePrice) * 100)
+    : 0;
   const productUrl = `${SITE_URL}/products/${product.slug}`;
-
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -75,7 +67,7 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
         "@id": `${productUrl}#product`,
         name: product.name,
         description: product.shortDescription || product.description || product.name,
-        image: gallery.filter(Boolean),
+        image: gallery,
         sku: product.sku,
         category: product.category || undefined,
         url: productUrl,
@@ -85,20 +77,12 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
           url: productUrl,
           priceCurrency: process.env.STRIPE_CURRENCY?.toUpperCase() || "USD",
           price: product.price,
-          availability: isOutOfStock
-            ? "https://schema.org/OutOfStock"
-            : "https://schema.org/InStock",
+          availability: isOutOfStock ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
           itemCondition: "https://schema.org/NewCondition",
         },
-        ...(product.reviewsCount > 0
-          ? {
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: product.rating,
-                reviewCount: product.reviewsCount,
-              },
-            }
-          : {}),
+        ...(product.reviewsCount > 0 ? {
+          aggregateRating: { "@type": "AggregateRating", ratingValue: product.rating, reviewCount: product.reviewsCount },
+        } : {}),
       },
       {
         "@type": "BreadcrumbList",
@@ -112,218 +96,150 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
   };
 
   return (
-    <StoreShell cartCount={3}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-      <main className="bg-surface">
-        <section className="section-shell py-8 sm:py-10">
-          {/* Breadcrumb */}
-          <nav
-            aria-label="Breadcrumb"
-            className="mb-6 flex flex-wrap items-center gap-1.5 text-sm text-white/40"
-          >
-            <Link href="/" className="transition-colors hover:text-white/70">
-              Home
-            </Link>
-            <ChevronRight className="size-3.5" />
-            <Link href="/shop" className="transition-colors hover:text-white/70">
-              Shop
-            </Link>
-            <ChevronRight className="size-3.5" />
+    <StoreShell>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
+      <main className="relative overflow-hidden bg-surface text-white">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[760px] bg-[radial-gradient(circle_at_15%_10%,color-mix(in_srgb,var(--brand)_18%,transparent),transparent_31%),radial-gradient(circle_at_85%_16%,color-mix(in_srgb,var(--brand-2)_14%,transparent),transparent_27%)]" />
+
+        <section className="section-shell relative pb-16 pt-6 sm:pt-8 lg:pb-24">
+          <nav aria-label="Breadcrumb" className="mb-7 flex items-center gap-1.5 overflow-hidden text-xs font-medium text-white/40 sm:text-sm">
+            <Link href="/" className="shrink-0 hover:text-white">Home</Link>
+            <ChevronRight className="size-3.5 shrink-0" />
+            <Link href="/shop" className="shrink-0 hover:text-white">Shop</Link>
+            <ChevronRight className="size-3.5 shrink-0" />
             <span className="truncate text-white/70">{product.name}</span>
           </nav>
 
-          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
-            <ProductGallery images={gallery} name={product.name} />
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(390px,0.88fr)] lg:items-start xl:gap-16">
+            <ProductGallery
+              images={gallery}
+              name={product.name}
+              discount={discount}
+              label={product.bestSeller ? "Best seller" : product.isNew ? "New arrival" : undefined}
+            />
 
-            <div className="space-y-5">
-              <div className="space-y-5 rounded-[28px] border border-white/[0.08] bg-white/[0.03] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:p-7">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-semibold text-white/75">
-                    {product.category}
-                  </Badge>
-                  {isOutOfStock ? (
-                    <Badge className="rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-[11px] font-semibold text-red-400">
-                      Out of stock
-                    </Badge>
-                  ) : isLowStock ? (
-                    <Badge className="rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold text-amber-400">
-                      Only {product.stockQuantity} left
-                    </Badge>
-                  ) : (
-                    <Badge className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold text-emerald-400">
-                      In stock
-                    </Badge>
-                  )}
-                  {product.isNew ? (
-                    <Badge className="rounded-full border border-brand/25 bg-brand/10 px-3 py-1 text-[11px] font-semibold text-brand">
-                      New drop
-                    </Badge>
-                  ) : product.bestSeller ? (
-                    <Badge className="rounded-full border border-brand/25 bg-brand/10 px-3 py-1 text-[11px] font-semibold text-brand">
-                      Top seller
-                    </Badge>
-                  ) : null}
-                </div>
+            <div className="lg:sticky lg:top-24">
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
+                <Link href={`/shop?category=${encodeURIComponent(product.category)}`} className="text-brand hover:text-brand-light">
+                  {product.category}
+                </Link>
+                <span className="size-1 rounded-full bg-white/20" />
+                <span className="text-white/35">SKU {product.sku || "N/A"}</span>
+              </div>
 
-                <div className="space-y-3">
-                  <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
-                    {product.name}
-                  </h1>
-                  <div className="flex items-center gap-3 text-sm">
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={
-                            i < Math.round(product.rating)
-                              ? "size-4 fill-[#fbbf24] text-[#fbbf24]"
-                              : "size-4 text-white/20"
-                          }
-                        />
-                      ))}
-                    </div>
-                    <span className="text-white/60">
-                      {product.rating.toFixed(1)} · {product.reviewsCount} reviews
-                    </span>
-                  </div>
-                  <p className="max-w-2xl text-sm leading-7 text-white/55 sm:text-base">
-                    {tagline}
-                  </p>
-                </div>
+              <h1 className="mt-4 text-balance font-heading text-4xl font-black leading-[1.02] tracking-[-0.045em] text-white sm:text-5xl xl:text-6xl">
+                {product.name}
+              </h1>
 
-                <div className="h-px bg-white/[0.08]" />
+              <a href="#reviews" className="mt-5 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2 pr-4 hover:border-white/20 hover:bg-white/[0.07]">
+                <span className="flex items-center gap-0.5 rounded-full bg-amber-400/10 px-2 py-1">
+                  <Star className="size-3.5 fill-amber-400 text-amber-400" />
+                  <span className="text-sm font-bold text-amber-300">{product.rating.toFixed(1)}</span>
+                </span>
+                <span className="text-xs font-medium text-white/55">{product.reviewsCount ? `${product.reviewsCount} verified reviews` : "Be the first to review"}</span>
+              </a>
 
+              <p className="mt-6 text-base leading-7 text-white/58 sm:text-lg sm:leading-8">
+                {product.shortDescription || product.description}
+              </p>
+
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold ${isOutOfStock ? "border-red-400/20 bg-red-400/10 text-red-300" : isLowStock ? "border-amber-400/20 bg-amber-400/10 text-amber-200" : "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"}`}>
+                  <CircleDot className="size-3.5" />
+                  {isOutOfStock ? "Currently unavailable" : isLowStock ? `Hurry, only ${product.stockQuantity} left` : "Ready to ship"}
+                </span>
+                {product.featured ? <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/45"><Sparkles className="size-3.5 text-brand" />Featured pick</span> : null}
+              </div>
+
+              <div className="mt-7 rounded-[30px] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.075),rgba(255,255,255,0.025))] p-5 shadow-[0_30px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:p-6">
                 <ProductPurchase
-                  item={{
-                    id: product.id,
-                    name: product.name,
-                    slug: product.slug,
-                    price: product.price,
-                    costPrice: product.costPrice,
-                    image: product.image,
-                    category: product.category,
-                  }}
+                  item={{ id: product.id, name: product.name, slug: product.slug, price: product.price, costPrice: product.costPrice, image: product.image, category: product.category }}
                   price={product.price}
                   comparePrice={product.comparePrice}
                   stock={product.stockQuantity}
+                  lowStockLimit={product.lowStockLimit}
                   isOutOfStock={isOutOfStock}
+                  isLowStock={isLowStock}
                 />
               </div>
 
-              {/* Trust row */}
-              <div className="grid gap-3 sm:grid-cols-3">
-                {TRUST.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div
-                      key={item.title}
-                      className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4"
-                    >
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                        <Icon className="size-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-white">{item.title}</p>
-                        <p className="truncate text-xs text-white/45">{item.text}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="mt-5 grid grid-cols-3 divide-x divide-white/8 rounded-2xl border border-white/8 bg-black/15 py-4">
+                {[
+                  { icon: PackageCheck, label: "Stock checked" },
+                  { icon: ShieldCheck, label: "Secure checkout" },
+                  { icon: Truck, label: "Order tracking" },
+                ].map(({ icon: Icon, label }) => (
+                  <div key={label} className="flex flex-col items-center gap-2 px-2 text-center">
+                    <Icon className="size-4 text-brand" />
+                    <span className="text-[10px] font-semibold text-white/50 sm:text-xs">{label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Tabbed details */}
-        <section className="section-shell pb-4">
-          <Tabs defaultValue="description" className="gap-6">
-            <TabsList className="h-auto flex-wrap gap-1 rounded-full border border-white/[0.08] bg-white/[0.03] p-1">
-              <TabsTrigger
-                value="description"
-                className="rounded-full px-5 py-2 text-sm text-white/60 data-active:bg-white/8 data-active:text-white"
-              >
-                Description
-              </TabsTrigger>
-              <TabsTrigger
-                value="specifications"
-                className="rounded-full px-5 py-2 text-sm text-white/60 data-active:bg-white/8 data-active:text-white"
-              >
-                Specifications
-              </TabsTrigger>
-              <TabsTrigger
-                value="shipping"
-                className="rounded-full px-5 py-2 text-sm text-white/60 data-active:bg-white/8 data-active:text-white"
-              >
-                Shipping &amp; returns
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="description">
-              <div className="rounded-[28px] border border-white/[0.08] bg-white/[0.03] p-6 sm:p-7">
-                <p className="max-w-3xl text-sm leading-7 text-white/60 sm:text-base">
-                  {product.description}
-                </p>
+        <section className="relative border-y border-white/7 bg-white/[0.025]">
+          <div className="section-shell grid gap-12 py-16 lg:grid-cols-[1.08fr_0.92fr] lg:py-24">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-brand">Inside the box</p>
+              <h2 className="mt-3 max-w-xl text-3xl font-black tracking-tight sm:text-4xl">Made for moments that feel anything but ordinary.</h2>
+              <div className="mt-6 max-w-2xl whitespace-pre-line text-base leading-8 text-white/58">
+                {product.description || product.shortDescription}
               </div>
-            </TabsContent>
-
-            <TabsContent value="specifications">
-              <div className="rounded-[28px] border border-white/[0.08] bg-white/[0.03] p-6 sm:p-7">
-                {product.specifications.length ? (
-                  <ul className="grid gap-2 sm:grid-cols-2">
-                    {product.specifications.map((spec) => (
-                      <li
-                        key={spec}
-                        className="flex items-start gap-2 rounded-2xl border border-white/[0.08] bg-black/20 px-4 py-3 text-sm text-white/60"
-                      >
-                        <Check className="mt-0.5 size-4 shrink-0 text-brand" />
-                        <span>{spec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-white/45">No specifications listed.</p>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="shipping">
-              <div className="grid gap-3 rounded-[28px] border border-white/[0.08] bg-white/[0.03] p-6 text-sm text-white/60 sm:p-7">
-                {[
-                  "Dispatched within 24–48 hours of order confirmation.",
-                  "Free delivery on orders over the store threshold.",
-                  "7-day hassle-free returns on unused items in original packaging.",
-                  "Secure, encrypted checkout with Cash on Delivery available.",
-                ].map((line) => (
-                  <div key={line} className="flex items-start gap-2">
-                    <Check className="mt-0.5 size-4 shrink-0 text-brand" />
-                    <span>{line}</span>
+              <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                {[{ icon: BadgeCheck, text: "Carefully selected for quality" }, { icon: RefreshCw, text: "Straightforward return support" }, { icon: ShieldCheck, text: "Protected checkout process" }, { icon: Box, text: "Packed with care" }].map(({ icon: Icon, text }) => (
+                  <div key={text} className="flex items-center gap-3 rounded-2xl border border-white/8 bg-black/15 px-4 py-3 text-sm text-white/65">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand"><Icon className="size-4" /></span>
+                    {text}
                   </div>
                 ))}
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+
+            <div className="rounded-[30px] border border-white/9 bg-black/20 p-5 sm:p-7">
+              <div className="flex items-center justify-between gap-3">
+                <div><p className="text-[11px] font-bold uppercase tracking-[0.2em] text-brand">Product details</p><h2 className="mt-2 text-2xl font-bold">Good to know</h2></div>
+                <span className="flex size-11 items-center justify-center rounded-2xl bg-brand/10 text-brand"><Sparkles className="size-5" /></span>
+              </div>
+              {product.specifications.length ? (
+                <ul className="mt-6 space-y-2.5">
+                  {product.specifications.map((spec) => (
+                    <li key={spec} className="flex items-start gap-3 rounded-2xl border border-white/7 bg-white/[0.025] px-4 py-3.5 text-sm leading-6 text-white/65">
+                      <Check className="mt-1 size-4 shrink-0 text-emerald-400" /><span>{spec}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="mt-6 text-sm text-white/40">Detailed specifications will be added soon.</p>}
+            </div>
+          </div>
+        </section>
+
+        <section className="section-shell py-14">
+          <div className="grid gap-3 md:grid-cols-3">
+            {[
+              { icon: Truck, title: "Tracked delivery", text: "Follow your order status from confirmation through delivery." },
+              { icon: ShieldCheck, title: "Checkout confidence", text: "Your order details are validated and processed securely." },
+              { icon: RefreshCw, title: "Return support", text: "Need help after delivery? Our support flow keeps things simple." },
+            ].map(({ icon: Icon, title, text }) => (
+              <div key={title} className="group rounded-[26px] border border-white/8 bg-white/[0.025] p-5 transition hover:-translate-y-1 hover:border-brand/25 hover:bg-brand/[0.04]">
+                <span className="flex size-11 items-center justify-center rounded-2xl border border-brand/15 bg-brand/10 text-brand"><Icon className="size-5" /></span>
+                <h3 className="mt-5 text-base font-bold">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-white/45">{text}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <ProductReviews productId={product.id} productSlug={product.slug} reviews={reviews} />
 
         {relatedProducts.length ? (
-          <section className="section-shell pb-14 pt-8">
-            <div className="mb-6 max-w-3xl space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-brand/80">
-                Related products
-              </p>
-              <h2 className="text-3xl font-black tracking-tight text-white">
-                More products in the same lane.
-              </h2>
+          <section className="section-shell pb-20 pt-10">
+            <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+              <div><p className="text-[11px] font-bold uppercase tracking-[0.22em] text-brand">Keep exploring</p><h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">You may also like</h2></div>
+              <Link href="/shop" className="inline-flex items-center gap-1 text-sm font-semibold text-white/55 hover:text-white">View all products <ChevronRight className="size-4" /></Link>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {relatedProducts.map((item) => (
-                <ProductCard key={item.id} product={item} />
-              ))}
-            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{relatedProducts.map((item) => <ProductCard key={item.id} product={item} />)}</div>
           </section>
         ) : null}
       </main>
