@@ -38,6 +38,7 @@ export function ExpenseRowActions({ expense }: {
     expenseType: "advertising" | "shipping" | "salary" | "miscellaneous";
     amount: number;
     date: string;
+    updatedAt: string;
   };
 }) {
   const router = useRouter();
@@ -61,6 +62,7 @@ export function ExpenseRowActions({ expense }: {
     formData.set("expenseType", values.expenseType);
     formData.set("amount", values.amount);
     formData.set("date", values.date);
+    formData.set("expectedUpdatedAt", expense.updatedAt);
     startTransition(async () => {
       const result = await updateExpenseAction(initialState, formData);
       if (result.status === "success") {
@@ -74,6 +76,7 @@ export function ExpenseRowActions({ expense }: {
   function remove() {
     const formData = new FormData();
     formData.set("expenseId", expense.id);
+    formData.set("expectedUpdatedAt", expense.updatedAt);
     startTransition(async () => {
       const result = await deleteExpenseAction(initialState, formData);
       if (result.status === "success") {

@@ -2,23 +2,14 @@
 
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { buildExpenseCsv } from "@/lib/expense-management";
 
 type ExportExpense = { title: string; type: string; date: string; amount: number };
 
-function csvCell(value: string | number) {
-  let text = String(value);
-  if (typeof value === "string" && /^\s*[=+\-@]/.test(text)) text = `'${text}`;
-  return `"${text.replaceAll('"', '""')}"`;
-}
-
 export function ExpenseExportButton({ expenses }: { expenses: ExportExpense[] }) {
   function download() {
-    const rows = [
-      ["Title", "Type", "Date", "Amount"],
-      ...expenses.map((expense) => [expense.title, expense.type, expense.date, expense.amount.toFixed(2)]),
-    ];
     const blob = new Blob(
-      [`\uFEFF${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}`],
+      [buildExpenseCsv(expenses)],
       { type: "text/csv;charset=utf-8" }
     );
     const url = URL.createObjectURL(blob);

@@ -18,9 +18,9 @@ import {
 } from "@/components/ui/table";
 import { getCatalogData } from "@/lib/ecommerce-data";
 import { formatProfitCurrency } from "@/lib/profit-report";
+import { filterExpenses, isValidExpenseDate, sortExpenses, type ExpenseSort } from "@/lib/expense-management";
 
 const PAGE_SIZE = 20;
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const TYPES = ["all", "advertising", "shipping", "salary", "miscellaneous"];
 
 export default async function AdminExpensesPage({
@@ -35,24 +35,19 @@ export default async function AdminExpensesPage({
   const sort = ["newest", "oldest", "highest", "lowest", "title"].includes(params.sort)
     ? params.sort
     : "newest";
-  const from = DATE_PATTERN.test(params.from ?? "") ? params.from : "";
-  const to = DATE_PATTERN.test(params.to ?? "") ? params.to : "";
+  const from = isValidExpenseDate(params.from ?? "") ? params.from : "";
+  const to = isValidExpenseDate(params.to ?? "") ? params.to : "";
   const invalidRange = Boolean(from && to && from > to);
 
-  const filteredExpenses = catalog.expenses.filter((expense) => {
-    if (query && !expense.title.toLocaleLowerCase().includes(query)) return false;
-    if (type !== "all" && expense.expenseType !== type) return false;
-    if (from && expense.date < from) return false;
-    if (to && expense.date > to) return false;
-    return true;
-  });
-  filteredExpenses.sort((a, b) => {
-    if (sort === "oldest") return a.date.localeCompare(b.date);
-    if (sort === "highest") return b.amount - a.amount;
-    if (sort === "lowest") return a.amount - b.amount;
-    if (sort === "title") return a.title.localeCompare(b.title);
-    return b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt);
-  });
+  const filteredExpenses = sortExpenses(
+    filterExpenses(catalog.expenses, {
+      query,
+      type: type as "all" | (typeof catalog.expenses)[number]["expenseType"],
+      from,
+      to,
+    }),
+    sort as ExpenseSort
+  );
 
   const resultCount = filteredExpenses.length;
   const requestedPage = Number(params.page ?? "1");
@@ -155,7 +150,7 @@ export default async function AdminExpensesPage({
                       <TableCell><Badge variant="secondary" className="capitalize">{expense.expenseType}</Badge></TableCell>
                       <TableCell className="whitespace-nowrap">{new Date(`${expense.date}T00:00:00Z`).toLocaleDateString("en-US", { dateStyle: "medium", timeZone: "UTC" })}</TableCell>
                       <TableCell className="font-semibold">{formatProfitCurrency(expense.amount)}</TableCell>
-                      <TableCell className="text-right"><ExpenseRowActions expense={{ id: expense.id, title: expense.title, expenseType: expense.expenseType, amount: expense.amount, date: expense.date }} /></TableCell>
+                      <TableCell className="text-right"><ExpenseRowActions expense={{ id: expense.id, title: expense.title, expenseType: expense.expenseType, amount: expense.amount, date: expense.date, updatedAt: expense.updatedAt }} /></TableCell>
                     </TableRow>
                   ))}
                   {!visibleExpenses.length ? <TableRow><TableCell colSpan={5} className="h-36 text-center text-muted-foreground">{catalog.expenses.length ? "No expenses match the current filters." : "No expenses logged yet."}</TableCell></TableRow> : null}
