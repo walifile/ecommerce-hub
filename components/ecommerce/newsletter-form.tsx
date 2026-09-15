@@ -59,7 +59,7 @@ export function NewsletterForm() {
           </>
         ) : (
           <>
-            Claim my 10% off
+            Join the newsletter
             <ArrowUpRight className="size-4" />
           </>
         )}

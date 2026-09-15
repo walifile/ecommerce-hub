@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Truck, Undo2 } from "lucide-react";
 import { CartClient } from "@/app/cart/_components/cart-client";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
 import { getCatalogData } from "@/lib/ecommerce-data";
+
+// Private/transactional — kept out of the index via robots.txt; this just
+// gives the tab a real title instead of falling back to the homepage's.
+export const metadata: Metadata = { title: "Your Cart" };
 
 const trustItems = [
   { label: "Secure checkout", icon: ShieldCheck },

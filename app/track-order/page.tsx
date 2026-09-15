@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Search, ShieldCheck, Truck, Undo2 } from "lucide-react";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
 import { StoreShell } from "@/components/ecommerce/store-shell";
@@ -11,6 +12,24 @@ import {
   getTrackedOrder,
 } from "@/lib/ecommerce-data";
 import { cn } from "@/lib/utils";
+
+export async function generateMetadata(
+  props: PageProps<"/track-order">
+): Promise<Metadata> {
+  const search = await props.searchParams;
+  const hasLookup = Boolean(search.orderNumber || search.order || search.phone || search.trackingToken);
+
+  return {
+    title: "Track Your Order",
+    description:
+      "Look up your ToyVerse order status by order number and phone, or via your tracking link, and follow it from confirmed to delivered.",
+    // A populated lookup renders someone's private order details — never
+    // index those URLs, only the blank lookup form.
+    ...(hasLookup
+      ? { robots: { index: false, follow: false } }
+      : { alternates: { canonical: "/track-order" } }),
+  };
+}
 
 const trackingStates = [
   "pending",

@@ -26,8 +26,8 @@ export async function subscribeToNewsletter(
   // No backend configured (e.g. local dev) — accept gracefully so the UI works.
   if (!supabase) {
     return {
-      status: "success",
-      message: "You're on the list! Your 10% code is on its way.",
+      status: "error",
+      message: "Newsletter signup is temporarily unavailable.",
     };
   }
 
@@ -59,6 +59,6 @@ export async function subscribeToNewsletter(
 
   return {
     status: "success",
-    message: "You're in! Check your inbox for 10% off your first order.",
+    message: "You're subscribed. Thanks for joining us!",
   };
 }

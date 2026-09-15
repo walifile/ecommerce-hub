@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BadgeCheck, ClipboardList, CreditCard, ShieldCheck } from "lucide-react";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions",
+  description:
+    "The terms that govern orders, payments, shipping, and returns when you shop at ToyVerse.",
+  alternates: { canonical: "/terms-and-conditions" },
+};
 
 const terms = [
   {

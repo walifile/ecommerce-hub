@@ -32,13 +32,16 @@ export async function sendContactMessage(
   if (message.length < 10) {
     return { status: "error", message: "Please add a more detailed message." };
   }
+  if (name.length > 100 || subject.length > 200 || message.length > 5000 || orderNumber.length > 80) {
+    return { status: "error", message: "One or more fields are too long." };
+  }
 
   const supabase = getSupabaseServerClient();
 
   if (!supabase) {
     return {
-      status: "success",
-      message: "Message ready. Connect Supabase to store submissions permanently.",
+      status: "error",
+      message: "Contact support is temporarily unavailable. Please try again later.",
     };
   }
 

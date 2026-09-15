@@ -129,6 +129,8 @@ export type Expense = {
   expenseType: "advertising" | "shipping" | "salary" | "miscellaneous";
   amount: number;
   date: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type Coupon = {
@@ -155,6 +157,8 @@ export type AiGeneration = {
   longDescription: string;
   metaTitle: string;
   metaDescription: string;
+  specifications: string[];
+  model: string;
   faq: AiFaq[];
   createdAt: string;
 };
@@ -512,6 +516,12 @@ function calculateOrderProfit(order: Order) {
     0
   );
 
+  if (order.status === "cancelled") return 0;
+  if (order.status === "returned") {
+    const refund = Math.min(order.revenue, Math.max(0, order.refundAmount ?? order.revenue));
+    return order.revenue - refund - order.shippingCost - order.adCost;
+  }
+
   return order.revenue - productCost - order.shippingCost - order.adCost;
 }
 
@@ -733,6 +743,8 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     expenseType: expense.expense_type as Expense["expenseType"],
     amount: Number(expense.amount),
     date: expense.expense_date,
+    createdAt: expense.created_at,
+    updatedAt: expense.updated_at ?? expense.created_at,
   }));
 
   const coupons = couponRows.map((coupon) => ({
@@ -764,6 +776,10 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
     longDescription: row.long_description ?? "",
     metaTitle: row.meta_title ?? "",
     metaDescription: row.meta_description ?? "",
+    specifications: Array.isArray(row.specifications)
+      ? row.specifications.map(String).filter(Boolean)
+      : [],
+    model: row.model ?? "",
     faq: Array.isArray(row.faq)
       ? row.faq.map((item): AiFaq =>
           item && typeof item === "object"
@@ -1028,6 +1044,63 @@ export async function getOrderById(id?: string) {
 
   const { orders } = await getCatalogData();
   return orders.find((order) => order.id === id) ?? null;
+}
+
+export type MyOrderSummary = {
+  id: string;
+  orderNumber: string;
+  trackingToken: string;
+  status: Order["status"];
+  paymentMethod: Order["paymentMethod"];
+  total: number;
+  itemCount: number;
+  createdAt: string;
+};
+
+/**
+ * Best-effort order history for a signed-in customer, matched by the email
+ * used at checkout (guest checkout means orders aren't otherwise linked to
+ * an auth user). Returns [] when no checkout used this email.
+ */
+export async function getMyOrders(email: string): Promise<MyOrderSummary[]> {
+  const supabase = getSupabaseServerClient();
+  if (!supabase || !email.trim()) return [];
+
+  const { data: customers, error: customerError } = await supabase
+    .from("customers")
+    .select("id")
+    .ilike("email", email.trim());
+  if (customerError || !customers?.length) return [];
+
+  const customerIds = (customers as { id: string }[]).map((c) => c.id);
+  const { data, error } = await supabase
+    .from("orders")
+    .select("id, order_number, tracking_token, status, payment_method, total, created_at, order_items(quantity)")
+    .in("customer_id", customerIds)
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+
+  return (
+    data as unknown as Array<{
+      id: string;
+      order_number: string;
+      tracking_token: string;
+      status: Order["status"];
+      payment_method: Order["paymentMethod"];
+      total: number;
+      created_at: string;
+      order_items: { quantity: number }[];
+    }>
+  ).map((row) => ({
+    id: row.id,
+    orderNumber: row.order_number,
+    trackingToken: row.tracking_token,
+    status: row.status,
+    paymentMethod: row.payment_method,
+    total: Number(row.total),
+    itemCount: row.order_items.reduce((sum, item) => sum + item.quantity, 0),
+    createdAt: row.created_at,
+  }));
 }
 
 export async function getCustomerById(id?: string) {

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   PackageOpen,
@@ -35,6 +36,38 @@ const trustItems = [
   { icon: Undo2, label: "30-day returns" },
   { icon: ShieldCheck, label: "Lab-safe & certified" },
 ];
+
+export async function generateMetadata(
+  props: PageProps<"/shop">
+): Promise<Metadata> {
+  const search = await props.searchParams;
+  const category = typeof search.category === "string" ? search.category : "";
+  const query = typeof search.query === "string" ? search.query : "";
+
+  // Search-result pages are thin/duplicate content — keep them out of the
+  // index (robots.txt also blocks crawling ?query= for defense in depth).
+  if (query) {
+    return {
+      title: `Search results for "${query}"`,
+      robots: { index: false, follow: true },
+    };
+  }
+
+  if (category) {
+    return {
+      title: category,
+      description: `Shop premium, lab-safe ${category.toLowerCase()} toys at ToyVerse — fast 48-hour dispatch, free shipping over $50, and easy 30-day returns.`,
+      alternates: { canonical: `/shop?category=${encodeURIComponent(category)}` },
+    };
+  }
+
+  return {
+    title: "Shop All Toys",
+    description:
+      "Browse the full ToyVerse catalog — educational kits, building sets, RC toys and creative play, all lab-safe and ready to ship.",
+    alternates: { canonical: "/shop" },
+  };
+}
 
 export default async function ShopPage(props: PageProps<"/shop">) {
   const search = await props.searchParams;

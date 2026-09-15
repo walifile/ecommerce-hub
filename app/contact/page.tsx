@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Mail, MessageSquare, Phone, ShieldCheck, Truck, Undo2 } from "lucide-react";
 import { ContactForm } from "@/components/ecommerce/contact-form";
@@ -5,6 +6,13 @@ import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCatalogData } from "@/lib/ecommerce-data";
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Get in touch with ToyVerse support — order questions, shipping info, and returns. We reply fast to keep your shopping experience smooth.",
+  alternates: { canonical: "/contact" },
+};
 
 const servicePromises = [
   { label: "Secure checkout", icon: ShieldCheck },

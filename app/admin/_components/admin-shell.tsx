@@ -10,6 +10,7 @@ import {
   FolderTree,
   LayoutGrid,
   Menu,
+  MessageCircleMore,
   MessageSquareText,
   MoonStar,
   Package2,
@@ -42,6 +43,7 @@ const adminLinks = [
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquareText },
   { href: "/admin/profit", label: "Profit", icon: ChartColumn },
   { href: "/admin/expenses", label: "Expenses", icon: Wallet },
+  { href: "/admin/whatsapp", label: "WhatsApp", icon: MessageCircleMore },
   { href: "/admin/ai", label: "AI", icon: Bot },
   { href: "/admin/settings", label: "Settings", icon: Palette },
 ];

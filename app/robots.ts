@@ -7,8 +7,18 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Keep private/transactional areas out of the index.
-      disallow: ["/admin", "/checkout", "/cart", "/login", "/signup"],
+      // Keep private/transactional areas, and thin/duplicate search &
+      // order-lookup result pages, out of the index.
+      disallow: [
+        "/admin",
+        "/checkout",
+        "/cart",
+        "/login",
+        "/signup",
+        "/account",
+        "/track-order?*",
+        "/shop?*query=*",
+      ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,

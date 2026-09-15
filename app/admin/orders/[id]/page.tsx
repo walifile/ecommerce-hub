@@ -8,7 +8,7 @@ import {
   Phone,
   User,
 } from "lucide-react";
-import { updateOrderStatusAction } from "@/app/admin/orders/actions";
+import { OrderActionForm } from "@/app/admin/orders/_components/order-action-form";
 import { PrintOrderButton } from "@/app/admin/orders/_components/print-order-button";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { StatusBadge } from "@/components/ecommerce/status-badge";
@@ -79,7 +79,7 @@ export default async function AdminOrderDetailPage(
             >
               Invoice
             </Link>
-            <form action={updateOrderStatusAction} className="flex items-center gap-2">
+            <OrderActionForm className="flex items-center gap-2">
               <input type="hidden" name="orderId" value={order.id} />
               <NativeSelect
                 name="status"
@@ -88,6 +88,7 @@ export default async function AdminOrderDetailPage(
                 className="w-40 capitalize"
               >
                 {STATUSES.map((status) => (
+                  (status === "cancelled" || status === "returned") && status !== order.status ? null :
                   <NativeSelectOption key={status} value={status} className="capitalize">
                     {status}
                   </NativeSelectOption>
@@ -96,7 +97,7 @@ export default async function AdminOrderDetailPage(
               <Button type="submit" variant="outline" size="sm" className="rounded-md">
                 Update status
               </Button>
-            </form>
+            </OrderActionForm>
             <PrintOrderButton />
           </div>
         </div>
@@ -342,7 +343,7 @@ export default async function AdminOrderDetailPage(
                 <CardTitle>Return or cancellation</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <form action={updateOrderStatusAction} className="space-y-4">
+                <OrderActionForm className="space-y-4">
                   <input type="hidden" name="orderId" value={order.id} />
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="space-y-2">
@@ -403,7 +404,7 @@ export default async function AdminOrderDetailPage(
                   <Button type="submit" className="rounded-md">
                     Save resolution
                   </Button>
-                </form>
+                </OrderActionForm>
 
                 {order.events?.length ? (
                   <div className="space-y-2 border-t border-border/60 pt-4">

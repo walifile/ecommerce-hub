@@ -8,26 +8,50 @@ import {
   updateCompatibleOrderStatus,
 } from "@/lib/order-operations";
 import { customerSchema } from "@/lib/validations/admin";
+import { getOrderById } from "@/lib/ecommerce-data";
 
 export type OrderFormState = { status: "idle" | "success" | "error"; message: string };
 
-export async function updateOrderStatusAction(formData: FormData) {
+const ORDER_STATUSES = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled", "returned"];
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export async function updateOrderStatusAction(formData: FormData): Promise<OrderFormState> {
   await requireAdmin();
-  const id = String(formData.get("orderId") ?? "");
-  const status = String(formData.get("status") ?? "");
-  if (!id || !status) return;
+  const id = String(formData.get("orderId") ?? "").trim();
+  const status = String(formData.get("status") ?? "").trim().toLowerCase();
+  if (!UUID_RE.test(id) || !ORDER_STATUSES.includes(status)) {
+    return { status: "error", message: "Invalid order or status." };
+  }
   const refundRaw = String(formData.get("refundAmount") ?? "").trim();
   const refund = refundRaw ? Number(refundRaw) : null;
+  const reason = String(formData.get("reason") ?? "").trim();
+  const note = String(formData.get("note") ?? "").trim();
+  if (refundRaw && (!Number.isFinite(refund) || Number(refund) < 0)) {
+    return { status: "error", message: "Refund amount must be zero or greater." };
+  }
+  if ((status === "cancelled" || status === "returned") && !reason) {
+    return { status: "error", message: "Add a reason for a cancellation or return." };
+  }
+  if (reason.length > 500 || note.length > 2000) {
+    return { status: "error", message: "Reason or note is too long." };
+  }
+  if (refund !== null) {
+    const existingOrder = await getOrderById(id);
+    if (!existingOrder) return { status: "error", message: "Order not found." };
+    if (refund > existingOrder.total) {
+      return { status: "error", message: "Refund cannot exceed the order total." };
+    }
+  }
   const result = await updateCompatibleOrderStatus({
     orderId: id,
     status,
-    reason: String(formData.get("reason") ?? "").trim() || null,
-    refundAmount: Number.isFinite(refund as number) ? refund : null,
-    note: String(formData.get("note") ?? "").trim() || null,
+    reason: reason || null,
+    refundAmount: refund,
+    note: note || null,
   });
   if (!result.ok) {
     console.error("[admin] updateOrderStatus failed:", result.error);
-    return;
+    return { status: "error", message: result.error || "Order status could not be updated." };
   }
   const order = result.data;
   const templateKey = templateForStatus(status);
@@ -40,6 +64,7 @@ export async function updateOrderStatusAction(formData: FormData) {
   }
   revalidatePath("/admin", "layout");
   revalidatePath("/shop");
+  return { status: "success", message: `Order marked ${status}.` };
 }
 
 type ManualOrderItem = { productId: string; quantity: number };

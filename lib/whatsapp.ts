@@ -144,7 +144,7 @@ export async function notifyOrder(input: OrderNotifyInput): Promise<void> {
   }
 
   try {
-    await supabase.from("whatsapp_logs").insert({
+    const { error } = await supabase.from("whatsapp_logs").insert({
       order_id: input.orderId,
       template_name: input.templateKey,
       phone: input.phone || null,
@@ -154,6 +154,7 @@ export async function notifyOrder(input: OrderNotifyInput): Promise<void> {
           ? new Date().toISOString()
           : null,
     } as never);
+    if (error) console.error("[whatsapp] log insert failed:", error.message);
   } catch (error) {
     console.error("[whatsapp] log insert failed:", error);
   }

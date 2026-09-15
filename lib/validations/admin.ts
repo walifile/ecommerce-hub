@@ -120,10 +120,16 @@ export type CustomerFormInput = z.infer<typeof customerSchema>;
 
 // ── Expense ───────────────────────────────────────────────────────────
 export const expenseSchema = z.object({
-  title: z.string().trim().min(1, "Enter an expense title"),
+  title: z.string().trim().min(1, "Enter an expense title").max(120, "Use 120 characters or less"),
   expenseType: z.enum(["advertising", "shipping", "salary", "miscellaneous"]),
-  amount: positiveAmount("Enter a valid amount"),
-  date: z.string().trim(),
+  amount: positiveAmount("Enter a valid amount").refine(
+    (value) => Number(value) <= 9_999_999_999.99,
+    "Amount is too large"
+  ),
+  date: z.string().trim().refine(
+    (value) => value === "" || (/^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00Z`).getTime())),
+    "Enter a valid date"
+  ),
 });
 
 export type ExpenseFormInput = z.infer<typeof expenseSchema>;

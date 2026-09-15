@@ -16,7 +16,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function safeRedirect(value: FormDataEntryValue | null): string | null {
   const path = String(value ?? "").trim();
   if (!path) return null;
-  if (path === "/account" || path.startsWith("/account/")) return null;
   return path.startsWith("/") && !path.startsWith("//") ? path : null;
 }
 
@@ -65,7 +64,7 @@ export async function signInAction(
         : "/admin";
     redirect(adminRedirect);
   }
-  redirect(explicitRedirect ?? "/");
+  redirect(explicitRedirect === "/account" ? "/" : explicitRedirect ?? "/");
 }
 
 export async function signUpAction(

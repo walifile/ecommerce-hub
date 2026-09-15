@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck, Lock, DatabaseZap, Mail } from "lucide-react";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "How ToyVerse collects, uses, and protects your information when you shop, checkout, and contact support.",
+  alternates: { canonical: "/privacy-policy" },
+};
 
 const sections = [
   {

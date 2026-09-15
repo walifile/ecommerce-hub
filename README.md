@@ -78,6 +78,10 @@ For WhatsApp order notifications, set `WHATSAPP_ACCESS_TOKEN`,
 `WHATSAPP_PHONE_NUMBER_ID`, and optionally `WHATSAPP_DEFAULT_COUNTRY_CODE` for
 local phone numbers.
 
+For the admin AI Product Generator, set the server-only `OPENAI_API_KEY`.
+`OPENAI_MODEL` is optional and defaults to `gpt-5.6-luna`. Never expose the API
+key through a `NEXT_PUBLIC_` environment variable.
+
 ## Phase 1 Notes
 
 The current codebase is structured to keep public storefront pages, admin surfaces, and shared ecommerce data in one app. The next Phase 1 work should continue inside the existing routes and shared components rather than introducing a second shell.

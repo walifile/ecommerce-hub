@@ -41,7 +41,7 @@ export async function updateSession(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Gate the admin dashboard behind authentication.
+  // Gate the admin dashboard and the customer account area behind authentication.
   if (!user && pathname.startsWith("/admin")) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
@@ -51,15 +51,26 @@ export async function updateSession(request: NextRequest) {
 
   // Logged-in users shouldn't see login/signup — send admins to the
   // dashboard, everyone else to their account.
-  const isAuthEntry = pathname === "/login" || pathname === "/signup";
-  if ((user && isAuthEntry) || pathname === "/account") {
-    const { data: profile } = user
-      ? await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .maybeSingle<{ role: string }>()
-      : { data: null };
+  if (user && (pathname === "/login" || pathname === "/signup")) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle<{ role: string }>();
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = profile?.role === "admin" ? "/admin" : "/";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Keep admins out of the customer account area — send them to their
+  // dashboard instead.
+  if (user && pathname.startsWith("/account")) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle<{ role: string }>();
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = profile?.role === "admin" ? "/admin" : "/";
     redirectUrl.search = "";

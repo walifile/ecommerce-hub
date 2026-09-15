@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { updateOrderStatusAction } from "@/app/admin/orders/actions";
+import { OrderActionForm } from "@/app/admin/orders/_components/order-action-form";
 import { cn } from "@/lib/utils";
 
 const STATUSES = [
@@ -13,8 +13,6 @@ const STATUSES = [
   "processing",
   "shipped",
   "delivered",
-  "cancelled",
-  "returned",
 ];
 
 export function OrderActions({
@@ -36,7 +34,7 @@ export function OrderActions({
         <ExternalLink className="size-4" />
         View
       </Link>
-      <form action={updateOrderStatusAction} className="flex items-center gap-2">
+      <OrderActionForm className="flex items-center gap-2">
         <input type="hidden" name="orderId" value={orderId} />
         <NativeSelect
           name="status"
@@ -53,7 +51,7 @@ export function OrderActions({
         <Button type="submit" variant="outline" size="sm" className="rounded-md">
           Update
         </Button>
-      </form>
+      </OrderActionForm>
       <Link
         href={`/admin/orders/${orderId}/invoice`}
         className={cn(

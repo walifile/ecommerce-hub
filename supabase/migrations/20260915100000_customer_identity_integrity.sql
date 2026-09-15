@@ -4,6 +4,14 @@
 update public.customers
 set phone = nullif(regexp_replace(coalesce(phone, ''), '[^0-9]+', '', 'g'), '');
 
+-- Legacy/test rows may contain values too short or too long to be usable as a
+-- customer identity. Keep the customer and their order history, but clear the
+-- invalid phone before the new constraint is installed.
+update public.customers
+set phone = null
+where phone is not null
+  and length(phone) not between 7 and 15;
+
 create temporary table customer_duplicate_map on commit drop as
 with ranked as (
   select

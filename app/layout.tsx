@@ -41,9 +41,9 @@ export const metadata: Metadata = {
   authors: [{ name: "ToyVerse" }],
   creator: "ToyVerse",
   publisher: "ToyVerse",
-  alternates: {
-    canonical: "/",
-  },
+  // No blanket canonical here — every page must declare its own (the
+  // homepage does, in app/page.tsx). A layout-wide "/" would make every
+  // page that forgets to override it claim the homepage as canonical.
   openGraph: {
     type: "website",
     siteName: "ToyVerse",

@@ -27,7 +27,7 @@ export function AiGenerator({ initial }: { initial?: AiGeneration }) {
     longDescription: initial?.longDescription ?? "",
     metaTitle: initial?.metaTitle ?? "",
     metaDescription: initial?.metaDescription ?? "",
-    specifications: "",
+    specifications: initial?.specifications.join("\n") ?? "",
   });
   const [faq, setFaq] = useState<AiFaq[]>(initial?.faq ?? []);
   const [pending, startGenerating] = useTransition();

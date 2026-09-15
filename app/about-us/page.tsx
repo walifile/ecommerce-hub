@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Award, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { StoreShell } from "@/components/ecommerce/store-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description:
+    "Learn what makes ToyVerse different — lab-safe materials, a 12-point quality check, 48-hour dispatch, and 30-day easy returns on every order.",
+  alternates: { canonical: "/about-us" },
+};
 
 const values = [
   {

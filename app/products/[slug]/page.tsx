@@ -24,18 +24,26 @@ const TRUST = [
   { icon: RefreshCw, title: "Easy returns", text: "7-day return window" },
 ];
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 export async function generateMetadata(
   props: PageProps<"/products/[slug]">
 ): Promise<Metadata> {
   const { slug } = await props.params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Product not found" };
+  const title = product.metaTitle || product.name;
+  const description =
+    product.metaDescription || product.shortDescription || product.description;
   return {
-    title: product.metaTitle || product.name,
-    description: product.metaDescription || product.shortDescription || product.description,
+    title,
+    description,
+    alternates: { canonical: `/products/${product.slug}` },
     openGraph: {
-      title: product.metaTitle || product.name,
-      description: product.metaDescription || product.shortDescription || product.description,
+      type: "website",
+      title,
+      description,
+      url: `${SITE_URL}/products/${product.slug}`,
       images: product.image ? [product.image] : undefined,
     },
   };
@@ -57,9 +65,58 @@ export default async function ProductPage(props: PageProps<"/products/[slug]">) 
   const isOutOfStock = product.stockQuantity <= 0;
   const isLowStock = !isOutOfStock && product.stockQuantity <= product.lowStockLimit;
   const tagline = product.shortDescription || product.description;
+  const productUrl = `${SITE_URL}/products/${product.slug}`;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        "@id": `${productUrl}#product`,
+        name: product.name,
+        description: product.shortDescription || product.description || product.name,
+        image: gallery.filter(Boolean),
+        sku: product.sku,
+        category: product.category || undefined,
+        url: productUrl,
+        brand: { "@type": "Brand", name: "ToyVerse" },
+        offers: {
+          "@type": "Offer",
+          url: productUrl,
+          priceCurrency: process.env.STRIPE_CURRENCY?.toUpperCase() || "USD",
+          price: product.price,
+          availability: isOutOfStock
+            ? "https://schema.org/OutOfStock"
+            : "https://schema.org/InStock",
+          itemCondition: "https://schema.org/NewCondition",
+        },
+        ...(product.reviewsCount > 0
+          ? {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: product.rating,
+                reviewCount: product.reviewsCount,
+              },
+            }
+          : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "Shop", item: `${SITE_URL}/shop` },
+          { "@type": "ListItem", position: 3, name: product.name, item: productUrl },
+        ],
+      },
+    ],
+  };
 
   return (
     <StoreShell cartCount={3}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <main className="bg-surface">
         <section className="section-shell py-8 sm:py-10">
           {/* Breadcrumb */}

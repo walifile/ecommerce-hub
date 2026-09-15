@@ -20,6 +20,8 @@ export type Database = {
           product_name: string;
           product_title: string | null;
           short_description: string | null;
+          specifications: Json;
+          model: string | null;
         };
       };
       categories: {
@@ -53,7 +55,9 @@ export type Database = {
           expense_date: string;
           expense_type: string;
           id: string;
+          idempotency_key: string | null;
           title: string;
+          updated_at: string;
         };
       };
       coupons: {

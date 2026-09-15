@@ -23,10 +23,10 @@ import {
 } from "@/components/ui/table";
 import {
   getCatalogData,
-  getOrderProfit,
   type DashboardSeriesPoint,
   type Order,
 } from "@/lib/ecommerce-data";
+import { getOrderProfitBreakdown, type OrderProfitBreakdown } from "@/lib/profit-report";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -43,8 +43,8 @@ function getCutoff(range: Range): Date | null {
   if (range === "all") return null;
   const days = range === "1d" ? 1 : range === "7d" ? 7 : range === "30d" ? 30 : 90;
   const d = new Date();
-  d.setDate(d.getDate() - days);
-  d.setHours(0, 0, 0, 0);
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() - (days - 1));
   return d;
 }
 
@@ -54,7 +54,7 @@ function filterOrders(orders: Order[], range: Range): Order[] {
   return orders.filter((o) => new Date(o.createdAt) >= cutoff);
 }
 
-function computeTrend(orders: Order[], range: Range): DashboardSeriesPoint[] {
+function computeTrend(rows: OrderProfitBreakdown[], range: Range): DashboardSeriesPoint[] {
   const now = new Date();
 
   if (range === "1d" || range === "7d" || range === "30d") {
@@ -63,7 +63,7 @@ function computeTrend(orders: Order[], range: Range): DashboardSeriesPoint[] {
       const d = new Date(now);
       d.setDate(d.getDate() - (days - 1 - i));
       const key = d.toISOString().slice(0, 10);
-      const dayOrders = orders.filter((o) => o.createdAt.slice(0, 10) === key);
+      const dayOrders = rows.filter((row) => row.reportDate === key);
       return {
         label:
           range === "1d"
@@ -71,8 +71,8 @@ function computeTrend(orders: Order[], range: Range): DashboardSeriesPoint[] {
             : range === "7d"
             ? d.toLocaleDateString("en-US", { weekday: "short" })
             : d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-        revenue: dayOrders.reduce((s, o) => s + o.revenue, 0),
-        profit:  dayOrders.reduce((s, o) => s + getOrderProfit(o), 0),
+        revenue: dayOrders.reduce((sum, row) => sum + row.revenue, 0),
+        profit: dayOrders.reduce((sum, row) => sum + row.profit, 0),
         orders:  dayOrders.length,
       };
     });
@@ -84,14 +84,14 @@ function computeTrend(orders: Order[], range: Range): DashboardSeriesPoint[] {
       weekEnd.setDate(weekEnd.getDate() - (12 - w) * 7);
       const weekStart = new Date(weekEnd);
       weekStart.setDate(weekStart.getDate() - 6);
-      const weekOrders = orders.filter((o) => {
-        const d = new Date(o.createdAt);
+      const weekOrders = rows.filter((row) => {
+        const d = new Date(row.reportDate);
         return d >= weekStart && d <= weekEnd;
       });
       return {
         label: weekStart.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-        revenue: weekOrders.reduce((s, o) => s + o.revenue, 0),
-        profit:  weekOrders.reduce((s, o) => s + getOrderProfit(o), 0),
+        revenue: weekOrders.reduce((sum, row) => sum + row.revenue, 0),
+        profit: weekOrders.reduce((sum, row) => sum + row.profit, 0),
         orders:  weekOrders.length,
       };
     });
@@ -99,12 +99,12 @@ function computeTrend(orders: Order[], range: Range): DashboardSeriesPoint[] {
 
   // all — group by month
   const monthMap = new Map<string, { revenue: number; profit: number; orders: number; ts: number }>();
-  orders.forEach((o) => {
-    const d = new Date(o.createdAt);
+  rows.forEach((row) => {
+    const d = new Date(row.reportDate);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     const entry = monthMap.get(key) ?? { revenue: 0, profit: 0, orders: 0, ts: d.getTime() };
-    entry.revenue += o.revenue;
-    entry.profit  += getOrderProfit(o);
+    entry.revenue += row.revenue;
+    entry.profit += row.profit;
     entry.orders  += 1;
     monthMap.set(key, entry);
   });
@@ -142,8 +142,16 @@ function topProductsByUnits(orders: Order[], limit = 5) {
 
 function topProductsByProfit(orders: Order[], limit = 5) {
   const map = new Map<string, number>();
-  orders.forEach((order) => order.items.forEach((item) =>
-    map.set(item.productName, (map.get(item.productName) ?? 0) + (item.unitPrice - item.productCost) * item.quantity)));
+  orders.forEach((order) => {
+    const profit = getOrderProfitBreakdown(order).profit;
+    const itemRevenue = order.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    order.items.forEach((item) => {
+      const share = itemRevenue > 0
+        ? (item.unitPrice * item.quantity) / itemRevenue
+        : 1 / order.items.length;
+      map.set(item.productName, (map.get(item.productName) ?? 0) + profit * share);
+    });
+  });
   return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit)
     .map(([name, value]) => ({ name, value }));
 }
@@ -157,23 +165,33 @@ export default async function AdminOverviewPage({
   const range   = (["1d", "7d", "30d", "90d", "all"].includes(params.range) ? params.range : "30d") as Range;
 
   const data           = await getCatalogData();
+  const cutoff         = getCutoff(range);
   const filtered       = filterOrders(data.orders, range);
-  const trend          = computeTrend(filtered, range);
-  const topProducts    = topProductsByRevenue(filtered);
-  const mostSold       = topProductsByUnits(filtered);
-  const highestProfit  = topProductsByProfit(filtered);
+  const accountingRows = data.orders
+    .map(getOrderProfitBreakdown)
+    .filter((row) =>
+      (row.category === "realized" || row.category === "returned") &&
+      (!cutoff || new Date(row.reportDate) >= cutoff)
+    );
+  const deliveredOrders = accountingRows
+    .filter((row) => row.category === "realized")
+    .map((row) => row.order);
+  const trend          = computeTrend(accountingRows, range);
+  const topProducts    = topProductsByRevenue(deliveredOrders);
+  const mostSold       = topProductsByUnits(deliveredOrders);
+  const highestProfit  = topProductsByProfit(deliveredOrders);
   const lowStock       = data.products.filter((p) => p.stockQuantity <= p.lowStockLimit);
 
-  const totalRevenue   = filtered.reduce((s, o) => s + o.revenue, 0);
-  const totalProfit    = filtered.reduce((s, o) => s + getOrderProfit(o), 0);
+  const totalRevenue   = accountingRows.reduce((sum, row) => sum + row.revenue, 0);
+  const orderProfit    = accountingRows.reduce((sum, row) => sum + row.profit, 0);
   const totalOrders    = filtered.length;
-  const avgOrderValue  = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  const avgOrderValue  = deliveredOrders.length > 0 ? totalRevenue / deliveredOrders.length : 0;
 
-  const cutoff = getCutoff(range);
   const filteredExpenses = data.expenses.filter(
     (e) => !cutoff || new Date(e.date) >= cutoff
   );
   const totalExpenses = filteredExpenses.reduce((s, e) => s + e.amount, 0);
+  const totalProfit = orderProfit - totalExpenses;
 
   const metricCards = [
     {
@@ -434,24 +452,24 @@ export default async function AdminOverviewPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.slice(0, 15).map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">{order.orderNumber}</TableCell>
-                    <TableCell className="text-muted-foreground">{formatDate(order.createdAt)}</TableCell>
-                    <TableCell>{formatCurrency(order.revenue)}</TableCell>
-                    <TableCell>{formatCurrency(order.shippingCost)}</TableCell>
-                    <TableCell>{formatCurrency(order.adCost)}</TableCell>
+                {accountingRows.slice(0, 15).map((row) => (
+                  <TableRow key={row.order.id}>
+                    <TableCell className="font-medium">{row.order.orderNumber}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(row.reportDate)}</TableCell>
+                    <TableCell>{formatCurrency(row.revenue)}</TableCell>
+                    <TableCell>{formatCurrency(row.shippingCost)}</TableCell>
+                    <TableCell>{formatCurrency(row.adCost)}</TableCell>
                     <TableCell
                       className={cn(
                         "font-medium",
-                        getOrderProfit(order) >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
+                        row.profit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-destructive"
                       )}
                     >
-                      {formatCurrency(getOrderProfit(order))}
+                      {formatCurrency(row.profit)}
                     </TableCell>
                   </TableRow>
                 ))}
-                {filtered.length === 0 && (
+                {accountingRows.length === 0 && (
                   <tr>
                     <td colSpan={6} className="py-8 text-center text-sm text-muted-foreground">
                       No orders in this period.

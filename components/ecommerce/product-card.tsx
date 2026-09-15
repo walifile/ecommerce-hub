@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart, Star } from "lucide-react";
 import { AddToCartButton } from "@/components/cart/add-to-cart";
@@ -20,12 +21,15 @@ export function ProductCard({ product }: { product: Product }) {
         href={`/products/${product.slug}`}
         className="relative block aspect-square overflow-hidden bg-surface-2"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={product.image}
-          alt={product.name}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : null}
 
         {/* Status badge (one, top-left) */}
         {product.bestSeller ? (
