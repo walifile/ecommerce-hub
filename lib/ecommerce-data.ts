@@ -165,10 +165,18 @@ export type AiGeneration = {
 
 export type WhatsAppLog = {
   id: string;
+  orderId?: string;
   templateName: string;
   phone: string;
   status: string;
-  sentAt: string;
+  messageId?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  attemptCount: number;
+  sentAt?: string;
+  deliveredAt?: string;
+  readAt?: string;
+  createdAt: string;
 };
 
 export type DashboardSeriesPoint = {
@@ -553,7 +561,7 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
       // memory keeps those installations usable until migrations are applied.
       supabase.from("coupons").select("*"),
       supabase.from("ai_generations").select("*").order("created_at", { ascending: false }),
-      supabase.from("whatsapp_logs").select("*").order("created_at", { ascending: false }),
+      supabase.from("whatsapp_logs").select("*").order("created_at", { ascending: false }).limit(200),
       supabase.from("settings").select("*").limit(1).maybeSingle(),
       readSettingsOverrides(),
       readCompatJson<Database["public"]["Tables"]["order_events"]["Row"][]>("orders/events.json", []),
@@ -795,10 +803,18 @@ async function readSupabaseCatalog(): Promise<CatalogData | null> {
 
   const whatsappLogs = whatsappRows.map((row) => ({
     id: row.id,
+    orderId: row.order_id ?? undefined,
     templateName: row.template_name,
     phone: row.phone ?? "",
     status: row.status,
-    sentAt: row.sent_at ?? "Pending",
+    messageId: row.meta_message_id ?? undefined,
+    errorCode: row.error_code ?? undefined,
+    errorMessage: row.error_message ?? undefined,
+    attemptCount: row.attempt_count,
+    sentAt: row.sent_at ?? undefined,
+    deliveredAt: row.delivered_at ?? undefined,
+    readAt: row.read_at ?? undefined,
+    createdAt: row.created_at,
   }));
 
   const trend = mockTrend;

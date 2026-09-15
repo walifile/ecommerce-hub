@@ -202,13 +202,21 @@ export type Database = {
       };
       whatsapp_logs: {
         Row: {
+          attempt_count: number;
           created_at: string;
+          delivered_at: string | null;
+          error_code: string | null;
+          error_message: string | null;
           id: string;
+          meta_message_id: string | null;
           order_id: string | null;
           phone: string | null;
+          read_at: string | null;
+          request_key: string;
           sent_at: string | null;
           status: string;
           template_name: string;
+          updated_at: string;
         };
       };
       profiles: {

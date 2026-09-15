@@ -25,7 +25,7 @@ export function OperationsSettingsForm({ settings }: { settings: StoreSettings }
         ["whatsappTemplateOrderDelivered", "Order delivered", settings.whatsappTemplateOrderDelivered],
       ] as const).map(([name, label, value]) => (
         <label key={name} className="grid gap-2 text-sm font-medium">{label}
-          <Textarea name={name} required defaultValue={value} className="min-h-20" />
+          <Textarea name={name} required maxLength={1024} defaultValue={value} className="min-h-20" />
         </label>
       ))}
       <div className="grid gap-4 sm:grid-cols-2">

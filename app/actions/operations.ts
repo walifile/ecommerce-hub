@@ -19,6 +19,12 @@ export async function saveOperationsSettingsAction(
   }
   const templates = ["whatsappTemplateOrderCreated", "whatsappTemplateOrderConfirmed", "whatsappTemplateOrderShipped", "whatsappTemplateOrderDelivered"];
   if (templates.some((key) => !text(key))) return { status: "error", message: "All WhatsApp templates are required." };
+  if (templates.some((key) => text(key).length > 1024)) {
+    return { status: "error", message: "WhatsApp previews must be 1,024 characters or fewer." };
+  }
+  if (templates.some((key) => !text(key).includes("{orderNumber}"))) {
+    return { status: "error", message: "Every WhatsApp preview must include {orderNumber}." };
+  }
   const result = await updateOperationsSettings({
     whatsappTemplateOrderCreated: text("whatsappTemplateOrderCreated"),
     whatsappTemplateOrderConfirmed: text("whatsappTemplateOrderConfirmed"),
